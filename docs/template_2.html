@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Alimenti - Analisi Completa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 20px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-select {
+            padding: 12px 20px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .stats {
+            padding: 15px 30px;
+            background: #e7f3ff;
+            border-bottom: 2px solid #b3d9ff;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stat-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .stat-value {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            padding: 20px 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        
+        thead {
+            background: #667eea;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        th {
+            padding: 15px 10px;
+            text-align: left;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.3s;
+            white-space: nowrap;
+        }
+        
+        th:hover {
+            background: #5568d3;
+        }
+        
+        th::after {
+            content: ' ⇅';
+            opacity: 0.5;
+            font-size: 0.8em;
+        }
+        
+        th.sort-asc::after {
+            content: ' ↑';
+            opacity: 1;
+        }
+        
+        th.sort-desc::after {
+            content: ' ↓';
+            opacity: 1;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #e9ecef;
+            transition: background 0.2s;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        td {
+            padding: 12px 10px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .badge-low {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .badge-protective {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .badge-neutral {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        
+        .badge-increased {
+            background: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .data-available {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .data-missing {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-size: 1.2em;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            table {
+                font-size: 0.8em;
+            }
+            
+            th, td {
+                padding: 8px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🥗 Database Alimenti Completo</h1>
+            <p>Analisi nutrizionale con TEF, Fruttosio, Fibre e Rischi per la Salute</p>
+        </div>
+        
+        <div class="controls">
+            <input type="text" class="search-box" id="searchInput" placeholder="🔍 Cerca alimento...">
+            <div class="filter-group">
+                <select class="filter-select" id="categoryFilter">
+                    <option value="">Tutte le Categorie</option>
+                </select>
+                <select class="filter-select" id="metabolicFilter">
+                    <option value="">Tutti i Rischi Metabolici</option>
+                    <option value="Basso">🟢 Basso</option>
+                    <option value="Medio">🟡 Medio</option>
+                    <option value="Alto">🔴 Alto</option>
+                </select>
+                <select class="filter-select" id="tumorFilter">
+                    <option value="">Tutti i Rischi Tumorali</option>
+                    <option value="Protettivo">🛡️ Protettivo</option>
+                    <option value="Neutro">⚪ Neutro</option>
+                    <option value="Aumentato">⚠️ Aumentato</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-label">Totale Alimenti:</span>
+                <span class="stat-value" id="totalItems">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Con Dati TEF:</span>
+                <span class="stat-value" id="tefItems">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Visualizzati:</span>
+                <span class="stat-value" id="visibleItems">0</span>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table id="foodTable">
+                <thead>
+                    <tr>
+                        <th data-sort="name">Alimento</th>
+                        <th data-sort="category">Categoria</th>
+                        <th data-sort="kcal">Kcal</th>
+                        <th data-sort="tef">TEF (Kcal)</th>
+                        <th data-sort="tefPerc">TEF (%)</th>
+                        <th data-sort="netKcal">Kcal Nette</th>
+                        <th data-sort="fructose">Fruttosio (g)</th>
+                        <th data-sort="fiber">Fibre (g)</th>
+                        <th data-sort="ratio">Rapporto F/F</th>
+                        <th data-sort="malabsorption">Rischio Malassorb.</th>
+                        <th data-sort="metabolic">Rischio Metabolico</th>
+                        <th data-sort="tumor">Rischio Tumorale</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Database completo unificato
+        const foods = [
+            // Alimenti con dati TEF da Alimenti.xlsx
+            {name: "Gamberi", category: "Pesce", kcal: 85, tef: 20.3, tefPerc: 23.9, netKcal: 64.7, rapport: 0.76, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Cime di rapa", category: "Verdure", kcal: 22, tef: 4.8, tefPerc: 22.0, netKcal: 17.2, rapport: 0.78, fructose: 0.2, fiber: 2.5, ratio: 0.08, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Albume d'uovo", category: "Uova", kcal: 52, tef: 11.3, tefPerc: 21.7, netKcal: 40.7, rapport: 0.78, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Neutro"},
+            {name: "Indivia", category: "Verdure", kcal: 17, tef: 3.7, tefPerc: 21.6, netKcal: 13.3, rapport: 0.78, fructose: 0.3, fiber: 1.5, ratio: 0.20, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Orata", category: "Pesce", kcal: 100, tef: 20.9, tefPerc: 20.9, netKcal: 79.1, rapport: 0.79, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Alghe Kombu", category: "Verdure", kcal: 43, tef: 8.9, tefPerc: 20.7, netKcal: 34.1, rapport: 0.79, fructose: 0.5, fiber: 5.0, ratio: 0.10, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Lattuga", category: "Verdure", kcal: 15, tef: 3.0, tefPerc: 20.3, netKcal: 12.0, rapport: 0.80, fructose: 1.0, fiber: 1.2, ratio: 0.83, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Bietole", category: "Verdure", kcal: 19, tef: 3.9, tefPerc: 20.3, netKcal: 15.2, rapport: 0.80, fructose: 0.3, fiber: 2.0, ratio: 0.15, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Limone", category: "Frutta fresca", kcal: 29, tef: 5.8, tefPerc: 20.0, netKcal: 23.2, rapport: 0.80, fructose: 1.1, fiber: 0.3, ratio: 3.67, malabsorption: "Alto", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Tè verde (senza zucchero)", category: "Bevande", kcal: 1, tef: 0.2, tefPerc: 20.0, netKcal: 0.8, rapport: 0.80, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Petto di pollo (senza pelle)", category: "Carne", kcal: 165, tef: 32.6, tefPerc: 19.8, netKcal: 132.4, rapport: 0.80, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Neutro"},
+            {name: "Konjac (Shirataki)", category: "Verdure", kcal: 9, tef: 2.1, tefPerc: 23.3, netKcal: 6.9, rapport: 0.77, fructose: 0, fiber: 3.0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Yogurt greco 0% grassi", category: "Latticini", kcal: 59, tef: 11.6, tefPerc: 19.7, netKcal: 47.4, rapport: 0.80, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Carciofi", category: "Verdure", kcal: 47, tef: 9.2, tefPerc: 19.6, netKcal: 37.8, rapport: 0.80, fructose: 0.5, fiber: 5.5, ratio: 0.09, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Rucola", category: "Verdure", kcal: 25, tef: 4.9, tefPerc: 19.5, netKcal: 20.1, rapport: 0.81, fructose: 0.2, fiber: 1.6, ratio: 0.13, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Cavoletti di Bruxelles", category: "Verdure", kcal: 43, tef: 8.2, tefPerc: 19.2, netKcal: 34.8, rapport: 0.81, fructose: 1.0, fiber: 3.8, ratio: 0.26, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Seitan", category: "Cereali trasf.", kcal: 120, tef: 23.1, tefPerc: 19.2, netKcal: 97.0, rapport: 0.81, fructose: 0, fiber: 2.0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Neutro"},
+            {name: "Cuori di palma", category: "Verdure", kcal: 28, tef: 5.3, tefPerc: 19.1, netKcal: 22.6, rapport: 0.81, fructose: 0.2, fiber: 2.5, ratio: 0.08, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Cavolo riccio (Kale)", category: "Verdure", kcal: 49, tef: 9.3, tefPerc: 19.0, netKcal: 39.7, rapport: 0.81, fructose: 0.6, fiber: 3.6, ratio: 0.17, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Calamari", category: "Pesce", kcal: 92, tef: 17.5, tefPerc: 19.0, netKcal: 74.5, rapport: 0.81, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Broccoli", category: "Verdure", kcal: 34, tef: 6.4, tefPerc: 18.8, netKcal: 27.6, rapport: 0.81, fructose: 0.7, fiber: 2.6, ratio: 0.27, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Cavolfiore", category: "Verdure", kcal: 25, tef: 4.6, tefPerc: 18.5, netKcal: 20.4, rapport: 0.81, fructose: 0.6, fiber: 2.0, ratio: 0.30, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Tonno al naturale", category: "Pesce trasf.", kcal: 116, tef: 26.4, tefPerc: 22.8, netKcal: 89.5, rapport: 0.77, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Cavolo cappuccio", category: "Verdure", kcal: 25, tef: 4.4, tefPerc: 17.7, netKcal: 20.6, rapport: 0.82, fructose: 1.5, fiber: 2.5, ratio: 0.60, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Fagiolini", category: "Verdure", kcal: 31, tef: 5.5, tefPerc: 17.7, netKcal: 25.5, rapport: 0.82, fructose: 1.4, fiber: 2.7, ratio: 0.52, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Melanzane", category: "Verdure", kcal: 25, tef: 4.3, tefPerc: 17.4, netKcal: 20.6, rapport: 0.83, fructose: 0.3, fiber: 3.0, ratio: 0.10, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Germogli di soia", category: "Legumi", kcal: 49, tef: 8.5, tefPerc: 17.4, netKcal: 40.5, rapport: 0.83, fructose: 0.2, fiber: 2.0, ratio: 0.10, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Funghi shiitake", category: "Verdure", kcal: 34, tef: 5.9, tefPerc: 17.3, netKcal: 28.1, rapport: 0.83, fructose: 0.5, fiber: 2.5, ratio: 0.20, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Zucchine", category: "Verdure", kcal: 17, tef: 2.9, tefPerc: 16.9, netKcal: 14.1, rapport: 0.83, fructose: 1.6, fiber: 1.0, ratio: 1.60, malabsorption: "Medio", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Lenticchie (cotte)", category: "Legumi", kcal: 116, tef: 19.6, tefPerc: 16.9, netKcal: 96.5, rapport: 0.83, fructose: 0.2, fiber: 7.9, ratio: 0.03, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Peperoni verdi", category: "Verdure", kcal: 20, tef: 3.3, tefPerc: 16.7, netKcal: 16.7, rapport: 0.83, fructose: 1.1, fiber: 1.7, ratio: 0.65, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Finocchi", category: "Verdure", kcal: 31, tef: 5.1, tefPerc: 16.6, netKcal: 25.9, rapport: 0.83, fructose: 0.3, fiber: 3.1, ratio: 0.10, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Scarola", category: "Verdure", kcal: 17, tef: 2.8, tefPerc: 16.6, netKcal: 14.2, rapport: 0.83, fructose: 0.5, fiber: 2.0, ratio: 0.25, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Tacchino (petto)", category: "Carne", kcal: 135, tef: 30.4, tefPerc: 22.6, netKcal: 104.5, rapport: 0.77, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Neutro"},
+            {name: "Cavolo rosso", category: "Verdure", kcal: 31, tef: 5.1, tefPerc: 16.4, netKcal: 25.9, rapport: 0.84, fructose: 1.5, fiber: 2.1, ratio: 0.71, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "More", category: "Frutta fresca", kcal: 43, tef: 7.1, tefPerc: 16.4, netKcal: 35.9, rapport: 0.84, fructose: 2.4, fiber: 5.3, ratio: 0.45, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Ravanelli", category: "Verdure", kcal: 16, tef: 2.6, tefPerc: 16.2, netKcal: 13.4, rapport: 0.84, fructose: 0.5, fiber: 1.6, ratio: 0.31, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Pomodori", category: "Verdure", kcal: 18, tef: 2.9, tefPerc: 16.2, netKcal: 15.1, rapport: 0.84, fructose: 1.3, fiber: 1.2, ratio: 1.08, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Fagioli neri (cotti)", category: "Legumi", kcal: 132, tef: 21.2, tefPerc: 16.1, netKcal: 110.8, rapport: 0.84, fructose: 0.1, fiber: 8.0, ratio: 0.01, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Salmone (magro)", category: "Pesce", kcal: 142, tef: 22.7, tefPerc: 16.0, netKcal: 119.3, rapport: 0.84, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Lamponi", category: "Frutta fresca", kcal: 52, tef: 8.2, tefPerc: 15.8, netKcal: 43.8, rapport: 0.84, fructose: 2.3, fiber: 6.5, ratio: 0.35, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Alghe Wakame", category: "Verdure", kcal: 45, tef: 7.1, tefPerc: 15.7, netKcal: 37.9, rapport: 0.84, fructose: 0.3, fiber: 3.0, ratio: 0.10, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Radicchio", category: "Verdure", kcal: 23, tef: 3.6, tefPerc: 15.7, netKcal: 19.4, rapport: 0.84, fructose: 0.3, fiber: 0.9, ratio: 0.33, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Cetriolo", category: "Verdure", kcal: 15, tef: 2.3, tefPerc: 15.6, netKcal: 12.7, rapport: 0.84, fructose: 0.9, fiber: 0.5, ratio: 1.80, malabsorption: "Medio", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Spinaci", category: "Verdure", kcal: 23, tef: 5.2, tefPerc: 22.5, netKcal: 17.8, rapport: 0.77, fructose: 0.2, fiber: 2.2, ratio: 0.09, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Sedano", category: "Verdure", kcal: 16, tef: 2.5, tefPerc: 15.4, netKcal: 13.5, rapport: 0.85, fructose: 0.5, fiber: 1.6, ratio: 0.31, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Peperoncini", category: "Verdure", kcal: 40, tef: 6.0, tefPerc: 15.1, netKcal: 34.0, rapport: 0.85, fructose: 2.0, fiber: 2.0, ratio: 1.00, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Edamame", category: "Legumi", kcal: 122, tef: 18.4, tefPerc: 15.1, netKcal: 103.6, rapport: 0.85, fructose: 0.2, fiber: 5.2, ratio: 0.04, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Barbabietole", category: "Verdure", kcal: 43, tef: 6.4, tefPerc: 14.8, netKcal: 36.6, rapport: 0.85, fructose: 2.0, fiber: 2.8, ratio: 0.71, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Fiocchi di latte (Cottage)", category: "Latticini", kcal: 98, tef: 14.4, tefPerc: 14.7, netKcal: 83.6, rapport: 0.85, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Neutro"},
+            {name: "Zucca", category: "Verdure", kcal: 26, tef: 3.8, tefPerc: 14.6, netKcal: 22.2, rapport: 0.85, fructose: 0.8, fiber: 1.5, ratio: 0.53, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Tofu", category: "Legumi trasf.", kcal: 76, tef: 11.0, tefPerc: 14.5, netKcal: 65.0, rapport: 0.86, fructose: 0, fiber: 1.2, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Rapa", category: "Verdure", kcal: 28, tef: 4.0, tefPerc: 14.4, netKcal: 24.0, rapport: 0.86, fructose: 1.0, fiber: 1.8, ratio: 0.56, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Fagioli di soia (cotti)", category: "Legumi", kcal: 141, tef: 20.4, tefPerc: 14.4, netKcal: 120.6, rapport: 0.86, fructose: 0.3, fiber: 6.0, ratio: 0.05, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Tempeh", category: "Legumi trasf.", kcal: 193, tef: 27.6, tefPerc: 14.3, netKcal: 165.4, rapport: 0.86, fructose: 0, fiber: 5.7, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Sogliola", category: "Pesce", kcal: 86, tef: 19.4, tefPerc: 22.5, netKcal: 66.6, rapport: 0.77, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Ceci (cotti)", category: "Legumi", kcal: 164, tef: 23.3, tefPerc: 14.2, netKcal: 140.7, rapport: 0.86, fructose: 0.1, fiber: 7.6, ratio: 0.01, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Fragole", category: "Frutta fresca", kcal: 32, tef: 4.5, tefPerc: 14.1, netKcal: 27.5, rapport: 0.86, fructose: 2.4, fiber: 2.0, ratio: 1.20, malabsorption: "Medio", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Carote", category: "Verdure", kcal: 41, tef: 5.7, tefPerc: 13.8, netKcal: 35.3, rapport: 0.86, fructose: 0.6, fiber: 2.8, ratio: 0.21, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Aglio", category: "Verdure", kcal: 149, tef: 20.5, tefPerc: 13.8, netKcal: 128.5, rapport: 0.86, fructose: 0.2, fiber: 2.1, ratio: 0.10, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Albicocche", category: "Frutta fresca", kcal: 48, tef: 6.6, tefPerc: 13.8, netKcal: 41.4, rapport: 0.86, fructose: 0.9, fiber: 2.0, ratio: 0.45, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Farro (cotto)", category: "Cereali", kcal: 127, tef: 17.5, tefPerc: 13.8, netKcal: 109.5, rapport: 0.86, fructose: 0.1, fiber: 3.5, ratio: 0.03, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Pesche", category: "Frutta fresca", kcal: 39, tef: 5.3, tefPerc: 13.6, netKcal: 33.7, rapport: 0.86, fructose: 1.5, fiber: 1.5, ratio: 1.00, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Arance", category: "Frutta fresca", kcal: 47, tef: 6.4, tefPerc: 13.6, netKcal: 40.6, rapport: 0.86, fructose: 2.4, fiber: 2.4, ratio: 1.00, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Grano saraceno (cotto)", category: "Cereali", kcal: 92, tef: 12.5, tefPerc: 13.6, netKcal: 79.5, rapport: 0.86, fructose: 0.1, fiber: 2.7, ratio: 0.04, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Cipolle", category: "Verdure", kcal: 40, tef: 5.4, tefPerc: 13.4, netKcal: 34.6, rapport: 0.87, fructose: 1.3, fiber: 1.7, ratio: 0.76, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Merluzzo", category: "Pesce", kcal: 82, tef: 18.3, tefPerc: 22.3, netKcal: 63.7, rapport: 0.78, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Pane integrale", category: "Cereali trasf.", kcal: 247, tef: 33.1, tefPerc: 13.4, netKcal: 213.9, rapport: 0.87, fructose: 0.1, fiber: 6.5, ratio: 0.02, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Pasta integrale (cotta)", category: "Cereali", kcal: 124, tef: 16.6, tefPerc: 13.4, netKcal: 107.4, rapport: 0.87, fructose: 0, fiber: 3.5, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Pompelmo", category: "Frutta fresca", kcal: 42, tef: 5.6, tefPerc: 13.3, netKcal: 36.4, rapport: 0.87, fructose: 1.8, fiber: 1.6, ratio: 1.13, malabsorption: "Medio", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Kiwi", category: "Frutta fresca", kcal: 61, tef: 8.1, tefPerc: 13.3, netKcal: 52.9, rapport: 0.87, fructose: 4.3, fiber: 3.0, ratio: 1.43, malabsorption: "Medio", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Pere", category: "Frutta fresca", kcal: 57, tef: 7.5, tefPerc: 13.1, netKcal: 49.5, rapport: 0.87, fructose: 6.2, fiber: 3.1, ratio: 2.00, malabsorption: "Alto", metabolic: "Medio", tumor: "Protettivo"},
+            {name: "Melone", category: "Frutta fresca", kcal: 34, tef: 4.4, tefPerc: 13.1, netKcal: 29.6, rapport: 0.87, fructose: 1.9, fiber: 0.9, ratio: 2.11, malabsorption: "Medio", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Ciliegie", category: "Frutta fresca", kcal: 63, tef: 8.2, tefPerc: 13.0, netKcal: 54.8, rapport: 0.87, fructose: 5.4, fiber: 1.6, ratio: 3.38, malabsorption: "Alto", metabolic: "Medio", tumor: "Protettivo"},
+            {name: "Porri", category: "Verdure", kcal: 61, tef: 7.9, tefPerc: 12.9, netKcal: 53.1, rapport: 0.87, fructose: 1.5, fiber: 2.0, ratio: 0.75, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Mirtilli", category: "Frutta fresca", kcal: 57, tef: 7.4, tefPerc: 12.9, netKcal: 49.6, rapport: 0.87, fructose: 5.0, fiber: 2.4, ratio: 2.08, malabsorption: "Alto", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Anguria", category: "Frutta fresca", kcal: 30, tef: 3.9, tefPerc: 12.8, netKcal: 26.1, rapport: 0.87, fructose: 3.4, fiber: 0.4, ratio: 8.50, malabsorption: "Alto", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Asparagi", category: "Verdure", kcal: 20, tef: 4.4, tefPerc: 22.2, netKcal: 15.6, rapport: 0.78, fructose: 0.5, fiber: 2.1, ratio: 0.24, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Mele", category: "Frutta fresca", kcal: 52, tef: 6.6, tefPerc: 12.8, netKcal: 45.4, rapport: 0.87, fructose: 5.9, fiber: 2.4, ratio: 2.46, malabsorption: "Alto", metabolic: "Medio", tumor: "Protettivo"},
+            {name: "Mandarini", category: "Frutta fresca", kcal: 53, tef: 6.8, tefPerc: 12.8, netKcal: 46.2, rapport: 0.87, fructose: 2.4, fiber: 1.8, ratio: 1.33, malabsorption: "Medio", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Avena", category: "Cereali", kcal: 389, tef: 49.7, tefPerc: 12.8, netKcal: 339.3, rapport: 0.87, fructose: 0.1, fiber: 10.6, ratio: 0.01, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Papaya", category: "Frutta fresca", kcal: 43, tef: 5.5, tefPerc: 12.7, netKcal: 37.5, rapport: 0.87, fructose: 2.0, fiber: 1.7, ratio: 1.18, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Prugne", category: "Frutta fresca", kcal: 46, tef: 5.8, tefPerc: 12.6, netKcal: 40.2, rapport: 0.87, fructose: 2.5, fiber: 1.4, ratio: 1.79, malabsorption: "Medio", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Zenzero", category: "Verdure", kcal: 80, tef: 9.9, tefPerc: 12.4, netKcal: 70.1, rapport: 0.88, fructose: 0.5, fiber: 2.0, ratio: 0.25, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Ananas", category: "Frutta fresca", kcal: 50, tef: 6.2, tefPerc: 12.4, netKcal: 43.8, rapport: 0.88, fructose: 2.5, fiber: 1.4, ratio: 1.79, malabsorption: "Medio", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Quinoa (cotta)", category: "Cereali", kcal: 120, tef: 14.6, tefPerc: 12.2, netKcal: 105.4, rapport: 0.88, fructose: 0, fiber: 2.8, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Orzo (cotto)", category: "Cereali", kcal: 123, tef: 14.9, tefPerc: 12.1, netKcal: 108.1, rapport: 0.88, fructose: 0, fiber: 3.8, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Uva", category: "Frutta fresca", kcal: 69, tef: 8.3, tefPerc: 12.0, netKcal: 60.7, rapport: 0.88, fructose: 8.1, fiber: 0.9, ratio: 9.00, malabsorption: "Alto", metabolic: "Medio", tumor: "Protettivo"},
+            {name: "Funghi champignon", category: "Verdure", kcal: 22, tef: 4.9, tefPerc: 22.1, netKcal: 17.1, rapport: 0.78, fructose: 0.5, fiber: 1.0, ratio: 0.50, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Semi di chia", category: "Semi", kcal: 486, tef: 57.5, tefPerc: 11.8, netKcal: 428.5, rapport: 0.88, fructose: 0, fiber: 34.4, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Riso integrale (cotto)", category: "Cereali", kcal: 112, tef: 12.9, tefPerc: 11.6, netKcal: 99.1, rapport: 0.88, fructose: 0, fiber: 1.8, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Semi di lino", category: "Semi", kcal: 534, tef: 57.0, tefPerc: 10.7, netKcal: 477.0, rapport: 0.89, fructose: 0, fiber: 27.3, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Semi di zucca", category: "Semi", kcal: 559, tef: 58.3, tefPerc: 10.4, netKcal: 500.7, rapport: 0.90, fructose: 0.1, fiber: 6.0, ratio: 0.02, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Pistacchi", category: "Frutta secca", kcal: 560, tef: 54.6, tefPerc: 9.8, netKcal: 505.4, rapport: 0.90, fructose: 0.2, fiber: 10.6, ratio: 0.02, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Mandorle", category: "Frutta secca", kcal: 579, tef: 56.0, tefPerc: 9.7, netKcal: 523.0, rapport: 0.90, fructose: 0.1, fiber: 12.5, ratio: 0.01, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Semi di girasole", category: "Semi", kcal: 584, tef: 54.6, tefPerc: 9.3, netKcal: 529.4, rapport: 0.91, fructose: 0, fiber: 8.6, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Anacardi", category: "Frutta secca", kcal: 553, tef: 51.0, tefPerc: 9.2, netKcal: 502.0, rapport: 0.91, fructose: 0.1, fiber: 3.3, ratio: 0.03, malabsorption: "Basso", metabolic: "Medio", tumor: "Protettivo"},
+            {name: "Noci", category: "Frutta secca", kcal: 654, tef: 52.0, tefPerc: 8.0, netKcal: 602.0, rapport: 0.92, fructose: 0.1, fiber: 6.7, ratio: 0.01, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Caffè nero (senza zucchero)", category: "Bevande", kcal: 2, tef: 0.1, tefPerc: 5.0, netKcal: 1.9, rapport: 0.95, fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            
+            // Alimenti aggiuntivi da table-86cb60ef-bfc2-4543-a4ae-48feaf87c1a8.xlsx
+            {name: "Coca-Cola / Bevande a base di cola", category: "Bevande", fructose: 6.1, fiber: 0, ratio: "∞", malabsorption: "Alto", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Aranciata / Bevande gassate zuccherate", category: "Bevande", fructose: 5.2, fiber: 0, ratio: "∞", malabsorption: "Alto", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Biscotti frollini commerciali", category: "Dolci", fructose: 2.5, fiber: 1.5, ratio: 1.67, malabsorption: "Alto", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Castagne secche", category: "Frutta secca", fructose: 62.0, fiber: 8.0, ratio: 7.75, malabsorption: "Alto", metabolic: "Alto", tumor: "Protettivo"},
+            {name: "Cereali da colazione zuccherati", category: "Cereali trasf.", fructose: 2.5, fiber: 2.0, ratio: 1.25, malabsorption: "Medio", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Cioccolato al latte", category: "Dolci", fructose: 3.0, fiber: 3.4, ratio: 0.88, malabsorption: "Medio", metabolic: "Alto", tumor: "Neutro"},
+            {name: "Datteri secchi", category: "Frutta disidratata", fructose: 19.6, fiber: 8.0, ratio: 2.45, malabsorption: "Alto", metabolic: "Alto", tumor: "Protettivo"},
+            {name: "Fichi secchi", category: "Frutta disidratata", fructose: 22.9, fiber: 9.8, ratio: 2.34, malabsorption: "Alto", metabolic: "Alto", tumor: "Protettivo"},
+            {name: "Gelato alla crema industriale", category: "Dolci", fructose: 6.0, fiber: 0.5, ratio: 12.0, malabsorption: "Alto", metabolic: "Alto", tumor: "Neutro"},
+            {name: "Ketchup commerciale", category: "Condimenti", fructose: 4.0, fiber: 0.3, ratio: 13.3, malabsorption: "Alto", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Marmellata / Confettura", category: "Dolci", fructose: 15.0, fiber: 1.0, ratio: 15.0, malabsorption: "Alto", metabolic: "Alto", tumor: "Neutro"},
+            {name: "Melassa", category: "Dolcificanti", fructose: 12.8, fiber: 0, ratio: "∞", malabsorption: "Alto", metabolic: "Alto", tumor: "Neutro"},
+            {name: "Merendine confezionate", category: "Dolci", fructose: 4.0, fiber: 1.0, ratio: 4.00, malabsorption: "Alto", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Miele", category: "Dolcificanti", fructose: 40.9, fiber: 0.2, ratio: 204.5, malabsorption: "Alto", metabolic: "Alto", tumor: "Neutro"},
+            {name: "Patate fritte (commerciali)", category: "Tuberi trasf.", fructose: 0, fiber: 3.8, ratio: 0, malabsorption: "Basso", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Pizza margherita", category: "Piatti pronti", fructose: 1.5, fiber: 2.5, ratio: 0.60, malabsorption: "Basso", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Salame / Insaccati stagionati", category: "Salumi", fructose: 0.5, fiber: 0, ratio: "∞", malabsorption: "Medio", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Salsa barbecue", category: "Condimenti", fructose: 15.4, fiber: 0.8, ratio: 19.2, malabsorption: "Alto", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Sciroppo di agave", category: "Dolcificanti", fructose: 55.6, fiber: 0, ratio: "∞", malabsorption: "Alto", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Sciroppo di mais (HFCS)", category: "Dolcificanti", fructose: 28.0, fiber: 0, ratio: "∞", malabsorption: "Alto", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Sorbetto alla frutta", category: "Dolci", fructose: 8.0, fiber: 0.3, ratio: 26.6, malabsorption: "Alto", metabolic: "Alto", tumor: "Neutro"},
+            {name: "Succo di frutta 100% (commerciale)", category: "Bevande", fructose: 5.7, fiber: 0.2, ratio: 28.5, malabsorption: "Alto", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Uva secca (Uvetta)", category: "Frutta disidratata", fructose: 29.7, fiber: 3.7, ratio: 8.03, malabsorption: "Alto", metabolic: "Alto", tumor: "Protettivo"},
+            {name: "Wurstel / Hot dog", category: "Salumi trasf.", fructose: 1.2, fiber: 0, ratio: "∞", malabsorption: "Alto", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Yogurt alla frutta zuccherato", category: "Latticini trasf.", fructose: 4.5, fiber: 0, ratio: "∞", malabsorption: "Alto", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Zucchero bianco (saccarosio)", category: "Dolcificanti", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Zucchero di canna grezzo", category: "Dolcificanti", fructose: 1.1, fiber: 0, ratio: "∞", malabsorption: "Medio", metabolic: "Alto", tumor: "Aumentato"},
+            {name: "Latte intero di vacca", category: "Latticini", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Riso bianco (brillato) crudo", category: "Cereali", fructose: 0, fiber: 1.0, ratio: 0, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Aceto balsamico tradizionale", category: "Condimenti", fructose: 7.4, fiber: 0, ratio: "∞", malabsorption: "Alto", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Banane", category: "Frutta fresca", fructose: 4.8, fiber: 2.6, ratio: 1.85, malabsorption: "Medio", metabolic: "Medio", tumor: "Protettivo"},
+            {name: "Birra tradizionale", category: "Bevande alcoliche", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Medio", tumor: "Aumentato"},
+            {name: "Burro", category: "Grassi", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Cioccolato fondente (>85%)", category: "Dolci", fructose: 0.5, fiber: 11.0, ratio: 0.05, malabsorption: "Basso", metabolic: "Medio", tumor: "Protettivo"},
+            {name: "Cornflakes (senza zucchero)", category: "Cereali trasf.", fructose: 0.1, fiber: 3.0, ratio: 0.03, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Crackers integrali", category: "Cereali trasf.", fructose: 0.1, fiber: 6.0, ratio: 0.02, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Farina di frumento 00", category: "Cereali", fructose: 0.1, fiber: 2.7, ratio: 0.04, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Grissini", category: "Cereali trasf.", fructose: 0.1, fiber: 3.5, ratio: 0.03, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Latte di avena (commerciale)", category: "Bevande vegetali", fructose: 1.5, fiber: 0.8, ratio: 1.88, malabsorption: "Medio", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Maionese classica", category: "Condimenti", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Maionese light", category: "Condimenti", fructose: 1.5, fiber: 0, ratio: "∞", malabsorption: "Alto", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Mais dolce in scatola", category: "Verdure", fructose: 1.0, fiber: 2.0, ratio: 0.50, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Mozzarella di bufala", category: "Latticini", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Pane bianco (tipo 00)", category: "Cereali trasf.", fructose: 0.1, fiber: 2.7, ratio: 0.04, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Pasta al pomodoro (casa)", category: "Piatti pronti", fructose: 1.2, fiber: 2.0, ratio: 0.60, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Pasta di semola cotta", category: "Cereali", fructose: 0, fiber: 1.8, ratio: 0, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Pasta di semola cruda", category: "Cereali", fructose: 0.1, fiber: 3.0, ratio: 0.03, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Patate al forno", category: "Tuberi", fructose: 0.4, fiber: 2.1, ratio: 0.19, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Patate crude", category: "Tuberi", fructose: 0.3, fiber: 2.2, ratio: 0.14, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Patate dolci (americane) crude", category: "Tuberi", fructose: 0.7, fiber: 3.0, ratio: 0.23, malabsorption: "Basso", metabolic: "Medio", tumor: "Protettivo"},
+            {name: "Patate dolci cotte", category: "Tuberi", fructose: 0.5, fiber: 2.5, ratio: 0.20, malabsorption: "Basso", metabolic: "Medio", tumor: "Protettivo"},
+            {name: "Patate lesse", category: "Tuberi", fructose: 0.3, fiber: 1.8, ratio: 0.17, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Pesto alla genovese", category: "Condimenti", fructose: 0.1, fiber: 1.5, ratio: 0.07, malabsorption: "Basso", metabolic: "Medio", tumor: "Protettivo"},
+            {name: "Prosciutto cotto (alta qualità)", category: "Salumi", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Medio", tumor: "Aumentato"},
+            {name: "Prosciutto crudo (sgrassato)", category: "Salumi", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Medio", tumor: "Aumentato"},
+            {name: "Prugne secche", category: "Frutta disidratata", fructose: 12.5, fiber: 7.1, ratio: 1.76, malabsorption: "Alto", metabolic: "Medio", tumor: "Protettivo"},
+            {name: "Ricotta di mucca", category: "Latticini", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Riso bianco cotto", category: "Cereali", fructose: 0, fiber: 0.4, ratio: 0, malabsorption: "Basso", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Salsa di pomodoro pronta", category: "Verdure trasf.", fructose: 2.2, fiber: 1.0, ratio: 2.20, malabsorption: "Medio", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Succo d'arancia 100% spremuto", category: "Bevande", fructose: 2.4, fiber: 0.2, ratio: 12.0, malabsorption: "Alto", metabolic: "Medio", tumor: "Neutro"},
+            {name: "Vino bianco (secco)", category: "Bevande alcoliche", fructose: 0.1, fiber: 0, ratio: "∞", malabsorption: "Basso", metabolic: "Medio", tumor: "Aumentato"},
+            {name: "Vino rosso (secco)", category: "Bevande alcoliche", fructose: 0.1, fiber: 0, ratio: "∞", malabsorption: "Basso", metabolic: "Medio", tumor: "Aumentato"},
+            {name: "Concentrato di pomodoro", category: "Verdure trasf.", fructose: 5.8, fiber: 4.0, ratio: 1.45, malabsorption: "Medio", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Lenticchie secche crude", category: "Legumi", fructose: 0.3, fiber: 10.7, ratio: 0.03, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Aceto di mele", category: "Condimenti", fructose: 0.3, fiber: 0, ratio: "∞", malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Aglio in polvere", category: "Spezie", fructose: 0.3, fiber: 9.0, ratio: 0.03, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Avocado", category: "Frutta fresca", fructose: 0.1, fiber: 6.7, ratio: 0.01, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Broccoli cotti", category: "Verdure", fructose: 0.7, fiber: 3.3, ratio: 0.21, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Broccoli crudi", category: "Verdure", fructose: 0.7, fiber: 2.6, ratio: 0.27, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Burro di arachidi (100% arachidi)", category: "Frutta secca trasf.", fructose: 0, fiber: 8.5, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Caffè espresso (non zuccherato)", category: "Bevande", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Carote cotte", category: "Verdure", fructose: 0.4, fiber: 3.0, ratio: 0.13, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Cavolfiore cotto", category: "Verdure", fructose: 0.5, fiber: 2.3, ratio: 0.22, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Cavolo cappuccio rosso crudo", category: "Verdure", fructose: 1.5, fiber: 2.1, ratio: 0.71, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Cavolo cappuccio verde crudo", category: "Verdure", fructose: 1.5, fiber: 2.5, ratio: 0.60, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Ceci secchi crudi", category: "Legumi", fructose: 0.2, fiber: 17.4, ratio: 0.01, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Cetrioli crudi", category: "Verdure", fructose: 0.9, fiber: 0.5, ratio: 1.80, malabsorption: "Medio", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Cipolle cotte", category: "Verdure", fructose: 1.4, fiber: 2.0, ratio: 0.70, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Cipolle in polvere", category: "Spezie", fructose: 1.7, fiber: 15.0, ratio: 0.11, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Fagioli borlotti cotti", category: "Legumi", fructose: 0.1, fiber: 6.5, ratio: 0.02, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Fagioli cannellini secchi", category: "Legumi", fructose: 0.1, fiber: 17.0, ratio: 0.01, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Fagioli in scatola (scolati)", category: "Legumi trasf.", fructose: 0.1, fiber: 5.0, ratio: 0.02, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Fagiolini freschi", category: "Verdure", fructose: 1.4, fiber: 2.7, ratio: 0.52, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Fagiolini surgelati cotti", category: "Verdure", fructose: 1.0, fiber: 3.4, ratio: 0.29, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Farina d'avena", category: "Cereali", fructose: 0.1, fiber: 10.1, ratio: 0.01, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Farina di frumento integrale", category: "Cereali", fructose: 0.1, fiber: 10.5, ratio: 0.01, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Fette biscottate integrali", category: "Cereali trasf.", fructose: 0.1, fiber: 8.5, ratio: 0.01, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Fiocchi d'avena", category: "Cereali", fructose: 0.1, fiber: 10.6, ratio: 0.01, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Grano saraceno cotto", category: "Cereali", fructose: 0.1, fiber: 2.7, ratio: 0.04, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Hummus di ceci", category: "Legumi trasf.", fructose: 0.1, fiber: 4.0, ratio: 0.03, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Kefir naturale", category: "Latticini", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Latte di mandorla (senza zucchero)", category: "Bevande vegetali", fructose: 0, fiber: 0.4, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Latte di soia (senza zucchero)", category: "Bevande vegetali", fructose: 0, fiber: 0.6, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Latte parzialmente scremato", category: "Latticini", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Neutro"},
+            {name: "Latte scremato", category: "Latticini", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Neutro"},
+            {name: "Lenticchie cotte", category: "Legumi", fructose: 0.2, fiber: 7.9, ratio: 0.03, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Limoni (succo)", category: "Frutta fresca", fructose: 1.1, fiber: 0.3, ratio: 3.67, malabsorption: "Alto", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Manzo magro fresco", category: "Carne", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Neutro"},
+            {name: "Melanzane cotte", category: "Verdure", fructose: 0.4, fiber: 2.5, ratio: 0.16, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Melanzane crude", category: "Verdure", fructose: 0.3, fiber: 3.0, ratio: 0.10, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Minestrone di verdure (casa)", category: "Piatti pronti", fructose: 0.8, fiber: 2.5, ratio: 0.32, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Nocciole", category: "Frutta secca", fructose: 0.1, fiber: 9.7, ratio: 0.01, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Olio extravergine di oliva", category: "Grassi", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Orzo perlato cotto", category: "Cereali", fructose: 0, fiber: 3.8, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Pane di segale", category: "Cereali trasf.", fructose: 0.1, fiber: 5.8, ratio: 0.02, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Parmigiano Reggiano", category: "Latticini", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Passata di pomodoro", category: "Verdure trasf.", fructose: 2.4, fiber: 1.5, ratio: 1.60, malabsorption: "Medio", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Peperoni cotti", category: "Verdure", fructose: 1.5, fiber: 2.5, ratio: 0.60, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Peperoni rossi crudi", category: "Verdure", fructose: 2.3, fiber: 2.1, ratio: 1.10, malabsorption: "Medio", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Peperoni verdi crudi", category: "Verdure", fructose: 1.1, fiber: 1.7, ratio: 0.65, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Piselli freschi", category: "Legumi freschi", fructose: 0.4, fiber: 5.7, ratio: 0.07, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Pomodori pelati in scatola", category: "Verdure trasf.", fructose: 1.3, fiber: 1.2, ratio: 1.08, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Radicchio rosso", category: "Verdure", fructose: 0.3, fiber: 0.9, ratio: 0.33, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Riso integrale cotto", category: "Cereali", fructose: 0, fiber: 1.8, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Riso integrale crudo", category: "Cereali", fructose: 0, fiber: 2.7, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Riso parboiled cotto", category: "Cereali", fructose: 0, fiber: 1.2, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Salsa di soia", category: "Condimenti", fructose: 0, fiber: 0.8, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Senape classica", category: "Condimenti", fructose: 0.5, fiber: 3.3, ratio: 0.15, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Soia edamame surgelata", category: "Legumi", fructose: 0.2, fiber: 5.2, ratio: 0.04, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Spinaci cotti", category: "Verdure", fructose: 0.1, fiber: 2.4, ratio: 0.04, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Spinaci crudi", category: "Verdure", fructose: 0.2, fiber: 2.2, ratio: 0.09, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Tè verde / nero (non zuccherato)", category: "Bevande", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Tonno fresco", category: "Pesce", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Uovo di gallina intero", category: "Uova", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Neutro"},
+            {name: "Yogurt bianco naturale intero", category: "Latticini", fructose: 0, fiber: 0, ratio: 0, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Zucchine cotte", category: "Verdure", fructose: 0.9, fiber: 1.2, ratio: 0.75, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"},
+            {name: "Zuppa di legumi in scatola", category: "Piatti pronti", fructose: 0.2, fiber: 4.5, ratio: 0.04, malabsorption: "Basso", metabolic: "Basso", tumor: "Protettivo"}
+        ];
+
+        // Variabili globali
+        let currentSort = { column: null, direction: 'asc' };
+        let filteredFoods = [...foods];
+
+        // Inizializzazione
+        document.addEventListener('DOMContentLoaded', function() {
+            populateCategoryFilter();
+            updateStats();
+            renderTable();
+            setupEventListeners();
+        });
+
+        // Popola il filtro categorie
+        function populateCategoryFilter() {
+            const categories = [...new Set(foods.map(food => food.category))].sort();
+            const categoryFilter = document.getElementById('categoryFilter');
+            
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        // Aggiorna statistiche
+        function updateStats() {
+            document.getElementById('totalItems').textContent = foods.length;
+            document.getElementById('tefItems').textContent = foods.filter(f => f.tef !== undefined).length;
+            document.getElementById('visibleItems').textContent = filteredFoods.length;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Ricerca
+            document.getElementById('searchInput').addEventListener('input', filterAndRender);
+            
+            // Filtri
+            document.getElementById('categoryFilter').addEventListener('change', filterAndRender);
+            document.getElementById('metabolicFilter').addEventListener('change', filterAndRender);
+            document.getElementById('tumorFilter').addEventListener('change', filterAndRender);
+            
+            // Ordinamento
+            document.querySelectorAll('th[data-sort]').forEach(th => {
+                th.addEventListener('click', function() {
+                    const column = this.dataset.sort;
+                    sortTable(column);
+                });
+            });
+        }
+
+        // Filtra e renderizza
+        function filterAndRender() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const metabolicFilter = document.getElementById('metabolicFilter').value;
+            const tumorFilter = document.getElementById('tumorFilter').value;
+
+            filteredFoods = foods.filter(food => {
+                const matchSearch = food.name.toLowerCase().includes(searchTerm);
+                const matchCategory = !categoryFilter || food.category === categoryFilter;
+                const matchMetabolic = !metabolicFilter || food.metabolic === metabolicFilter;
+                const matchTumor = !tumorFilter || food.tumor === tumorFilter;
+                
+                return matchSearch && matchCategory && matchMetabolic && matchTumor;
+            });
+
+            updateStats();
+            renderTable();
+        }
+
+        // Ordina tabella
+        function sortTable(column) {
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+
+            filteredFoods.sort((a, b) => {
+                let aVal = a[column];
+                let bVal = b[column];
+
+                if (aVal === undefined) aVal = '';
+                if (bVal === undefined) bVal = '';
+
+                if (typeof aVal === 'string' && typeof bVal === 'string') {
+                    return currentSort.direction === 'asc' 
+                        ? aVal.localeCompare(bVal) 
+                        : bVal.localeCompare(aVal);
+                } else {
+                    return currentSort.direction === 'asc' 
+                        ? aVal - bVal 
+                        : bVal - aVal;
+                }
+            });
+
+            // Aggiorna indicatori di ordinamento
+            document.querySelectorAll('th').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+            
+            const activeHeader = document.querySelector(`th[data-sort="${column}"]`);
+            activeHeader.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+
+            renderTable();
+        }
+
+        // Renderizza tabella
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (filteredFoods.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="12" class="no-results">Nessun alimento trovato</td></tr>';
+                return;
+            }
+
+            filteredFoods.forEach(food => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td><strong>${food.name}</strong></td>
+                    <td>${food.category || '-'}</td>
+                    <td>${food.kcal !== undefined ? food.kcal : '<span class="data-missing">N/D</span>'}</td>
+                    <td>${food.tef !== undefined ? food.tef : '<span class="data-missing">N/D</span>'}</td>
+                    <td>${food.tefPerc !== undefined ? food.tefPerc + '%' : '<span class="data-missing">N/D</span>'}</td>
+                    <td>${food.netKcal !== undefined ? food.netKcal : '<span class="data-missing">N/D</span>'}</td>
+                    <td>${food.fructose !== undefined ? food.fructose : '<span class="data-missing">N/D</span>'}</td>
+                    <td>${food.fiber !== undefined ? food.fiber : '<span class="data-missing">N/D</span>'}</td>
+                    <td>${food.ratio !== undefined ? food.ratio : '<span class="data-missing">N/D</span>'}</td>
+                    <td>${getBadge(food.malabsorption, 'malabsorption')}</td>
+                    <td>${getBadge(food.metabolic, 'metabolic')}</td>
+                    <td>${getBadge(food.tumor, 'tumor')}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Crea badge colorato
+        function getBadge(value, type) {
+            if (!value) return '<span class="data-missing">N/D</span>';
+            
+            let className = '';
+            
+            if (type === 'malabsorption' || type === 'metabolic') {
+                if (value === 'Basso') className = 'badge-low';
+                else if (value === 'Medio') className = 'badge-medium';
+                else if (value === 'Alto') className = 'badge-high';
+            } else if (type === 'tumor') {
+                if (value === 'Protettivo') className = 'badge-protective';
+                else if (value === 'Neutro') className = 'badge-neutral';
+                else if (value === 'Aumentato') className = 'badge-increased';
+            }
+            
+            return `<span class="badge ${className}">${value}</span>`;
+        }
+    </script>
+</body>
+</html>

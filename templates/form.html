@@ -1,0 +1,49 @@
+<div class="col-md-4">
+    <label class="form-label">Rischio Diabete</label>
+    <input
+        type="text"
+        class="form-control"
+        name="rischio_diabete"
+        value="{{ item.rischio_diabete if item and item.rischio_diabete is not none else '' }}"
+    >
+</div>
+
+<div class="col-md-4">
+    <label class="form-label">Rischio Colesterolo</label>
+    <input
+        type="text"
+        class="form-control"
+        name="rischio_colesterolo"
+        value="{{ item.rischio_colesterolo if item and item.rischio_colesterolo is not none else '' }}"
+    >
+</div>
+
+<div class="col-md-4">
+    <label class="form-label">Rischio Malassorbimento</label>
+    <input
+        type="text"
+        class="form-control"
+        name="rischio_malassorbimento"
+        value="{{ item.rischio_malassorbimento if item and item.rischio_malassorbimento is not none else '' }}"
+    >
+</div>
+
+<div class="col-md-4">
+    <label class="form-label">Rischio Metabolico</label>
+    <input
+        type="text"
+        class="form-control"
+        name="rischio_metabolico"
+        value="{{ item.rischio_metabolico if item and item.rischio_metabolico is not none else '' }}"
+    >
+</div>
+
+<div class="col-md-4">
+    <label class="form-label">Rischio Tumorale</label>
+    <input
+        type="text"
+        class="form-control"
+        name="rischio_tumorale"
+        value="{{ item.rischio_tumorale if item and item.rischio_tumorale is not none else '' }}"
+    >
+</div>

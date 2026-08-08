@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block title %}
+Database Alimenti - Analisi Completa
+{% endblock %}
+
+{% block content %}
+
+{% macro th_sortable(field, label, class='') %}
+    {% set current_sort = request.args.get('sort', 'alimento') %}
+    {% set current_dir = request.args.get('dir', 'asc') %}
+    {% set new_dir = 'desc' if current_sort == field and current_dir == 'asc' else 'asc' %}
+
+    <th class="{{ class }}">
+        <a
+            href="{{ url_for(
+                'index',
+                categoria=request.args.get('categoria', ''),
+                rischio_diabete=request.args.get('rischio_diabete', ''),
+                rischio_colesterolo=request.args.get('rischio_colesterolo', ''),
+                rischio_malassorbimento=request.args.get('rischio_malassorbimento', ''),
+                rischio_metabolico=request.args.get('rischio_metabolico', ''),
+                rischio_tumorale=request.args.get('rischio_tumorale', ''),
+                sort=field,
+                dir=new_dir
+            ) }}"
+            class="sort-link {{ 'sort-active' if current_sort == field else '' }}"
+        >
+            {{ label }}
+
+            {% if current_sort == field %}
+                <span>{{ '▲' if current_dir == 'asc' else '▼' }}</span>
+            {% else %}
+                <span class="sort-idle">↕</span>
+            {% endif %}
+        </a>
+    </th>
+{% endmacro %}
+
+
+{% macro risk_badge(value) %}
+    {% set v = (value or '')|trim|lower %}
+
+    {% if v in ['basso', 'protettivo'] %}
+        <span class="badge-risk risk-basso">{{ value }}</span>
+
+    {% elif v == 'medio' %}
+        <span class="badge-risk risk-medio">{{ value }}</span>
+
+    {% elif v == 'neutro' %}
+        <span class="badge-risk risk-neutro">{{ value }}</span>
+
+    {% elif v in ['alto', 'elevato', 'aumentato'] %}
+        <span class="badge-risk risk-alto">{{ value }}</span>
+
+    {% elif value %}
+        <span class="badge-risk risk-generico">{{ value }}</span>
+
+    {% else %}
+        -
+    {% endif %}
+{% endmacro %}
+
+
+<form method="get" action="{{ url_for('index') }}" class="row g-2 mb-3">
+
+    <input type="hidden" name="sort" value="{{ request.args.get('sort', 'alimento') }}">
+    <input type="hidden" name="dir" value="{{ request.args.get('dir', 'asc') }}">
+
+    <div class="col-6 col-md-2">
+        <label class="form-label">Categoria</label>
+
+        <select
+            name="categoria"
+            class="form-select"
+            onchange="this.form.submit()"
+        >
+            <option value="">Tutte le categorie</option>
+
+            {% for opt in category_options|default([]) %}
+                <option
+                    value="{{ opt.value }}"
+                    {% if request.args.get('categoria', '') == opt.value %}selected{% endif %}
+                >
+                    {{ opt.label }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+        <label class="form-label">Diabete</label>
+
+        <select
+            name="rischio_diabete"
+            class="form-select"
+            onchange="this.form.submit()"
+        >
+            <option value="">Tutti</option>
+
+            {% for opt in diabete_options|default([]) %}
+                <option
+                    value="{{ opt.value }}"
+                    {% if request.args.get('rischio_diabete', '') == opt.value %}selected{% endif %}
+                >
+                    {{ opt.label }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+        <label class="form-label">Colesterolo</label>
+
+        <select
+            name="rischio_colesterolo"
+            class="form-select"
+            onchange="this.form.submit()"
+        >
+            <option value="">Tutti</option>
+
+            {% for opt in colesterolo_options|default([]) %}
+                <option
+                    value="{{ opt.value }}"
+                    {% if request.args.get('rischio_colesterolo', '') == opt.value %}selected{% endif %}
+                >
+                    {{ opt.label }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+        <label class="form-label">Malassorbimento</label>
+
+        <select
+            name="rischio_malassorbimento"
+            class="form-select"
+            onchange="this.form.submit()"
+        >
+            <option value="">Tutti</option>
+
+            {% for opt in malassorbimento_options|default([]) %}
+                <option
+                    value="{{ opt.value }}"
+                    {% if request.args.get('rischio_malassorbimento', '') == opt.value %}selected{% endif %}
+                >
+                    {{ opt.label }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+        <label class="form-label">Metabolico</label>
+
+        <select
+            name="rischio_metabolico"
+            class="form-select"
+            onchange="this.form.submit()"
+        >
+            <option value="">Tutti</option>
+
+            {% for opt in metabolic_options|default([]) %}
+                <option
+                    value="{{ opt.value }}"
+                    {% if request.args.get('rischio_metabolico', '') == opt.value %}selected{% endif %}
+                >
+                    {{ opt.label }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+        <label class="form-label">Tumorale</label>
+
+        <select
+            name="rischio_tumorale"
+            class="form-select"
+            onchange="this.form.submit()"
+        >
+            <option value="">Tutti</option>
+
+            {% for opt in tumorale_options|default([]) %}
+                <option
+                    value="{{ opt.value }}"
+                    {% if request.args.get('rischio_tumorale', '') == opt.value %}selected{% endif %}
+                >
+                    {{ opt.label }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-12 d-flex justify-content-end gap-2">
+        <button type="submit" class="btn btn-outline-secondary">
+            Filtra
+        </button>
+
+        <a href="{{ url_for('index') }}" class="btn btn-link">
+            Reset
+        </a>
+    </div>
+
+</form>
+
+
+<div class="card table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    {{ th_sortable('alimento', 'Alimento') }}
+                    {{ th_sortable('categoria', 'Categoria') }}
+
+                    {{ th_sortable('kcal', 'Kcal', 'text-end') }}
+                    {{ th_sortable('tef_kcal', 'TEF (Kcal)', 'text-end') }}
+                    {{ th_sortable('tef_percent', 'TEF (%)', 'text-end') }}
+                    {{ th_sortable('kcal_nette', 'Kcal Nette', 'text-end') }}
+
+                    {{ th_sortable('fruttosio', 'Fruttosio (g)', 'text-end') }}
+                    {{ th_sortable('fibre', 'Fibre (g)', 'text-end') }}
+                    {{ th_sortable('rapporto', 'Rapporto F/F', 'text-end') }}
+
+                    {{ th_sortable('rischio_colesterolo', 'Colesterolo') }}
+                    {{ th_sortable('rischio_diabete', 'Diabete') }}
+                    {{ th_sortable('rischio_malassorbimento', 'Malassorb.') }}
+                    {{ th_sortable('rischio_metabolico', 'Metabolico') }}
+                    {{ th_sortable('rischio_tumorale', 'Tumorale') }}
+
+                    <th class="text-end">Azioni</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for a in alimenti %}
+                    <tr>
+                        <td class="fw-semibold">
+                            {{ a.alimento }}
+                        </td>
+
+                        <td>
+                            {{ a.categoria or '-' }}
+                        </td>
+
+                        <td class="text-end">
+                            {{ '%g'|format(a.kcal or 0) }}
+                        </td>
+
+                        <td class="text-end">
+                            {{ '%g'|format(a.tef_kcal or 0) }}
+                        </td>
+
+                        <td class="text-end">
+                            {{ '%g'|format(a.tef_percent or 0) }}
+                        </td>
+
+                        <td class="text-end">
+                            {{ '%g'|format(a.kcal_nette or 0) }}
+                        </td>
+
+                        <td class="text-end">
+                            {{ '%.2f'|format(a.fruttosio or 0) }}
+                        </td>
+
+                        <td class="text-end">
+                            {{ '%.2f'|format(a.fibre or 0) }}
+                        </td>
+
+                        <td class="text-end">
+                            {{ '%.2f'|format(a.rapporto or 0) }}
+                        </td>
+
+                        <td>
+                            {{ risk_badge(a.rischio_colesterolo) }}
+                        </td>
+
+                        <td>
+                            {{ risk_badge(a.rischio_diabete) }}
+                        </td>
+
+                        <td>
+                            {{ risk_badge(a.rischio_malassorbimento) }}
+                        </td>
+
+                        <td>
+                            {{ risk_badge(a.rischio_metabolico) }}
+                        </td>
+
+                        <td>
+                            {{ risk_badge(a.rischio_tumorale) }}
+                        </td>
+
+                        <td class="text-end actions-cell">
+                            <div class="d-inline-flex gap-1">
+                                <a
+                                    href="{{ url_for('modifica', alimento_id=a.id) }}"
+                                    class="btn btn-sm btn-outline-primary"
+                                    title="Modifica"
+                                >
+                                    ✏️
+                                </a>
+
+                                <form
+                                    action="{{ url_for('elimina', alimento_id=a.id) }}"
+                                    method="post"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Vuoi eliminare questo alimento?');"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-outline-danger"
+                                        title="Elimina"
+                                    >
+                                        🗑️
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="15" class="text-center py-4">
+                            Nessun alimento trovato con i filtri correnti.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

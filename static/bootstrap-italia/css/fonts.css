@@ -1,0 +1,55 @@
+/* =========================================================
+   Font locali per Bootstrap Italia
+   Percorsi relativi a:
+   static/bootstrap-italia/css/fonts.css
+   ========================================================= */
+
+/* Titillium Web - Light */
+@font-face {
+    font-family: "Titillium Web";
+    src: url("../fonts/Titillium_Web/titillium-web-v10-latin-ext_latin-300.woff2") format("woff2");
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Titillium Web - Regular */
+@font-face {
+    font-family: "Titillium Web";
+    src: url("../fonts/Titillium_Web/titillium-web-v10-latin-ext_latin-regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* Titillium Web - Semibold */
+@font-face {
+    font-family: "Titillium Web";
+    src: url("../fonts/Titillium_Web/titillium-web-v10-latin-ext_latin-600.woff2") format("woff2");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Titillium Web - Bold */
+@font-face {
+    font-family: "Titillium Web";
+    src: url("../fonts/Titillium_Web/titillium-web-v10-latin-ext_latin-700.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Titillium Web - Italic */
+@font-face {
+    font-family: "Titillium Web";
+    src: url("../fonts/Titillium_Web/titillium-web-v10-latin-ext_latin-italic.woff2") format("woff2");
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* Forza l'uso del font locale */
+body {
+    font-family: "Titillium Web", Arial, Helvetica, sans-serif;
+}

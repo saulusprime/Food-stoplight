@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Database Alimenti{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-italia/css/bootstrap-italia.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-italia/css/fonts.css') }}">
+    <style>
+        body {
+            background: #f4f7f4;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #14532d, #16a34a);
+            color: white;
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 12px 28px rgba(20, 83, 45, 0.18);
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 0.35rem;
+        }
+
+        .page-header p {
+            margin: 0;
+            opacity: 0.92;
+        }
+
+        .stat-card {
+            border: 0;
+            border-radius: 1rem;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .table-card {
+            border: 0;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .table thead th {
+            background: #e8f5e9;
+            color: #14532d;
+            font-weight: 700;
+            white-space: nowrap;
+            border-bottom: 2px solid #c8e6c9;
+        }
+
+        .sort-link {
+            color: inherit;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .sort-link:hover {
+            color: #166534;
+        }
+
+        .sort-active {
+            color: #166534;
+        }
+
+        .sort-idle {
+            opacity: 0.35;
+            font-size: 0.85rem;
+        }
+
+        .badge-risk {
+            display: inline-block;
+            min-width: 72px;
+            text-align: center;
+            padding: 0.45em 0.7em;
+            border-radius: 0.65rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .risk-basso,
+        .risk-protettivo {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .risk-medio {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .risk-neutro {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .risk-alto,
+        .risk-aumentato {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .risk-generico {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .form-label {
+            font-weight: 600;
+        }
+
+        .actions-cell {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                🥗 Database Alimenti
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" href="{{ url_for('index') }}">
+                        Tabella
+                    </a>
+
+                    <a class="nav-link" href="{{ url_for('nuovo') }}">
+                        Nuovo alimento
+                    </a>
+
+                    <a class="nav-link" href="{{ url_for('importa') }}">
+                        Importa CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container mb-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close"data-bs-dismiss="alert" aria-label="Chiudi"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+    <script src="{{ url_for('static', filename='bootstrap-italia/js/bootstrap-italia.bundle.min.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
