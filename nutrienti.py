@@ -11,9 +11,17 @@ Convenzione: nei nuovi campi None significa "dato non disponibile",
 0 è un valore misurato.
 """
 
+from __future__ import annotations
+
 import re
+from collections.abc import Sequence
+from typing import Any
 
 import analisi
+from analisi import Alimento, Livello
+
+# (alimento, grammi) di un pasto o di una giornata
+Voce = tuple[Alimento, float]
 
 # ---------------------------------------------------------------
 # CAMPI
@@ -84,7 +92,7 @@ NOVA = {
 CAMPI_FONTE = ("fonte_nutrienti", "url_fonte", "fdc_id")
 
 
-def _nome_fodmap(etichetta):
+def _nome_fodmap(etichetta: str) -> str:
     """
     "GOS (galatto-oligosaccaridi)" -> "GOS", "Fruttani" -> "fruttani".
     """
@@ -93,19 +101,8 @@ def _nome_fodmap(etichetta):
 
 # Tutti i nuovi campi (None = non disponibile)
 CAMPI_NUMERICI_NULLABILI = (*CAMPI_NUTRIENTI, "indice_glicemico", "nova", "fdc_id")
-CAMPI_TESTO_NULLABILI = (*CAMPI_FODMAP, "fonte_nutrienti", "url_fonte")
+CAMPI_TESTO_NULLABILI = (*CAMPI_FODMAP, "fonte_nutrienti", "url_fonte", "note")
 CAMPI_NULLABILI = (*CAMPI_NUMERICI_NULLABILI, *CAMPI_TESTO_NULLABILI)
-
-# Colonne SQL da aggiungere alla tabella alimenti
-COLONNE_SQL = {
-    **{campo: "REAL" for campo in CAMPI_NUTRIENTI},
-    "indice_glicemico": "REAL",
-    "nova": "INTEGER",
-    **{campo: "TEXT" for campo in CAMPI_FODMAP},
-    "fonte_nutrienti": "TEXT",
-    "url_fonte": "TEXT",
-    "fdc_id": "INTEGER",
-}
 
 # Valori per 100 g che cambiano con la porzione
 CAMPI_PER_PORZIONE = ("kcal", "tef_kcal", "kcal_nette", "fruttosio", "fibre", *CAMPI_NUTRIENTI)
@@ -120,6 +117,7 @@ ETICHETTE = {
     "fonte_nutrienti": "Fonte nutrienti",
     "url_fonte": "URL fonte",
     "fdc_id": "FDC ID",
+    "note": "Note",
 }
 
 # Porzione: limiti accettati dal calcolatore, dal pasto e dal diario
@@ -140,7 +138,7 @@ URL_RE = re.compile(r"^https?://[^\s<>\"']+$", re.IGNORECASE)
 # LIVELLI E CLASSIFICAZIONI
 # ---------------------------------------------------------------
 
-def livello_fodmap(valore):
+def livello_fodmap(valore: object) -> Livello | None:
     """
     Livello FODMAP canonico ({etichetta, stato, ordine}) oppure None.
     Accetta anche emoji davanti e i colori del semaforo (verde, giallo, rosso).
@@ -151,16 +149,15 @@ def livello_fodmap(valore):
     return _FODMAP_PER_ETICHETTA.get(etichetta) if etichetta else None
 
 
-def fodmap_complessivo(item):
+def fodmap_complessivo(item: Alimento) -> Livello | None:
     """
     Livello FODMAP più alto tra le categorie classificate, None se nessuna lo è.
     """
-    livelli = [livello_fodmap(item.get(campo)) for campo in CAMPI_FODMAP]
-    livelli = [liv for liv in livelli if liv]
+    livelli = [liv for liv in (livello_fodmap(item.get(campo)) for campo in CAMPI_FODMAP) if liv is not None]
     return max(livelli, key=lambda liv: liv["ordine"]) if livelli else None
 
 
-def leggi_nova(valore):
+def leggi_nova(valore: object) -> int | None:
     """
     Gruppo NOVA 1-4 da "4", "NOVA 4", "4 - Ultra-trasformati"...; None altrimenti.
     """
@@ -174,12 +171,12 @@ def leggi_nova(valore):
     return int(corrispondenza.group(1)) if corrispondenza else None
 
 
-def gruppo_nova(item):
+def gruppo_nova(item: Alimento) -> dict[str, Any] | None:
     gruppo = leggi_nova(item.get("nova"))
     return NOVA.get(gruppo) if gruppo else None
 
 
-def livello_indice_glicemico(indice):
+def livello_indice_glicemico(indice: float | None) -> dict[str, str] | None:
     """
     Soglie usuali: fino a 55 basso, 56-69 medio, da 70 alto.
     """
@@ -195,7 +192,7 @@ def livello_indice_glicemico(indice):
     return {"etichetta": "Alto", "stato": "critical"}
 
 
-def livello_carico_glicemico(carico):
+def livello_carico_glicemico(carico: float | None) -> dict[str, str] | None:
     """
     Soglie per porzione: fino a 10 basso, 11-19 medio, da 20 alto.
     """
@@ -211,7 +208,7 @@ def livello_carico_glicemico(carico):
     return {"etichetta": "Alto", "stato": "critical"}
 
 
-def carboidrati_disponibili(item):
+def carboidrati_disponibili(item: Alimento) -> float | None:
     """
     Carboidrati meno fibre (i carboidrati USDA sono calcolati per differenza
     e comprendono le fibre); None se i carboidrati non sono noti.
@@ -224,7 +221,7 @@ def carboidrati_disponibili(item):
     return max(carboidrati - (item.get("fibre") or 0), 0.0)
 
 
-def carico_glicemico(item, grammi=100):
+def carico_glicemico(item: Alimento, grammi: float = 100) -> float | None:
     """
     Carico glicemico = indice glicemico × carboidrati disponibili della porzione ÷ 100.
     """
@@ -241,7 +238,7 @@ def carico_glicemico(item, grammi=100):
 # PORZIONI, PASTI E GIORNATE
 # ---------------------------------------------------------------
 
-def leggi_grammi(valore, predefinito=None):
+def leggi_grammi(valore: object, predefinito: float | None = None) -> float | None:
     """
     Grammi di una porzione (virgola o punto), nei limiti ammessi; altrimenti il predefinito.
     """
@@ -256,7 +253,7 @@ def leggi_grammi(valore, predefinito=None):
     return round(grammi, 1)
 
 
-def per_porzione(item, grammi):
+def per_porzione(item: Alimento, grammi: float) -> dict[str, float | None]:
     """
     Valori riferiti alla porzione: i campi per 100 g scalati, None restano None.
     """
@@ -268,13 +265,13 @@ def per_porzione(item, grammi):
     }
 
 
-def totali(voci):
+def totali(voci: Sequence[Voce]) -> tuple[dict[str, float], dict[str, int]]:
     """
     voci: lista di (alimento, grammi). Somma i valori delle porzioni e conta,
     campo per campo, gli alimenti per cui il dato manca.
     """
-    somme = {campo: 0.0 for campo in CAMPI_PER_PORZIONE}
-    mancanti = {campo: 0 for campo in CAMPI_PER_PORZIONE}
+    somme = dict.fromkeys(CAMPI_PER_PORZIONE, 0.0)
+    mancanti = dict.fromkeys(CAMPI_PER_PORZIONE, 0)
 
     for alimento, grammi in voci:
         porzione = per_porzione(alimento, grammi)
@@ -289,7 +286,7 @@ def totali(voci):
     return somme, mancanti
 
 
-def profilo_rischio(voci):
+def profilo_rischio(voci: Sequence[Voce]) -> dict[str, Any]:
     """
     Profilo di rischio di un pasto o di una giornata: per ogni rischio la media
     dei punti dei livelli (0-3) pesata sulle Kcal che ciascun alimento apporta.
@@ -300,14 +297,14 @@ def profilo_rischio(voci):
     su_kcal = sum(pesi_kcal) > 0
     pesi = pesi_kcal if su_kcal else [grammi for _, grammi in voci]
 
-    rischi = []
+    rischi: list[dict[str, Any]] = []
 
     for campo, etichetta in analisi.RISCHI:
         somma = 0.0
         peso_totale = 0.0
         contributi = []
 
-        for (alimento, _), peso in zip(voci, pesi):
+        for (alimento, _), peso in zip(voci, pesi, strict=True):
             liv = analisi.livello(alimento.get(campo))
 
             if liv is None or peso <= 0:
@@ -351,7 +348,7 @@ def profilo_rischio(voci):
 SUGGERIMENTI_MAX = 5
 
 
-def alternative(item, alimenti, n=SUGGERIMENTI_MAX):
+def alternative(item: Alimento, alimenti: list[Alimento], n: int = SUGGERIMENTI_MAX) -> list[Alimento]:
     """
     Alimenti della stessa categoria con punteggio più alto: prima i migliori,
     a parità quelli con Kcal più vicine. Esclude gli omonimi.

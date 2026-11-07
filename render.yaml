@@ -1,0 +1,39 @@
+# Blueprint di Render: https://render.com/docs/blueprint-spec
+# Dashboard > New > Blueprint > questo repository. Al primo avvio Render chiede
+# i valori segnati sync: false (ADMIN_USERNAME, ADMIN_PASSWORD, USDA_API_KEY).
+#
+# Il disco persistente (dove stanno database, utenti, diario e backup) richiede
+# un piano a pagamento e una sola istanza; ogni deploy ha una breve interruzione.
+
+services:
+  - type: web
+    name: food-stoplight
+    runtime: docker
+    region: frankfurt
+    plan: 0.5c-512mb
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /salute
+    # Deploy solo quando i controlli di GitHub Actions (lint, tipi, test) sono passati
+    autoDeployTrigger: checksPass
+    disk:
+      name: dati
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: APP_ENV
+        value: produzione
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      # Render fa da proxy HTTPS davanti all'app
+      - key: PROXY_ATTENDIBILI
+        value: "1"
+      - key: ACCESSO_PUBBLICO
+        value: "true"
+      - key: GUNICORN_WORKERS
+        value: "2"
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: USDA_API_KEY
+        sync: false

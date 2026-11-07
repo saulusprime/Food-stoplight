@@ -4,7 +4,15 @@ livelli di rischio, punteggio sintetico, medaglie "top alimenti"
 e dati già pronti per i grafici della home e della scheda alimento.
 """
 
+from __future__ import annotations
+
 import math
+from typing import Any
+
+# Righe del database e strutture per i template: dizionari con valori di tipo misto
+Alimento = dict[str, Any]
+Livello = dict[str, Any]
+Medaglia = dict[str, Any]
 
 # ---------------------------------------------------------------
 # LIVELLI DI RISCHIO
@@ -13,14 +21,14 @@ import math
 # (variabili CSS --stato-good, --stato-warning, ... in static/css/app.css).
 # ---------------------------------------------------------------
 
-LIVELLI = (
+LIVELLI: tuple[Livello, ...] = (
     {"chiave": "trascurabile", "etichetta": "Trascurabile", "punti": 0, "stato": "good", "emoji": "🟢"},
     {"chiave": "basso", "etichetta": "Basso", "punti": 1, "stato": "warning", "emoji": "🟡"},
     {"chiave": "medio", "etichetta": "Medio", "punti": 2, "stato": "serious", "emoji": "🟠"},
     {"chiave": "alto", "etichetta": "Alto", "punti": 3, "stato": "critical", "emoji": "🔴"},
 )
 
-PUNTI_MAX = LIVELLI[-1]["punti"]
+PUNTI_MAX: int = LIVELLI[-1]["punti"]
 
 # Valori alternativi accettati (vecchia scala del rischio tumorale, import CSV)
 SINONIMI = {
@@ -33,7 +41,7 @@ SINONIMI = {
 _PER_CHIAVE = {liv["chiave"]: liv for liv in LIVELLI}
 
 # Valore assente o non riconosciuto
-NON_CLASSIFICATO = {
+NON_CLASSIFICATO: Livello = {
     "chiave": "nd",
     "etichetta": "Non classificato",
     "punti": None,
@@ -52,7 +60,7 @@ RISCHI = (
 CAMPI_RISCHIO = tuple(campo for campo, _ in RISCHI)
 
 
-def livello(valore):
+def livello(valore: object) -> Livello | None:
     """
     Livello canonico di un valore di rischio (dict di LIVELLI) oppure None.
     """
@@ -61,7 +69,7 @@ def livello(valore):
     return _PER_CHIAVE.get(chiave)
 
 
-def stato(valore):
+def stato(valore: object) -> str:
     """
     Nome del colore di stato per un valore di rischio ("good" ... "critical", "nd").
     """
@@ -75,7 +83,7 @@ def stato(valore):
 # Media dei punti dei livelli noti (0-3), riportata su 0-100.
 # ---------------------------------------------------------------
 
-def calcola_punteggio(*valori):
+def calcola_punteggio(*valori: object) -> int | None:
     punti = [liv["punti"] for liv in map(livello, valori) if liv]
 
     if not punti:
@@ -85,7 +93,7 @@ def calcola_punteggio(*valori):
     return round(100 * (1 - media / PUNTI_MAX))
 
 
-def livello_punteggio(punteggio):
+def livello_punteggio(punteggio: float | None) -> Livello:
     """
     Livello corrispondente alla media dei rischi da cui deriva il punteggio:
     > 83 Trascurabile, 51-83 Basso, 17-50 Medio, <= 16 Alto.
@@ -98,7 +106,7 @@ def livello_punteggio(punteggio):
     return LIVELLI[indice]
 
 
-def punteggio_alimento(alimento):
+def punteggio_alimento(alimento: Alimento) -> int | None:
     return calcola_punteggio(*(alimento.get(campo) for campo in CAMPI_RISCHIO))
 
 
@@ -106,7 +114,7 @@ def punteggio_alimento(alimento):
 # MEDAGLIE "TOP ALIMENTI"
 # ---------------------------------------------------------------
 
-def _rapporto_ff(a):
+def _rapporto_ff(a: Alimento) -> float | None:
     """
     Rapporto fruttosio/fibre ricalcolato dai valori grezzi.
     """
@@ -114,7 +122,7 @@ def _rapporto_ff(a):
     return (a.get("fruttosio") or 0) / fibre if fibre > 0 else None
 
 
-MEDAGLIE = (
+MEDAGLIE: tuple[Medaglia, ...] = (
     {
         "chiave": "protettivi",
         "icona": "🛡️",
@@ -156,7 +164,7 @@ MEDAGLIE_PER_CHIAVE = {m["chiave"]: m for m in MEDAGLIE}
 POSTI_MEDAGLIA = 10
 
 
-def classifica(alimenti, medaglia, n):
+def classifica(alimenti: list[Alimento], medaglia: Medaglia, n: int) -> list[tuple[Alimento, str]]:
     """
     Primi n alimenti per il criterio della medaglia: lista di (alimento, valore formattato).
     """
@@ -169,11 +177,11 @@ def classifica(alimenti, medaglia, n):
     ]
 
 
-def medaglie_per_alimento(alimenti, posti=POSTI_MEDAGLIA):
+def medaglie_per_alimento(alimenti: list[Alimento], posti: int = POSTI_MEDAGLIA) -> dict[int, list[Medaglia]]:
     """
     {id alimento: [medaglia, ...]} per i primi `posti` di ogni classifica.
     """
-    assegnate = {}
+    assegnate: dict[int, list[Medaglia]] = {}
 
     for medaglia in MEDAGLIE:
         for alimento, _ in classifica(alimenti, medaglia, posti):
@@ -186,15 +194,15 @@ def medaglie_per_alimento(alimenti, posti=POSTI_MEDAGLIA):
 # DATI PER I GRAFICI
 # ---------------------------------------------------------------
 
-def _quota(n, totale):
+def _quota(n: float, totale: float) -> float:
     return n / totale * 100 if totale else 0.0
 
 
-def distribuzione_categorie(alimenti):
+def distribuzione_categorie(alimenti: list[Alimento]) -> list[dict[str, Any]]:
     """
     Barre ordinate (dalla più grande): [{categoria, n, quota, larghezza}].
     """
-    conteggi = {}
+    conteggi: dict[str, int] = {}
 
     for a in alimenti:
         categoria = (a.get("categoria") or "").strip() or "Senza categoria"
@@ -215,7 +223,7 @@ def distribuzione_categorie(alimenti):
     ]
 
 
-def distribuzione_rischi(alimenti):
+def distribuzione_rischi(alimenti: list[Alimento]) -> list[dict[str, Any]]:
     """
     Una barra impilata al 100% per ogni rischio, segmenti nell'ordine dei livelli.
     """
@@ -252,7 +260,7 @@ def distribuzione_rischi(alimenti):
     return righe
 
 
-def legenda_rischi(distribuzione):
+def legenda_rischi(distribuzione: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Livelli presenti in almeno una barra, nell'ordine della scala.
     """
@@ -260,12 +268,17 @@ def legenda_rischi(distribuzione):
     return [liv for liv in (*LIVELLI, NON_CLASSIFICATO) if liv["chiave"] in presenti]
 
 
-def punteggio_medio(alimenti):
+def punteggio_medio(alimenti: list[Alimento]) -> int | None:
     valori = [a["punteggio"] for a in alimenti if a.get("punteggio") is not None]
     return round(sum(valori) / len(valori)) if valori else None
 
 
-def radar(alimento, raggio=110, centro=(180, 150), punti=None):
+def radar(
+    alimento: Alimento,
+    raggio: float = 110,
+    centro: tuple[float, float] = (180, 150),
+    punti: dict[str, float | None] | None = None,
+) -> dict[str, Any]:
     """
     Geometria SVG del radar dei 5 rischi.
     Il raggio indica il livello: anello 1 = Trascurabile ... anello 4 = Alto
@@ -277,7 +290,7 @@ def radar(alimento, raggio=110, centro=(180, 150), punti=None):
     anelli = len(LIVELLI)
     n = len(RISCHI)
 
-    def punto(indice, r):
+    def punto(indice: int, r: float) -> tuple[float, float]:
         angolo = math.radians(-90 + indice * 360 / n)
         return (round(cx + r * math.cos(angolo), 1), round(cy + r * math.sin(angolo), 1))
 
@@ -285,6 +298,8 @@ def radar(alimento, raggio=110, centro=(180, 150), punti=None):
     vertici = []
 
     for i, (campo, etichetta) in enumerate(RISCHI):
+        valore: Any
+
         if punti is not None:
             media = punti.get(campo)
             liv = LIVELLI[min(int(media + 0.5), len(LIVELLI) - 1)] if media is not None else None
@@ -321,7 +336,7 @@ def radar(alimento, raggio=110, centro=(180, 150), punti=None):
     bisettrice = math.radians(-90 + 180 / n)
     lato = math.cos(math.pi / n)
 
-    def etichetta_anello(k):
+    def etichetta_anello(k: int) -> tuple[float, float]:
         r = raggio * k / anelli * lato
         return (round(cx + r * math.cos(bisettrice) + 3, 1), round(cy + r * math.sin(bisettrice) + 3, 1))
 

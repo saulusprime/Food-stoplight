@@ -9,20 +9,26 @@ Import di alimenti da file CSV o Excel (.xlsx), in tre passaggi:
 3. applica()     scrive il piano nel database (una sola transazione).
 """
 
+from __future__ import annotations
+
 import csv
 import io
 import math
 import re
+import sqlite3
 import zipfile
 from collections import Counter
+from collections.abc import Callable, Mapping, Sequence
 from datetime import date, datetime, time
-from decimal import ROUND_HALF_UP, Decimal
+from typing import Any
 
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
 
 import analisi
+import calcoli
 import nutrienti
+from calcoli import arrotonda, leggi_numero  # noqa: F401  (usati anche da altri moduli)
 
 # Limite di righe di dati per file (oltre si chiede di dividerlo)
 MAX_RIGHE = 20000
@@ -84,7 +90,7 @@ MODALITA = {
 MODALITA_PREDEFINITA = "aggiorna"
 
 # Valori da trattare come cella vuota
-VALORI_ASSENTI = {"", "-", "–", "—", "na", "n/a", "nd", "n/d", "n.d.", "null", "none"}
+VALORI_ASSENTI = calcoli.VALORI_ASSENTI
 
 
 class ErroreImport(Exception):
@@ -93,11 +99,18 @@ class ErroreImport(Exception):
     """
 
 
+# (numero di riga nel file, celle come testo)
+Riga = tuple[int, list[str]]
+
+# Voce del piano di import: {riga, azione, valori, id, modificati, precedente, avvisi}
+Voce = dict[str, Any]
+
+
 # ---------------------------------------------------------------
 # RICONOSCIMENTO DEL FILE E DELLE COLONNE
 # ---------------------------------------------------------------
 
-def normalize_header(value):
+def normalize_header(value: object) -> str:
     """
     Normalizza l'intestazione di una colonna.
     Esempio: "Fruttosio (g/100g)" -> "fruttosio g 100g"
@@ -106,7 +119,7 @@ def normalize_header(value):
     return re.sub(r"[^a-z0-9]+", " ", value).strip()
 
 
-def campo_colonna(intestazione):
+def campo_colonna(intestazione: object) -> str | None:
     """
     Campo del database corrispondente a un'intestazione, oppure None.
     """
@@ -131,6 +144,9 @@ def campo_colonna(intestazione):
 
     if "url" in norm or "link" in norm:
         return "url_fonte"
+
+    if norm in ("note", "nota", "annotazioni"):
+        return "note"
 
     if "fonte" in norm:
         # Le vecchie colonne Fonte Kcal / Fonte TEF di update.py non sono nella web app
@@ -190,7 +206,7 @@ def campo_colonna(intestazione):
     return None
 
 
-def _campo_rischio(norm, colesterolo=True):
+def _campo_rischio(norm: str, colesterolo: bool = True) -> str | None:
     if "diabete" in norm:
         return "rischio_diabete"
 
@@ -209,7 +225,7 @@ def _campo_rischio(norm, colesterolo=True):
     return None
 
 
-def _campo_fodmap(norm):
+def _campo_fodmap(norm: str) -> str | None:
     if "fruttan" in norm:
         return "fodmap_fruttani"
 
@@ -251,7 +267,7 @@ _NUTRIENTI_RE = (
 )
 
 
-def _campo_nutriente(norm):
+def _campo_nutriente(norm: str) -> str | None:
     for espressione, campo in _NUTRIENTI_RE:
         if espressione.search(norm):
             return campo
@@ -259,11 +275,11 @@ def _campo_nutriente(norm):
     return None
 
 
-def mappa_colonne(intestazioni):
+def mappa_colonne(intestazioni: Sequence[object]) -> dict[str, int]:
     """
     {campo: indice di colonna}; se due colonne indicano lo stesso campo vale la prima.
     """
-    mappa = {}
+    mappa: dict[str, int] = {}
 
     for indice, intestazione in enumerate(intestazioni):
         campo = campo_colonna(intestazione)
@@ -274,7 +290,7 @@ def mappa_colonne(intestazioni):
     return mappa
 
 
-def decode_csv_bytes(raw):
+def decode_csv_bytes(raw: bytes) -> str:
     """
     Prova a decodificare il CSV con diversi encoding.
     """
@@ -287,7 +303,7 @@ def decode_csv_bytes(raw):
     return raw.decode("latin-1", errors="replace")
 
 
-def guess_delimiter(sample):
+def guess_delimiter(sample: str) -> str:
     """
     Riconosce il separatore del CSV tra virgola, punto e virgola e tabulazione.
     """
@@ -300,7 +316,7 @@ def guess_delimiter(sample):
 NOMI_SEPARATORI = {",": "virgola", ";": "punto e virgola", "\t": "tabulazione"}
 
 
-def _righe_csv(raw):
+def _righe_csv(raw: bytes) -> tuple[list[Riga], str]:
     testo = decode_csv_bytes(raw)
     separatore = guess_delimiter(testo[:4096])
     lettore = csv.reader(io.StringIO(testo), delimiter=separatore)
@@ -320,7 +336,7 @@ def _righe_csv(raw):
     return righe, f"separatore: {NOMI_SEPARATORI.get(separatore, separatore)}"
 
 
-def _cella_excel(cella):
+def _cella_excel(cella: Any) -> str:
     """
     Valore di una cella Excel come testo, come se fosse stato letto da un CSV.
     """
@@ -351,7 +367,7 @@ def _cella_excel(cella):
     return str(valore).strip()
 
 
-def _righe_xlsx(raw):
+def _righe_xlsx(raw: bytes) -> tuple[list[Riga], str]:
     """
     Righe del primo foglio che contiene la colonna Alimento.
     """
@@ -400,14 +416,14 @@ def _righe_xlsx(raw):
         cartella.close()
 
 
-def _controlla_limite(righe_piene):
+def _controlla_limite(righe_piene: int) -> None:
     if righe_piene > MAX_RIGHE + RIGHE_RICERCA_INTESTAZIONE:
         raise ErroreImport(
             f"Il file supera le {MAX_RIGHE} righe: dividilo in più file."
         )
 
 
-def _trova_intestazione(righe):
+def _trova_intestazione(righe: list[Riga]) -> tuple[int | None, dict[str, int]]:
     """
     (posizione, mappa) della prima riga che contiene la colonna Alimento
     tra le prime righe non vuote; altrimenti la prima riga non vuota.
@@ -431,38 +447,7 @@ def _trova_intestazione(righe):
 # NORMALIZZAZIONE DEI VALORI
 # ---------------------------------------------------------------
 
-def leggi_numero(testo):
-    """
-    (valore, valido): valore None se la cella è vuota o assente (valido=True)
-    oppure se non è un numero (valido=False). Accetta virgola o punto decimale,
-    separatore delle migliaia, % e unità di misura in coda ("5,9 g").
-    """
-    testo = str(testo or "").strip().replace(" ", "").replace(" ", "")
-
-    if testo.lower() in VALORI_ASSENTI or testo.lower() in ("inf", "infinity", "∞"):
-        return None, True
-
-    testo = testo.rstrip("%")
-
-    if "," in testo and "." in testo:
-        # Il separatore decimale è l'ultimo dei due: 1.234,5 oppure 1,234.5
-        if testo.rfind(",") > testo.rfind("."):
-            testo = testo.replace(".", "").replace(",", ".")
-        else:
-            testo = testo.replace(",", "")
-    else:
-        testo = testo.replace(",", ".")
-
-    corrispondenza = re.fullmatch(r"(-?\d+(?:\.\d+)?|-?\.\d+)(?:[a-zA-Zµ]{1,4})?", testo)
-
-    if not corrispondenza:
-        return None, False
-
-    valore = float(corrispondenza.group(1))
-    return (valore, True) if math.isfinite(valore) else (None, True)
-
-
-def togli_protezione_formula(testo):
+def togli_protezione_formula(testo: str) -> str:
     """
     L'export antepone un apostrofo ai testi che iniziano con = + - @
     (protezione dalle formule in Excel): qui lo si toglie.
@@ -473,7 +458,7 @@ def togli_protezione_formula(testo):
     return testo
 
 
-def pulisci_nome(testo):
+def pulisci_nome(testo: str) -> str:
     """
     Spazi multipli e grassetto markdown (**Nome**) tolti dal nome dell'alimento.
     """
@@ -481,7 +466,7 @@ def pulisci_nome(testo):
     return re.sub(r"\s+", " ", testo).strip()
 
 
-def leggi_livello(testo):
+def leggi_livello(testo: str) -> str | None:
     """
     Etichetta canonica del livello di rischio ("Basso"...), anche se preceduta
     da emoji o simboli ("🔴 Alto", "⚠️ Aumentato"); None se non riconosciuto.
@@ -491,17 +476,17 @@ def leggi_livello(testo):
     return liv["etichetta"] if liv else None
 
 
-def normalizza_riga(numero, celle, mappa):
+def normalizza_riga(numero: int, celle: list[str], mappa: dict[str, int]) -> dict[str, Any]:
     """
     {"riga", "id", "valori", "forniti", "avvisi"} per una riga di dati.
     "forniti" elenca i campi con un valore nel file: solo questi
     sovrascrivono i dati esistenti in modalità aggiorna.
     """
-    valori = {}
+    valori: dict[str, Any] = {}
     forniti = []
     avvisi = []
 
-    def grezzo(campo):
+    def grezzo(campo: str) -> str:
         indice = mappa.get(campo)
 
         if indice is None or indice >= len(celle):
@@ -575,11 +560,13 @@ def normalizza_riga(numero, celle, mappa):
     }
 
 
-def _normalizza_nutrienti(grezzo, valori, forniti, avvisi):
+def _normalizza_nutrienti(
+    grezzo: Callable[[str], str], valori: dict[str, Any], forniti: list[str], avvisi: list[str]
+) -> None:
     """
     Macro e micronutrienti, indice glicemico, NOVA, FODMAP e fonte.
     """
-    def assente(testo):
+    def assente(testo: str) -> bool:
         return not testo or testo.lower() in VALORI_ASSENTI
 
     for campo in nutrienti.CAMPI_NUTRIENTI:
@@ -638,6 +625,12 @@ def _normalizza_nutrienti(grezzo, valori, forniti, avvisi):
         valori["fonte_nutrienti"] = testo
         forniti.append("fonte_nutrienti")
 
+    testo = grezzo("note")
+
+    if not assente(testo):
+        valori["note"] = testo[:2000]
+        forniti.append("note")
+
     testo = grezzo("url_fonte")
 
     if not assente(testo):
@@ -659,7 +652,7 @@ def _normalizza_nutrienti(grezzo, valori, forniti, avvisi):
             avvisi.append(f"FDC ID: «{testo}» non valido, ignorato")
 
 
-def leggi_file(nome_file, raw):
+def leggi_file(nome_file: str, raw: bytes) -> dict[str, Any]:
     """
     Legge un file .csv o .xlsx e restituisce un dizionario serializzabile in JSON:
     nome_file, formato, dettaglio, colonne [{nome, campo}], righe normalizzate.
@@ -723,27 +716,20 @@ def leggi_file(nome_file, raw):
 VUOTO = {
     "alimento": "",
     "categoria": "",
-    **{campo: 0.0 for campo in CAMPI_NUMERICI},
+    **dict.fromkeys(CAMPI_NUMERICI, 0.0),
     "rapporto": 0.0,
-    **{campo: "" for campo in analisi.CAMPI_RISCHIO},
-    **{campo: None for campo in nutrienti.CAMPI_NULLABILI},
+    **dict.fromkeys(analisi.CAMPI_RISCHIO, ""),
+    **dict.fromkeys(nutrienti.CAMPI_NULLABILI),
 }
 
 
-def arrotonda(valore, cifre):
+def completa_derivati(
+    base: Mapping[str, Any], valori: Mapping[str, Any], forniti: set[str], nuovo: bool
+) -> dict[str, Any]:
     """
-    Arrotondamento "alla pari per eccesso" come ROUND() di SQLite
-    (con cui è stato normalizzato il database): 2,8125 -> 2,813,
-    dove round() di Python darebbe 2,812.
-    """
-    passo = Decimal(1).scaleb(-cifre)
-    return float(Decimal(repr(float(valore))).quantize(passo, rounding=ROUND_HALF_UP))
-
-
-def completa_derivati(base, valori, forniti, nuovo):
-    """
-    Unisce i valori del file a quelli di partenza e ricalcola i campi derivati,
-    come il form: TEF (Kcal) <-> TEF (%), Kcal nette, rapporto fruttosio/fibre.
+    Unisce i valori del file a quelli di partenza e ricalcola i campi derivati
+    come il form (calcoli.completa_energia): Kcal e TEF dai macronutrienti,
+    TEF (Kcal) <-> TEF (%), Kcal nette, rapporto fruttosio/fibre.
     Un campo derivato si ricalcola solo se è cambiato qualcosa da cui dipende,
     così una riga identica al database resta invariata.
     """
@@ -761,44 +747,35 @@ def completa_derivati(base, valori, forniti, nuovo):
     for campo in (*CAMPI_TESTO, *analisi.CAMPI_RISCHIO):
         v[campo] = v.get(campo) or ""
 
-    kcal = v["kcal"]
-
-    if "tef_kcal" in forniti and "tef_percent" not in forniti:
-        v["tef_percent"] = arrotonda(v["tef_kcal"] / kcal * 100, 2) if kcal else 0.0
-    elif "tef_percent" in forniti and "tef_kcal" not in forniti:
-        v["tef_kcal"] = arrotonda(kcal * v["tef_percent"] / 100, 2)
-    elif "kcal" in forniti and not {"tef_kcal", "tef_percent"} & forniti and v["tef_percent"]:
-        v["tef_kcal"] = arrotonda(kcal * v["tef_percent"] / 100, 2)
-
-    if "kcal_nette" not in forniti and (nuovo or {"kcal", "tef_kcal", "tef_percent"} & forniti):
-        v["kcal_nette"] = arrotonda(kcal - v["tef_kcal"], 2)
-
-    if nuovo or {"fruttosio", "fibre", "rapporto"} & forniti:
-        v["rapporto"] = arrotonda(v["fruttosio"] / v["fibre"], 3) if v["fibre"] > 0 else 0.0
+    calcoli.completa_energia(v, forniti, nuovo)
 
     return v
 
 
-def _diverso(a, b, campo=None):
+def _come_numero(valore: object) -> float:
+    return float(valore) if isinstance(valore, (int, float)) else 0.0
+
+
+def _diverso(a: object, b: object, campo: str | None = None) -> bool:
     # Nei dati nutrizionali "non disponibile" (None) è diverso da 0
     if campo in CAMPI_NULLABILI and (a is None) != (b is None):
         return True
 
     if isinstance(a, (int, float)) or isinstance(b, (int, float)):
-        return abs(float(a or 0) - float(b or 0)) > 1e-9
+        return abs(_come_numero(a) - _come_numero(b)) > 1e-9
 
     return str(a or "").strip() != str(b or "").strip()
 
 
-def _chiave_nome(alimento):
+def _chiave_nome(alimento: object) -> str:
     return str(alimento or "").strip().casefold()
 
 
-def _chiave(alimento, categoria):
+def _chiave(alimento: object, categoria: object) -> tuple[str, str]:
     return (_chiave_nome(alimento), str(categoria or "").strip().casefold())
 
 
-def _voce(riga, azione, valori=None, **extra):
+def _voce(riga: dict[str, Any], azione: str, valori: dict[str, Any] | None = None, **extra: Any) -> Voce:
     return {
         "riga": riga["riga"],
         "azione": azione,
@@ -811,7 +788,7 @@ def _voce(riga, azione, valori=None, **extra):
     }
 
 
-def pianifica(conn, letto, modalita):
+def pianifica(conn: sqlite3.Connection, letto: dict[str, Any], modalita: str) -> list[Voce]:
     """
     Lista di voci {riga, azione, valori, id, modificati, precedente, avvisi}.
     Azioni: nuovo, aggiornato, invariato, unito (riga ripetuta nel file,
@@ -825,8 +802,8 @@ def pianifica(conn, letto, modalita):
         for row in conn.execute(f"SELECT id, {', '.join(CAMPI)} FROM alimenti")
     }
 
-    per_chiave = {}
-    per_nome = {}
+    per_chiave: dict[tuple[str, str], int] = {}
+    per_nome: dict[str, list[int]] = {}
 
     for row in esistenti.values():
         per_chiave.setdefault(_chiave(row["alimento"], row["categoria"]), row["id"])
@@ -834,8 +811,8 @@ def pianifica(conn, letto, modalita):
 
     con_categoria = letto.get("categoria_presente", True)
 
-    voci = []
-    nuovi = {}
+    voci: list[Voce] = []
+    nuovi: dict[object, Voce] = {}
 
     for riga in letto["righe"]:
         valori = riga["valori"]
@@ -937,7 +914,8 @@ def pianifica(conn, letto, modalita):
             if con_categoria:
                 id_doppione = per_chiave.get(_chiave(nome, valori.get("categoria")))
             else:
-                id_doppione = (per_nome.get(_chiave_nome(nome)) or [None])[0]
+                omonimi = per_nome.get(_chiave_nome(nome)) or []
+                id_doppione = omonimi[0] if omonimi else None
 
             if id_doppione:
                 voce["avvisi"].append(f"Già presente nel database (ID {id_doppione}): sarà duplicato")
@@ -948,7 +926,7 @@ def pianifica(conn, letto, modalita):
     return voci
 
 
-def riepilogo(voci):
+def riepilogo(voci: list[Voce]) -> dict[str, int]:
     conteggi = Counter(voce["azione"] for voce in voci)
 
     return {
@@ -967,7 +945,7 @@ def riepilogo(voci):
 # SCRITTURA
 # ---------------------------------------------------------------
 
-def applica(conn, voci, modalita, adesso):
+def applica(conn: sqlite3.Connection, voci: list[Voce], modalita: str, adesso: str) -> int:
     """
     Esegue il piano. Non fa commit: lo decide chi chiama.
     Restituisce il numero di alimenti eliminati (solo in modalità sostituisci).

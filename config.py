@@ -10,9 +10,12 @@ APP_ENV seleziona il profilo:
               cookie di sessione inviati solo su HTTPS
 """
 
+from __future__ import annotations
+
 import os
 import secrets
 import sys
+from typing import Any
 
 from dotenv import load_dotenv
 
@@ -25,7 +28,7 @@ AMBIENTI = ("sviluppo", "produzione")
 LUNGHEZZA_MINIMA_CHIAVE = 32
 
 
-def env_str(nome, default=""):
+def env_str(nome: str, default: str = "") -> str:
     valore = os.environ.get(nome)
 
     if valore is None or not valore.strip():
@@ -34,7 +37,7 @@ def env_str(nome, default=""):
     return valore.strip()
 
 
-def env_bool(nome, default=False):
+def env_bool(nome: str, default: bool = False) -> bool:
     valore = env_str(nome).lower()
 
     if not valore:
@@ -49,7 +52,7 @@ def env_bool(nome, default=False):
     raise RuntimeError(f"{nome}: valore booleano non valido ({valore!r}).")
 
 
-def env_int(nome, default):
+def env_int(nome: str, default: int) -> int:
     valore = env_str(nome)
 
     if not valore:
@@ -63,18 +66,18 @@ def env_int(nome, default):
         ) from None
 
 
-def env_percorso(nome, default):
+def env_percorso(nome: str, default: str) -> str:
     """
     Percorso di un file: se relativo, è riferito alla cartella del progetto.
     """
     return os.path.join(BASE_DIR, env_str(nome, default))
 
 
-def avviso(messaggio):
+def avviso(messaggio: str) -> None:
     print(f" * ATTENZIONE: {messaggio}", file=sys.stderr)
 
 
-def leggi_secret_key(produzione):
+def leggi_secret_key(produzione: bool) -> str:
     chiave = env_str("FLASK_SECRET_KEY")
 
     if produzione:
@@ -101,7 +104,7 @@ def leggi_secret_key(produzione):
     return chiave
 
 
-def carica_config():
+def carica_config() -> dict[str, Any]:
     """
     Restituisce il dizionario da passare a app.config.update().
     """
@@ -143,7 +146,11 @@ def carica_config():
         "BACKUP_DIR": env_percorso("BACKUP_DIR", os.path.join("instance", "backup")),
 
         # File caricati in attesa di conferma dell'import (eliminati dopo un'ora)
-        "IMPORT_DIR": os.path.join(BASE_DIR, "instance", "import"),
+        "IMPORT_DIR": env_percorso("IMPORT_DIR", os.path.join("instance", "import")),
+
+        # Numero di proxy davanti all'app (Render, nginx): 0 = nessuno.
+        # Serve per leggere schema e host corretti dalle intestazioni X-Forwarded-*.
+        "PROXY_ATTENDIBILI": env_int("PROXY_ATTENDIBILI", 0),
 
         # Limite di dimensione delle richieste (file da importare, backup da ripristinare)
         "MAX_UPLOAD_MB": max_upload_mb,

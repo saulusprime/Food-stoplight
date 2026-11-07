@@ -43,7 +43,11 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 
 ```
 Food-stoplight/
-├── app.py              # Applicazione Flask principale (route, CRUD, import/export, backup, login, comandi utenti)
+├── app.py              # Applicazione Flask: pagine web, login e ruoli, comandi da riga di comando
+├── api.py              # API REST in sola lettura (/api/alimenti, /api/categorie)
+├── archivio.py         # Query sugli alimenti (filtri, ordinamento), condivise da pagine e API
+├── database.py         # Connessioni ai tre database e migrazioni versionate dello schema
+├── calcoli.py          # Calcoli condivisi: numeri, Kcal e TEF dai macronutrienti, Kcal nette, rapporto F/F
 ├── analisi.py          # Livelli di rischio, punteggio, medaglie e dati per i grafici
 ├── importazione.py     # Lettura di CSV/Excel, riconoscimento colonne, piano dell'import (anteprima)
 ├── esportazione.py     # Export CSV, Excel e PDF (tabella e scheda alimento)
@@ -52,7 +56,7 @@ Food-stoplight/
 ├── usda.py             # Macro e micronutrienti da USDA FoodData Central
 ├── config.py           # Configurazione da variabili d'ambiente / .env (sviluppo e produzione)
 ├── .env.example        # Modello del file .env
-├── update.py           # CLI per aggiornamento massivo del DB da CSV ed export dei dati mancanti
+├── update.py           # Aggiornamento del database da CSV/Excel da riga di comando (stesse regole dell'import web)
 ├── autogen.py          # Generatore del dataset: dati reali USDA FoodData Central + alimenti integrativi
 ├── alimenti.db         # Database SQLite precaricato (~1000 alimenti)
 ├── utenti.db           # Utenti e password (creato al primo avvio, escluso da git)
@@ -74,12 +78,19 @@ Food-stoplight/
 │   ├── css/app.css     # Stili dell'app, colori dei livelli, modalità scura
 │   ├── js/app.js       # Pulsante del tema e tooltip dei grafici
 │   └── bootstrap-italia/   # Bootstrap Italia 2.18.3 (CSS, JS, font, icone)
+├── tests/              # Test automatici (pytest)
+├── docker/avvio.sh     # Avvio del container: prepara /data e l'amministratore iniziale
+├── Dockerfile, docker-compose.yml, .dockerignore   # Immagine di produzione (gunicorn)
+├── render.yaml         # Blueprint per il deploy su Render
+├── .github/workflows/ci.yml   # GitHub Actions: lint, tipi, test e immagine Docker a ogni push
+├── pyproject.toml      # Configurazione di ruff, mypy e pytest
+├── requirements.txt, requirements-dev.txt   # Dipendenze dell'app e strumenti di sviluppo
 └── docs/               # Dataset di esempio (CSV/XLSX) e prototipi HTML
 ```
 
 ## 🚀 Installazione e avvio
 
-Requisiti: **Python 3.10+**
+Requisiti: **Python 3.11+**
 
 ```bash
 # 1. Clona il repository
@@ -107,7 +118,7 @@ python app.py
 
 L'app sarà disponibile su **http://127.0.0.1:5000** (indirizzo e porta configurabili, vedi sotto).
 
-Al primo avvio, se il database non esiste, viene creato automaticamente con lo schema corretto. Il repository include comunque `alimenti.db` già popolato con ~1000 alimenti.
+Al primo avvio i database mancanti vengono creati e quelli esistenti portati allo schema attuale (vedi *Migrazioni*). Il repository include `alimenti.db` già popolato con ~1000 alimenti.
 
 ## ⚙️ Configurazione
 
@@ -125,6 +136,10 @@ La configurazione si legge dalle variabili d'ambiente oppure dal file `.env` nel
 | `USDA_API_KEY` | `DEMO_KEY` | Chiave USDA FoodData Central per `flask --app app usda-nutrienti` |
 | `BACKUP_DIR` | `instance/backup` | Cartella dei backup del database alimenti (si conservano gli ultimi 20) |
 | `MAX_UPLOAD_MB` | `10` | Dimensione massima dei file importati e dei backup da ripristinare |
+| `IMPORT_DIR` | `instance/import` | File caricati in attesa di conferma dell'import (eliminati dopo un'ora) |
+| `PROXY_ATTENDIBILI` | `0` | Numero di proxy davanti all'app (Render, nginx): con `1` schema e host si leggono da `X-Forwarded-*` |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | — | Solo nel container: amministratore creato al primo avvio se non ce n'è nessuno |
+| `PORT` / `GUNICORN_WORKERS` | `8000` / `2` | Solo nel container: porta e numero di processi di gunicorn |
 
 ## 👤 Utenti e ruoli
 
@@ -167,29 +182,79 @@ flask --app app usda-nutrienti --pagine 2 --sovrascrivi
 
 Il comando scarica l'elenco USDA usato da `autogen.py` (dataset Foundation e SR Legacy) e abbina gli alimenti per nome esatto, salvando fonte, link alla scheda USDA e FDC ID. Senza `USDA_API_KEY` usa la chiave pubblica `DEMO_KEY`, limitata a poche richieste l'ora; la chiave personale è gratuita: <https://fdc.nal.usda.gov/api-key-signup>.
 
+## 🔌 API REST
+
+API JSON in sola lettura, con gli stessi permessi della consultazione web (con `ACCESSO_PUBBLICO=false` senza login si riceve `401`).
+
+| Richiesta | Risposta |
+|---|---|
+| `GET /api` | Indice delle risorse e dei parametri |
+| `GET /api/alimenti` | `{totale, limit, offset, successiva, precedente, risultati}` |
+| `GET /api/alimenti/<id>` | Un alimento: tutti i campi più punteggio, livello medio, carico glicemico, FODMAP complessivo, link alla scheda |
+| `GET /api/categorie` | Categorie con il numero di alimenti |
+
+Parametri di `/api/alimenti`: `q` (testo nel nome), `categoria`, `rischio_diabete` … `rischio_tumorale` (livello), `sort` e `dir` (come la tabella), `limit` (1–500, default 100), `offset`.
+
+```bash
+curl "http://127.0.0.1:5000/api/alimenti?q=apple&rischio_diabete=Basso&sort=kcal&dir=desc&limit=5"
+```
+
+Gli errori sono JSON: `{"errore": "...", "stato": 404}`. `GET /salute` risponde `200` se il database è leggibile (controllo per Docker e Render).
+
 ## 🚢 Produzione
 
 - Imposta `APP_ENV=produzione` e una `FLASK_SECRET_KEY` robusta: senza, l'app non parte.
-- Servi l'app in **HTTPS**: in produzione i cookie di sessione sono `Secure` e su HTTP semplice il login non funziona (si può disattivare con `SESSION_COOKIE_SECURE=false`, sconsigliato).
-- `python app.py` usa il server di sviluppo di Flask: per un deploy reale usa un server WSGI, ad esempio `waitress-serve --host 0.0.0.0 --port 8000 app:app` oppure `gunicorn app:app`.
+- Servi l'app in **HTTPS**: in produzione i cookie di sessione sono `Secure` e su HTTP semplice il login non funziona (si può disattivare con `SESSION_COOKIE_SECURE=false`, sconsigliato). Dietro un proxy imposta `PROXY_ATTENDIBILI=1`.
+- `python app.py` usa il server di sviluppo di Flask: per un deploy reale usa gunicorn (compreso nei requisiti) o il container Docker.
+
+### Docker
+
+```bash
+cp .env.example .env                      # imposta FLASK_SECRET_KEY
+docker compose up -d --build              # http://localhost:8000
+docker compose exec -u app web flask --app app crea-utente admin
+```
+
+L'immagine esegue gunicorn come utente senza privilegi. Database, utenti, diario e backup stanno nel volume `/data`: al primo avvio vi viene copiato l'`alimenti.db` incluso nell'immagine, poi i dati restano tra un aggiornamento e l'altro.
+
+### Render
+
+1. Dashboard di Render → **New → Blueprint** → questo repository: `render.yaml` crea il servizio Docker con un disco persistente su `/data` e una `FLASK_SECRET_KEY` generata.
+2. Al primo avvio Render chiede `ADMIN_USERNAME` e `ADMIN_PASSWORD` (amministratore iniziale, creato solo se non ne esiste già uno; dopo il primo deploy la password si può togliere) ed eventualmente `USDA_API_KEY`.
+3. I deploy partono a ogni push su GitHub **solo se la CI è passata** (`autoDeployTrigger: checksPass`).
+
+Il disco persistente richiede un piano a pagamento (`plan: 0.5c-512mb`, il più piccolo) e una sola istanza; ogni deploy ha una breve interruzione. Sul piano gratuito i dati andrebbero persi a ogni riavvio.
+
+## 🗄️ Migrazioni del database
+
+Ogni database tiene la versione dello schema in `PRAGMA user_version`; all'avvio dell'app (o di `update.py`) si applicano in ordine le migrazioni mancanti di `database.py`, in un'unica transazione, dopo un backup automatico di `alimenti.db`. Un nuovo cambio di schema è sempre una migrazione nuova in coda alla lista, mai la modifica di una esistente.
+
+```bash
+flask --app app db-stato      # versione attuale di alimenti.db, utenti.db, diario.db
+```
+
+## 🧪 Sviluppo
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+pytest                # test automatici (su copie temporanee dei database)
+ruff check .          # lint
+mypy                  # controllo dei tipi
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) esegue lint, tipi e test con Python 3.11, 3.12 e 3.13 a ogni push, poi costruisce l'immagine Docker e ne verifica l'avvio.
 
 ## 🛠️ Strumenti a riga di comando
 
 ### `update.py` — aggiornamento massivo del database
 
-Aggiorna o inserisce alimenti da un file CSV, con calcolo automatico dei campi mancanti (Kcal dai macronutrienti, TEF, Kcal nette, rapporto F/Fibre):
+Le stesse regole dell'import web (file CSV o Excel, abbinamento per ID oppure per nome e categoria, campi derivati ricalcolati, backup automatico prima di scrivere), da riga di comando:
 
 ```bash
-# Import/aggiornamento da CSV
-python update.py --csv dati.csv
-
-# Simulazione senza scrivere sul database
-python update.py --csv dati.csv --dry-run
-
-# Esporta gli alimenti con dati incompleti da integrare
-python update.py --esporta-mancanti da_completare.csv
-
-# Database alternativo
+python update.py --csv dati.csv                     # aggiorna o aggiunge
+python update.py --csv dati.xlsx --dry-run          # mostra cosa cambierebbe
+python update.py --csv dati.csv --modalita aggiungi # oppure sostituisci
+python update.py --esporta-mancanti da_completare.csv   # CSV reimportabile con i dati da completare
 python update.py --db altro.db --csv dati.csv
 ```
 
@@ -202,11 +267,12 @@ Genera il file `1000_foods_complete.csv` combinando:
 
 ```bash
 python autogen.py
+python autogen.py --output dataset.csv --seed 42 --per-categoria 115
 ```
 
 ## 🧮 Note metodologiche
 
-- **TEF (Thermic Effect of Food)**: stimato pesando i macronutrienti con i coefficienti standard — proteine ~25%, carboidrati ~7,5–10%, grassi ~2,5–5% dell'energia.
+- **TEF (Thermic Effect of Food)**: quando manca, si stima dai macronutrienti come media dei coefficienti pesata sull'energia di ciascuno — proteine 25%, carboidrati 10%, grassi 5% (gli stessi in web app, import, `update.py` e `autogen.py`). Se mancano le Kcal si stimano dai macronutrienti (4 / 4 / 9 Kcal per grammo).
 - **Kcal Nette** = Kcal totali − TEF (Kcal).
 - **Rapporto Fruttosio/Fibre** = fruttosio ÷ fibre (0 se le fibre sono 0): indicatore utile per la valutazione del malassorbimento del fruttosio; più è basso, meglio è, perché le fibre ne favoriscono la tolleranza.
 - **Indicatori di rischio**: assegnati tramite punteggi basati su soglie di zuccheri, grassi saturi, colesterolo, fibre e fruttosio, con riferimento alle indicazioni OMS/WCRF per il rischio tumorale. Valori accettati: Trascurabile, Basso, Medio, Alto (sono riconosciuti anche Protettivo e Neutro come Trascurabile, Elevato e Aumentato come Alto).
@@ -226,12 +292,14 @@ python autogen.py
 
 | Componente | Tecnologia |
 |---|---|
-| Backend | Python 3, Flask 3 |
+| Backend | Python 3.11+, Flask 3, gunicorn |
 | Sicurezza | Flask-Login (sessioni e ruoli), Flask-WTF (CSRF), python-dotenv |
 | Database | SQLite 3 |
 | Frontend | Jinja2, Bootstrap Italia 2.18.3 |
 | Import / Export | openpyxl (Excel), fpdf2 (PDF) |
 | Dati | USDA FoodData Central API (requests) |
+| Qualità | pytest, ruff, mypy, GitHub Actions |
+| Deploy | Docker, Render |
 
 ## 👨‍💻 Sviluppatore
 

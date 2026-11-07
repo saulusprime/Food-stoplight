@@ -1,0 +1,31 @@
+# Food-stoplight con Docker Compose
+#
+#   cp .env.example .env        # imposta FLASK_SECRET_KEY (obbligatoria)
+#   docker compose up -d --build
+#   docker compose exec -u app web flask --app app crea-utente admin
+#
+# L'app risponde su http://localhost:8000; database, utenti, diario e backup
+# stanno nel volume "dati" e sopravvivono agli aggiornamenti dell'immagine.
+
+services:
+  web:
+    build: .
+    image: food-stoplight
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Valori fissi del container: prevalgono su quelli di .env
+      APP_ENV: produzione
+      DATABASE_PATH: /data/alimenti.db
+      UTENTI_DB_PATH: /data/utenti.db
+      DIARIO_DB_PATH: /data/diario.db
+      BACKUP_DIR: /data/backup
+      PORT: "8000"
+    volumes:
+      - dati:/data
+    restart: unless-stopped
+
+volumes:
+  dati:

@@ -1,0 +1,71 @@
+[project]
+name = "food-stoplight"
+version = "1.0.0"
+description = "Database nutrizionale con semaforo dei rischi (Flask + SQLite)"
+requires-python = ">=3.11"
+
+# ---------------------------------------------------------------
+# Lint: ruff check .
+# ---------------------------------------------------------------
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["static", "docs", "instance"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle
+    "W",
+    "F",   # pyflakes
+    "I",   # import ordinati
+    "B",   # bugbear: errori probabili
+    "UP",  # sintassi moderna
+    "C4",  # comprehension
+    "SIM", # semplificazioni
+]
+ignore = [
+    "SIM108",  # l'operatore ternario non è sempre più leggibile di un if
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Nei test le righe lunghe sono dati di prova: spezzarle li renderebbe meno leggibili
+"tests/*" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "analisi", "api", "app", "archivio", "autogen", "backup", "calcoli", "config",
+    "database", "esportazione", "importazione", "nutrienti", "update", "usda",
+]
+
+# ---------------------------------------------------------------
+# Tipi: mypy
+# ---------------------------------------------------------------
+[tool.mypy]
+python_version = "3.11"
+files = ["*.py", "tests"]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+# Librerie senza annotazioni di tipo
+module = ["flask_login.*", "flask_wtf.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# I test non annotano le funzioni (i loro assert fanno già da controllo);
+# il codice dell'app resta controllato in modo completo
+module = ["tests.*"]
+disallow_untyped_defs = false
+check_untyped_defs = false
+
+# ---------------------------------------------------------------
+# Test: pytest
+# ---------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

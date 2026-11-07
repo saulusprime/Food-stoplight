@@ -5,18 +5,47 @@ I file CSV ed Excel usano le stesse intestazioni accettate dall'import,
 così si possono modificare e reimportare (le righe si abbinano per ID).
 """
 
+from __future__ import annotations
+
 import csv
 import io
 import re
 import unicodedata
+from collections.abc import Callable, Sequence
+from datetime import datetime
+from typing import Any, TypedDict
 
 from fpdf import FPDF
 from openpyxl import Workbook
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
 
 import analisi
 import nutrienti
+from analisi import Alimento
+
+
+class InfoExport(TypedDict):
+    """
+    Contesto dell'export: filtri applicati, ordinamento, data, numero di alimenti.
+    """
+    filtri: list[tuple[str, str]]
+    ordinamento: str
+    data: datetime
+    totale: int
+
+def _intestazione_nutriente(campo: str) -> str:
+    """
+    "Grassi saturi (g)", "Vitamina C (mg)": intestazioni riconosciute anche dall'import.
+    """
+    _, _, unita, _, _ = nutrienti.PER_CAMPO[campo]
+    return f"{nutrienti.ETICHETTE[campo]} ({unita})"
+
+
+def _formato_excel(decimali: int) -> str:
+    return "0" if decimali == 0 else "0." + "0" * decimali
+
 
 # Colonne esportate: (campo, intestazione, formato numerico Excel)
 COLONNE = (
@@ -33,9 +62,8 @@ COLONNE = (
     ("rapporto", "Rapporto F/Fibre", "0.000"),
     *((campo, f"Rischio {etichetta}", None) for campo, etichetta in analisi.RISCHI),
     # Dati nutrizionali per 100 g (vuoti = non disponibili)
-    *((campo, f"{etichetta[0].upper()}{etichetta[1:]} ({unita})".replace("Di cui zuccheri", "Zuccheri").replace("Di cui saturi", "Grassi saturi"),
-       "0" if decimali == 0 else "0." + "0" * decimali)
-      for campo, etichetta, unita, decimali, _ in nutrienti.NUTRIENTI),
+    *((campo, _intestazione_nutriente(campo), _formato_excel(decimali))
+      for campo, _, _, decimali, _ in nutrienti.NUTRIENTI),
     ("indice_glicemico", "Indice glicemico", "0"),
     ("carico_glicemico", "Carico glicemico (per 100 g)", "0.0"),
     ("nova", "NOVA", "0"),
@@ -43,6 +71,7 @@ COLONNE = (
     ("fonte_nutrienti", "Fonte nutrienti", None),
     ("url_fonte", "URL fonte", None),
     ("fdc_id", "FDC ID", "0"),
+    ("note", "Note", None),
     ("aggiornato_il", "Aggiornato il", None),
 )
 
@@ -70,12 +99,13 @@ DISCLAIMER = (
 )
 
 
-def _rgb(esadecimale):
-    return tuple(int(esadecimale[i:i + 2], 16) for i in (0, 2, 4))
+def _rgb(esadecimale: str) -> tuple[int, int, int]:
+    rosso, verde, blu = (int(esadecimale[i:i + 2], 16) for i in (0, 2, 4))
+    return rosso, verde, blu
 
 
-def _luminanza(esadecimale):
-    def canale(c):
+def _luminanza(esadecimale: str) -> float:
+    def canale(c: float) -> float:
         c = c / 255
         return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
 
@@ -83,7 +113,7 @@ def _luminanza(esadecimale):
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 
-def colore_testo(sfondo):
+def colore_testo(sfondo: str) -> str:
     """
     Inchiostro scuro o bianco, quello col contrasto WCAG maggiore sullo sfondo.
     In stampa e a corpo piccolo il contrasto conta più che a schermo.
@@ -94,7 +124,7 @@ def colore_testo(sfondo):
     return INCHIOSTRO if contrasto_scuro >= contrasto_bianco else "ffffff"
 
 
-def colori_livello(valore):
+def colori_livello(valore: object) -> tuple[str, str] | None:
     """
     (sfondo, testo) esadecimali per un valore di rischio, None se non classificato.
     """
@@ -107,14 +137,15 @@ def colori_livello(valore):
     return sfondo, colore_testo(sfondo)
 
 
-def numero_it(valore, decimali=None):
+def numero_it(valore: float | str | None, decimali: int | None = None) -> str:
     """
     Numero con virgola decimale; senza decimali indicati usa la forma compatta.
     """
     if valore is None or valore == "":
         return "–"
 
-    testo = f"{valore:g}" if decimali is None else f"{valore:.{decimali}f}"
+    numero = float(valore)
+    testo = f"{numero:g}" if decimali is None else f"{numero:.{decimali}f}"
     return testo.replace(".", ",")
 
 
@@ -122,7 +153,7 @@ def numero_it(valore, decimali=None):
 # DESCRIZIONE DEI FILTRI (intestazione di Excel e PDF)
 # ---------------------------------------------------------------
 
-def descrivi(info):
+def descrivi(info: InfoExport) -> str:
     """
     Riga di contesto: numero di alimenti, filtri, ordinamento, data.
     """
@@ -142,7 +173,7 @@ def descrivi(info):
 # CSV
 # ---------------------------------------------------------------
 
-def proteggi_formula(testo):
+def proteggi_formula(testo: str) -> str:
     """
     Un testo che inizia con = + - @ verrebbe eseguito come formula da Excel
     (CSV injection): si antepone un apostrofo, che l'import poi toglie.
@@ -153,7 +184,7 @@ def proteggi_formula(testo):
     return testo
 
 
-def valore_colonna(alimento, campo):
+def valore_colonna(alimento: Alimento, campo: str) -> Any:
     """
     Valore di una colonna esportata; il carico glicemico si calcola al momento.
     """
@@ -163,18 +194,18 @@ def valore_colonna(alimento, campo):
     return alimento.get(campo)
 
 
-def _valore_csv(campo, valore):
+def _valore_csv(campo: str, valore: object) -> str:
     if valore is None:
         return ""
 
-    if campo in CAMPI_NUMERICI:
+    if campo in CAMPI_NUMERICI and isinstance(valore, (int, float)):
         testo = f"{float(valore):.6f}".rstrip("0").rstrip(".")
         return testo.replace(".", ",")
 
     return proteggi_formula(str(valore))
 
 
-def csv_bytes(alimenti):
+def csv_bytes(alimenti: list[Alimento]) -> bytes:
     """
     CSV con separatore punto e virgola e virgola decimale, come lo apre
     Excel in italiano; UTF-8 con BOM per gli accenti.
@@ -196,6 +227,7 @@ def csv_bytes(alimenti):
 LARGHEZZE_EXCEL = {
     "fonte_nutrienti": 30,
     "url_fonte": 48,
+    "note": 40,
     "id": 7,
     "alimento": 46,
     "categoria": 20,
@@ -204,20 +236,20 @@ LARGHEZZE_EXCEL = {
 }
 
 
-def _testo_excel(valore):
+def _testo_excel(valore: object) -> str:
     return ILLEGAL_CHARACTERS_RE.sub("", str(valore))
 
 
-def _scrivi_testo(cella, valore):
+def _scrivi_testo(cella: Any, valore: object) -> None:
     cella.value = _testo_excel(valore)
 
     # openpyxl tratta come formula ogni testo che inizia con "="
     cella.data_type = "s"
 
 
-def xlsx_bytes(alimenti, info):
+def xlsx_bytes(alimenti: list[Alimento], info: InfoExport) -> bytes:
     cartella = Workbook()
-    foglio = cartella.active
+    foglio = cartella.worksheets[0]
     foglio.title = "Alimenti"
 
     grassetto = Font(bold=True, color=INCHIOSTRO)
@@ -237,7 +269,7 @@ def xlsx_bytes(alimenti, info):
         cella.border = bordo_intestazione
         cella.alignment = a_capo
 
-        lettera = cella.column_letter
+        lettera = get_column_letter(colonna)
         foglio.column_dimensions[lettera].width = LARGHEZZE_EXCEL.get(
             campo, 17 if campo.startswith("rischio_") else 12
         )
@@ -245,25 +277,25 @@ def xlsx_bytes(alimenti, info):
     for riga, alimento in enumerate(alimenti, start=2):
         for colonna, (campo, _, formato) in enumerate(COLONNE, start=1):
             valore = valore_colonna(alimento, campo)
-            cella = foglio.cell(row=riga, column=colonna)
+            cella_dato = foglio.cell(row=riga, column=colonna)
 
             if valore is None or valore == "":
                 continue
 
             if formato:
-                cella.value = valore
-                cella.number_format = formato
+                cella_dato.value = valore
+                cella_dato.number_format = formato
             else:
-                _scrivi_testo(cella, valore)
+                _scrivi_testo(cella_dato, valore)
 
             if campo.startswith("rischio_"):
                 stato = analisi.stato(valore)
 
                 if stato in riempimenti:
-                    cella.fill, cella.font = riempimenti[stato]
+                    cella_dato.fill, cella_dato.font = riempimenti[stato]
 
     foglio.freeze_panes = "C2"
-    foglio.auto_filter.ref = f"A1:{foglio.cell(row=1, column=len(COLONNE)).column_letter}{max(len(alimenti) + 1, 2)}"
+    foglio.auto_filter.ref = f"A1:{get_column_letter(len(COLONNE))}{max(len(alimenti) + 1, 2)}"
     foglio.row_dimensions[1].height = 30
 
     _foglio_informazioni(cartella, info, riempimenti)
@@ -273,7 +305,9 @@ def xlsx_bytes(alimenti, info):
     return buffer.getvalue()
 
 
-def _foglio_informazioni(cartella, info, riempimenti):
+def _foglio_informazioni(
+    cartella: Workbook, info: InfoExport, riempimenti: dict[str, tuple[PatternFill, Font]]
+) -> None:
     foglio = cartella.create_sheet("Informazioni")
     foglio.column_dimensions["A"].width = 22
     foglio.column_dimensions["B"].width = 90
@@ -293,9 +327,11 @@ def _foglio_informazioni(cartella, info, riempimenti):
 
     righe += [
         ("", ""),
-        ("Punteggio", "100 × (1 − media dei punti ÷ 3), sui rischi disponibili: 100 = tutti trascurabili, 0 = tutti alti."),
+        ("Punteggio", "100 × (1 − media dei punti ÷ 3), sui rischi disponibili: "
+                      "100 = tutti trascurabili, 0 = tutti alti."),
         ("Rapporto F/Fibre", "Fruttosio ÷ fibre (0 se le fibre sono 0)."),
-        ("Nutrienti", "Valori per 100 g; celle vuote = dato non disponibile. Fonte e link nelle colonne Fonte nutrienti e URL fonte."),
+        ("Nutrienti", "Valori per 100 g; celle vuote = dato non disponibile. "
+                      "Fonte e link nelle colonne Fonte nutrienti e URL fonte."),
         ("Carico glicemico", "Indice glicemico × (carboidrati − fibre) ÷ 100, per 100 g."),
         ("NOVA", "1 non trasformati, 2 ingredienti culinari, 3 trasformati, 4 ultra-trasformati."),
         (
@@ -331,7 +367,7 @@ def _foglio_informazioni(cartella, info, riempimenti):
 SOSTITUZIONI_PDF = {"−": "-", "≤": "<=", "≥": ">=", "→": "->", "←": "<-", "≈": "~", "\u00a0": " "}
 
 
-def testo_pdf(testo):
+def testo_pdf(testo: object) -> str:
     """
     I font standard del PDF coprono solo Windows-1252: le lettere accentate
     fuori set perdono l'accento, emoji e simboli vengono tolti.
@@ -368,7 +404,7 @@ def testo_pdf(testo):
 
 
 class _Documento(FPDF):
-    def __init__(self, titolo, **kwargs):
+    def __init__(self, titolo: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.core_fonts_encoding = "windows-1252"
         self.set_margins(12, 12, 12)
@@ -379,7 +415,7 @@ class _Documento(FPDF):
         self.set_draw_color(*_rgb(GRIGLIA))
         self.set_line_width(0.15)
 
-    def footer(self):
+    def footer(self) -> None:
         self.set_y(-11)
         self.set_font("Helvetica", size=7)
         self.set_text_color(*_rgb(INCHIOSTRO_SECONDARIO))
@@ -387,7 +423,7 @@ class _Documento(FPDF):
         self.set_x(self.l_margin)
         self.cell(0, 4, f"Pagina {self.page_no()} di {{nb}}", align="R")
 
-    def titolo(self, testo, sottotitolo=None, corpo=16):
+    def titolo(self, testo: str, sottotitolo: str | None = None, corpo: float = 16) -> None:
         self.set_text_color(*_rgb(INCHIOSTRO))
         self.set_font("Helvetica", "B", corpo)
         self.multi_cell(0, corpo * 0.45, testo_pdf(testo), new_x="LMARGIN", new_y="NEXT")
@@ -400,7 +436,7 @@ class _Documento(FPDF):
 
         self.set_text_color(*_rgb(INCHIOSTRO))
 
-    def sezione(self, testo, x, larghezza):
+    def sezione(self, testo: str, x: float, larghezza: float) -> None:
         self.set_xy(x, self.get_y())
         self.set_font("Helvetica", "B", 10.5)
         self.set_text_color(*_rgb(INCHIOSTRO))
@@ -427,7 +463,7 @@ COLONNE_PDF = (
 )
 
 
-def _a_capo(pdf, testo, larghezza):
+def _a_capo(pdf: FPDF, testo: str, larghezza: float) -> list[str]:
     """
     Righe di testo che stanno nella larghezza data (parole intere,
     spezzate solo se una parola da sola non ci sta).
@@ -462,7 +498,7 @@ def _a_capo(pdf, testo, larghezza):
     return righe
 
 
-def pdf_tabella(alimenti, info):
+def pdf_tabella(alimenti: list[Alimento], info: InfoExport) -> bytes:
     """
     Tabella filtrata in A4 orizzontale, intestazione ripetuta su ogni pagina.
     Disegnata cella per cella: il motore di tabelle di fpdf2 impiega
@@ -490,7 +526,7 @@ def pdf_tabella(alimenti, info):
     posizioni = [pdf.l_margin + sum(larghezze[:i]) for i in range(len(COLONNE_PDF))]
     linea_base = interlinea / 2 + corpo * 0.3528 * 0.35
 
-    def scrivi(testo, indice, y, allineamento):
+    def scrivi(testo: str, indice: int, y: float, allineamento: str) -> None:
         x, larghezza = posizioni[indice], larghezze[indice]
 
         if allineamento == "LEFT":
@@ -501,7 +537,7 @@ def pdf_tabella(alimenti, info):
 
         pdf.text(x, y, testo)
 
-    def intestazione():
+    def intestazione() -> None:
         y = pdf.get_y()
         altezza = interlinea + 2 * margine_v
         pdf.set_fill_color(*_rgb(SFONDO_INTESTAZIONE))
@@ -569,7 +605,7 @@ def pdf_tabella(alimenti, info):
     return bytes(pdf.output())
 
 
-def pdf_scheda(item, medaglie, posti_medaglia, data):
+def pdf_scheda(item: Alimento, medaglie: list[dict[str, Any]], posti_medaglia: int, data: datetime) -> bytes:
     """
     Scheda alimento in A4 verticale: punteggio, valori, radar e rischi, medaglie.
     """
@@ -756,7 +792,7 @@ def pdf_scheda(item, medaglie, posti_medaglia, data):
     return bytes(pdf.output())
 
 
-def _come_leggere(pdf, x, larghezza):
+def _come_leggere(pdf: _Documento, x: float, larghezza: float) -> None:
     """
     Legenda in fondo alla scheda: livelli, punteggio e significato dei valori.
     """
@@ -810,7 +846,7 @@ def _come_leggere(pdf, x, larghezza):
         pdf.ln(1.2)
 
 
-def _etichetta_livello(pdf, x, testo, stato):
+def _etichetta_livello(pdf: FPDF, x: float, testo: str, stato: str) -> None:
     """
     Pallino colorato + etichetta, come i badge della web app.
     """
@@ -827,11 +863,11 @@ def _etichetta_livello(pdf, x, testo, stato):
     pdf.cell(80, 5.2, testo_pdf(testo), new_x="LMARGIN", new_y="NEXT")
 
 
-def _valore_nutriente(valore, decimali):
+def _valore_nutriente(valore: float | None, decimali: int) -> str:
     return "–" if valore is None else numero_it(round(valore, decimali))
 
 
-def _colori_fodmap(valore):
+def _colori_fodmap(valore: object) -> tuple[str, str] | None:
     liv = nutrienti.livello_fodmap(valore)
 
     if not liv:
@@ -841,7 +877,7 @@ def _colori_fodmap(valore):
     return sfondo, colore_testo(sfondo)
 
 
-def _indicatori(pdf, x, item):
+def _indicatori(pdf: FPDF, x: float, item: Alimento) -> None:
     """
     Indice glicemico, carico glicemico (100 g), NOVA e FODMAP complessivo:
     pallino colorato + testo, oppure "non disponibile".
@@ -851,17 +887,18 @@ def _indicatori(pdf, x, item):
     nova = nutrienti.gruppo_nova(item)
     fodmap = nutrienti.fodmap_complessivo(item)
 
-    voci = []
+    voci: list[tuple[str, str | None]] = []
 
-    if ig is not None:
-        liv = nutrienti.livello_indice_glicemico(ig)
-        voci.append((f"Indice glicemico: {numero_it(ig)} ({liv['etichetta'].lower()})", liv["stato"]))
+    liv_ig = nutrienti.livello_indice_glicemico(ig)
+    liv_cg = nutrienti.livello_carico_glicemico(cg)
+
+    if ig is not None and liv_ig:
+        voci.append((f"Indice glicemico: {numero_it(ig)} ({liv_ig['etichetta'].lower()})", liv_ig["stato"]))
     else:
         voci.append(("Indice glicemico: non disponibile", None))
 
-    if cg is not None:
-        liv = nutrienti.livello_carico_glicemico(cg)
-        voci.append((f"Carico glicemico per 100 g: {numero_it(cg)} ({liv['etichetta'].lower()})", liv["stato"]))
+    if cg is not None and liv_cg:
+        voci.append((f"Carico glicemico per 100 g: {numero_it(cg)} ({liv_cg['etichetta'].lower()})", liv_cg["stato"]))
 
     if nova:
         voci.append((f"NOVA {nova['gruppo']}: {nova['etichetta']}", nova["stato"]))
@@ -883,7 +920,9 @@ def _indicatori(pdf, x, item):
             pdf.cell(80, 5.2, testo_pdf(testo), new_x="LMARGIN", new_y="NEXT")
 
 
-def _tabella_chiave_valore(pdf, x, larghezza, righe, altezza=6):
+def _tabella_chiave_valore(
+    pdf: FPDF, x: float, larghezza: float, righe: Sequence[tuple[str, str]], altezza: float = 6
+) -> None:
     pdf.set_font("Helvetica", size=9)
     pdf.set_text_color(*_rgb(INCHIOSTRO))
 
@@ -893,7 +932,13 @@ def _tabella_chiave_valore(pdf, x, larghezza, righe, altezza=6):
         pdf.cell(larghezza * 0.35, altezza, valore, border="B", align="R", new_x="LMARGIN", new_y="NEXT")
 
 
-def _tabella_rischi(pdf, x, larghezza, rischi, colori=colori_livello):
+def _tabella_rischi(
+    pdf: FPDF,
+    x: float,
+    larghezza: float,
+    rischi: Sequence[tuple[str, object]],
+    colori: Callable[[object], tuple[str, str] | None] = colori_livello,
+) -> None:
     pdf.set_font("Helvetica", size=9)
     calcola_colori = colori
 
@@ -902,11 +947,11 @@ def _tabella_rischi(pdf, x, larghezza, rischi, colori=colori_livello):
         pdf.set_text_color(*_rgb(INCHIOSTRO))
         pdf.cell(larghezza * 0.55, 7, testo_pdf(etichetta), border="B")
 
-        colori = calcola_colori(valore)
+        coppia = calcola_colori(valore)
         testo = testo_pdf(valore) if valore else "Non classificato"
 
-        if colori:
-            sfondo, inchiostro = colori
+        if coppia:
+            sfondo, inchiostro = coppia
             pdf.set_fill_color(*_rgb(sfondo))
             pdf.set_text_color(*_rgb(inchiostro))
             pdf.cell(larghezza * 0.45, 7, testo, border="B", align="C", fill=True,
@@ -919,7 +964,7 @@ def _tabella_rischi(pdf, x, larghezza, rischi, colori=colori_livello):
     pdf.set_text_color(*_rgb(INCHIOSTRO))
 
 
-def _radar(pdf, item, centro, raggio):
+def _radar(pdf: FPDF, item: Alimento, centro: tuple[float, float], raggio: float) -> None:
     """
     Radar dei 5 rischi: stessa geometria della scheda web (analisi.radar),
     riportata in millimetri.
@@ -928,10 +973,10 @@ def _radar(pdf, item, centro, raggio):
     scala = raggio / 110
     cx, cy = centro
 
-    def mm(x, y):
+    def mm(x: float, y: float) -> tuple[float, float]:
         return (cx + x * scala, cy + y * scala)
 
-    def punti(stringa):
+    def punti(stringa: str) -> list[tuple[float, float]]:
         return [mm(*map(float, coppia.split(","))) for coppia in stringa.split()]
 
     pdf.set_draw_color(*_rgb(GRIGLIA))

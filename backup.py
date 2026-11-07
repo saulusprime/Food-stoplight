@@ -7,11 +7,14 @@ coerente anche mentre l'app sta usando il database. I backup automatici
 utenti.db non viene mai incluso, perché contiene le credenziali.
 """
 
+from __future__ import annotations
+
 import os
 import re
 import sqlite3
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 # Backup conservati nella cartella: oltre, si eliminano i più vecchi
 BACKUP_CONSERVATI = 20
@@ -23,6 +26,7 @@ MOTIVI = {
     "import": "Prima di un import",
     "ripristino": "Prima di un ripristino",
     "usda": "Prima dei nutrienti USDA",
+    "migrazione": "Prima di una migrazione dello schema",
 }
 
 NOME_RE = re.compile(r"^alimenti_(\d{8}-\d{6})(?:-(\d+))?_([a-z]+)\.db$")
@@ -34,11 +38,11 @@ class ErroreBackup(Exception):
     """
 
 
-def _uri_sola_lettura(percorso):
+def _uri_sola_lettura(percorso: str) -> str:
     return Path(percorso).resolve().as_uri() + "?mode=ro"
 
 
-def istantanea(db_path):
+def istantanea(db_path: str) -> bytes:
     """
     Contenuto completo del database come bytes, per il download.
     """
@@ -53,7 +57,7 @@ def istantanea(db_path):
         sorgente.close()
 
 
-def crea(db_path, cartella, motivo, pota_vecchi=True):
+def crea(db_path: str, cartella: str, motivo: str, pota_vecchi: bool = True) -> str:
     """
     Salva una copia del database nella cartella dei backup e restituisce il nome del file.
     """
@@ -86,7 +90,7 @@ def crea(db_path, cartella, motivo, pota_vecchi=True):
     return nome
 
 
-def pota(cartella, conserva=BACKUP_CONSERVATI):
+def pota(cartella: str, conserva: int = BACKUP_CONSERVATI) -> None:
     """
     Elimina i backup più vecchi oltre il numero da conservare.
     """
@@ -100,12 +104,25 @@ def pota(cartella, conserva=BACKUP_CONSERVATI):
         os.remove(os.path.join(cartella, nome))
 
 
-def _ordine(nome):
-    marca, progressivo, _ = NOME_RE.match(nome).groups()
+def _parti(nome: str) -> tuple[str, str | None, str]:
+    """
+    (marca temporale, progressivo, motivo) di un nome di backup valido.
+    """
+    corrispondenza = NOME_RE.match(nome)
+
+    if corrispondenza is None:
+        raise ValueError(f"Nome di backup non valido: {nome}")
+
+    marca, progressivo, motivo = corrispondenza.groups()
+    return marca, progressivo, motivo
+
+
+def _ordine(nome: str) -> tuple[str, int]:
+    marca, progressivo, _ = _parti(nome)
     return marca, int(progressivo or 1)
 
 
-def percorso(cartella, nome):
+def percorso(cartella: str, nome: str) -> str | None:
     """
     Percorso di un backup esistente nella cartella, None se il nome non è valido.
     Il controllo sul nome impedisce di uscire dalla cartella (../).
@@ -117,7 +134,7 @@ def percorso(cartella, nome):
     return completo if os.path.isfile(completo) else None
 
 
-def elenco(cartella):
+def elenco(cartella: str) -> list[dict[str, Any]]:
     """
     Backup presenti, dal più recente: nome, data, motivo, dimensione, numero di alimenti.
     """
@@ -129,7 +146,7 @@ def elenco(cartella):
     for nome in sorted(
         (n for n in os.listdir(cartella) if NOME_RE.match(n)), key=_ordine, reverse=True
     ):
-        marca, _, motivo = NOME_RE.match(nome).groups()
+        marca, _, motivo = _parti(nome)
         completo = os.path.join(cartella, nome)
 
         try:
@@ -148,7 +165,7 @@ def elenco(cartella):
     return risultato
 
 
-def verifica(file_db):
+def verifica(file_db: str) -> int:
     """
     Controlla che il file sia un database di Food-stoplight integro
     e restituisce il numero di alimenti; altrimenti solleva ErroreBackup.
@@ -191,7 +208,7 @@ def verifica(file_db):
         conn.close()
 
 
-def ripristina(file_db, db_path):
+def ripristina(file_db: str, db_path: str) -> None:
     """
     Sostituisce il contenuto del database con quello del file (già verificato).
     """

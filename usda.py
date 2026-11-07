@@ -8,6 +8,11 @@ La chiave pubblica DEMO_KEY basta per un aggiornamento occasionale
 https://fdc.nal.usda.gov/api-key-signup
 """
 
+from __future__ import annotations
+
+import sqlite3
+from typing import Any
+
 import requests
 
 import nutrienti
@@ -30,7 +35,7 @@ class ErroreUsda(Exception):
     pass
 
 
-def scarica(api_key, pagine=1, dimensione=200, timeout=30):
+def scarica(api_key: str, pagine: int = 1, dimensione: int = 200, timeout: float = 30) -> list[dict[str, Any]]:
     """
     Alimenti dell'elenco USDA con i loro nutrienti (formato abridged).
     """
@@ -38,16 +43,13 @@ def scarica(api_key, pagine=1, dimensione=200, timeout=30):
 
     for pagina in range(1, pagine + 1):
         try:
-            risposta = requests.get(
-                URL_ELENCO,
-                params={
+            parametri: dict[str, Any] = {
                     "api_key": api_key,
                     "dataType": list(DATASET),
                     "pageSize": dimensione,
                     "pageNumber": pagina,
-                },
-                timeout=timeout,
-            )
+            }
+            risposta = requests.get(URL_ELENCO, params=parametri, timeout=timeout)
         except requests.RequestException as exc:
             raise ErroreUsda(f"USDA non raggiungibile: {exc}") from None
 
@@ -67,7 +69,7 @@ def scarica(api_key, pagine=1, dimensione=200, timeout=30):
     return alimenti
 
 
-def valori(alimento_usda):
+def valori(alimento_usda: dict[str, Any]) -> dict[str, float]:
     """
     {campo: valore} dei nutrienti presenti, convertiti nelle unità dei campi.
     I nutrienti assenti non compaiono: restano "non disponibili".
@@ -89,7 +91,7 @@ def valori(alimento_usda):
             continue
 
         unita_usda = UNITA_USDA.get(str(n.get("unitName") or "").upper())
-        fattore = CONVERSIONI.get((unita_usda, unita))
+        fattore = CONVERSIONI.get((unita_usda, unita)) if unita_usda else None
 
         if fattore is None:
             continue
@@ -99,13 +101,15 @@ def valori(alimento_usda):
     return risultato
 
 
-def pianifica(conn, alimenti_usda, sovrascrivi=False):
+def pianifica(
+    conn: sqlite3.Connection, alimenti_usda: list[dict[str, Any]], sovrascrivi: bool = False
+) -> list[dict[str, Any]]:
     """
     Lista di aggiornamenti {id, alimento, fdc_id, valori} per le righe del database
     il cui nome coincide con una descrizione USDA. Senza sovrascrivi si
     compilano solo i campi vuoti.
     """
-    per_nome = {}
+    per_nome: dict[str, dict[str, Any]] = {}
 
     for a in alimenti_usda:
         per_nome.setdefault((a.get("description") or "").strip().casefold(), a)
@@ -121,7 +125,7 @@ def pianifica(conn, alimenti_usda, sovrascrivi=False):
         if not trovato:
             continue
 
-        nuovi = valori(trovato)
+        nuovi: dict[str, Any] = dict(valori(trovato))
         nuovi.update({
             "fdc_id": trovato.get("fdcId"),
             "fonte_nutrienti": f"USDA FoodData Central · {trovato.get('dataType', '')}".strip(" ·"),
@@ -132,12 +136,14 @@ def pianifica(conn, alimenti_usda, sovrascrivi=False):
             nuovi = {campo: valore for campo, valore in nuovi.items() if riga[campo] is None}
 
         if nuovi:
-            piano.append({"id": riga["id"], "alimento": riga["alimento"], "fdc_id": trovato.get("fdcId"), "valori": nuovi})
+            piano.append({
+                "id": riga["id"], "alimento": riga["alimento"], "fdc_id": trovato.get("fdcId"), "valori": nuovi,
+            })
 
     return piano
 
 
-def applica(conn, piano, adesso):
+def applica(conn: sqlite3.Connection, piano: list[dict[str, Any]], adesso: str) -> None:
     for voce in piano:
         campi = list(voce["valori"])
         conn.execute(

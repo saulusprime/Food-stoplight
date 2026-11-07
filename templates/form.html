@@ -101,11 +101,11 @@
     <h2 class="h5 mb-3">Energia</h2>
 
     <div class="row g-3 mb-4">
-        {{ campo('kcal', 'Kcal (per 100 g)', tipo='numero') }}
+        {{ campo('kcal', 'Kcal (per 100 g)', tipo='numero', aiuto='Vuoto: stimate dai macronutrienti.') }}
         {{ campo('tef_percent', 'TEF (%)', tipo='numero',
-                 aiuto='Vuoto: calcolato da TEF (Kcal) e Kcal.') }}
+                 aiuto='Vuoto: da TEF (Kcal) e Kcal, oppure stimato dai macronutrienti.') }}
         {{ campo('tef_kcal', 'TEF (Kcal)', tipo='numero',
-                 aiuto='Vuoto: calcolato da Kcal e TEF (%).') }}
+                 aiuto='Vuoto: da Kcal e TEF (%), oppure stimato dai macronutrienti.') }}
         {{ campo('kcal_nette', 'Kcal nette', tipo='numero',
                  aiuto='Vuoto: Kcal − TEF (Kcal).') }}
     </div>
@@ -115,8 +115,12 @@
     <div class="row g-3 mb-4">
         {{ campo('fruttosio', 'Fruttosio (g/100 g)', col='col-md-4', tipo='numero') }}
         {{ campo('fibre', 'Fibre (g/100 g)', col='col-md-4', tipo='numero') }}
-        {{ campo('rapporto', 'Rapporto F/Fibre', col='col-md-4', tipo='numero',
-                 aiuto='Vuoto: Fruttosio ÷ Fibre.') }}
+        <div class="col-md-4">
+            <label for="rapporto" class="form-label">Rapporto F/Fibre</label>
+            <input type="text" class="form-control" id="rapporto" value="{{ item.rapporto|numero(3) if item and item.rapporto is defined and item.rapporto is not none else '' }}"
+                   readonly aria-describedby="rapporto-aiuto">
+            <small id="rapporto-aiuto" class="form-text text-muted">Calcolato al salvataggio: fruttosio ÷ fibre.</small>
+        </div>
     </div>
 
     <h2 class="h5 mb-1">Macronutrienti</h2>
@@ -164,6 +168,11 @@
         {{ campo('fonte_nutrienti', 'Fonte', col='col-md-4') }}
         {{ campo('url_fonte', 'URL della fonte', col='col-md-5', aiuto='Indirizzo http:// o https://.') }}
         {{ campo('fdc_id', 'FDC ID (USDA)', col='col-md-3', tipo='numero') }}
+
+        <div class="col-12">
+            <label for="note" class="form-label">Note</label>
+            <textarea class="form-control" id="note" name="note" rows="2" maxlength="2000">{{ item.note if item and item.note else '' }}</textarea>
+        </div>
     </div>
 
     <h2 class="h5 mb-3">Profilo di rischio</h2>

@@ -29,15 +29,8 @@ Le attività completate sono in [ASIS.md](ASIS.md).
 
 ## 🏗️ Architettura e qualità del codice
 
-- [ ] **API REST** (JSON) per l'accesso programmatico ai dati (`/api/alimenti`, `/api/alimenti/<id>`)
-- [ ] Unificare lo schema del database tra `app.py` e `update.py` (oggi differiscono: rischi diabete/colesterolo vs macronutrienti/fonti)
-- [ ] Estrarre la logica condivisa (to_float, mapping CSV, calcoli TEF) in un modulo comune riutilizzato da `app.py`, `update.py` e `autogen.py`
-- [ ] Migrazioni database strutturate (es. Alembic o script versionati)
-- [ ] **Test automatici** (pytest): utilities, calcoli TEF, import CSV, route Flask
-- [ ] Type hints completi e controllo mypy in CI
-- [ ] GitHub Actions: lint + test a ogni push
-- [ ] Dockerfile e docker-compose per il deploy
-- [ ] Deploy su piattaforma cloud (Render / Railway / PythonAnywhere)
+- [ ] Primo deploy su Render dal proprio account: configurazione pronta in `render.yaml` (vedi README, *Render*)
+- [ ] Dividere `app.py` in blueprint Flask (pagine, import/export, backup, pasto e diario)
 
 ## 📱 Esperienza utente
 

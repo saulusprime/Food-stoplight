@@ -35,7 +35,7 @@ Commit `4d114f1` — 7 novembre 2026
 
 ## 🍽️ Funzionalità nutrizionali
 
-7 novembre 2026 — macro e micronutrienti reali per i 199 alimenti USDA; indice glicemico, FODMAP e NOVA hanno i campi ma ancora nessun valore (vedi TODO, Integrazione dati)
+Commit `01e743e` — 7 novembre 2026 — macro e micronutrienti reali per i 199 alimenti USDA; indice glicemico, FODMAP e NOVA hanno i campi ma ancora nessun valore (vedi TODO, Integrazione dati)
 
 - [x] Aggiungere i **macronutrienti completi** (proteine, carboidrati, grassi, grassi saturi, zuccheri, colesterolo) anche nella web app — già supportati da `update.py`
 - [x] Micronutrienti: vitamine e sali minerali principali
@@ -46,3 +46,17 @@ Commit `4d114f1` — 7 novembre 2026
 - [x] **Composizione pasti**: sommare più alimenti e vedere totali e profilo di rischio del pasto
 - [x] Diario alimentare giornaliero con totali di Kcal nette e TEF
 - [x] Suggerimenti di alimenti alternativi con profilo di rischio migliore nella stessa categoria
+
+## 🏗️ Architettura e qualità del codice
+
+7 novembre 2026 — deploy preparato (Docker, `render.yaml`), il primo deploy su Render resta da fare
+
+- [x] **API REST** (JSON) per l'accesso programmatico ai dati (`/api/alimenti`, `/api/alimenti/<id>`)
+- [x] Unificare lo schema del database tra `app.py` e `update.py` (oggi differiscono: rischi diabete/colesterolo vs macronutrienti/fonti)
+- [x] Estrarre la logica condivisa (to_float, mapping CSV, calcoli TEF) in un modulo comune riutilizzato da `app.py`, `update.py` e `autogen.py`
+- [x] Migrazioni database strutturate (es. Alembic o script versionati)
+- [x] **Test automatici** (pytest): utilities, calcoli TEF, import CSV, route Flask
+- [x] Type hints completi e controllo mypy in CI
+- [x] GitHub Actions: lint + test a ogni push
+- [x] Dockerfile e docker-compose per il deploy
+- [x] Deploy su piattaforma cloud: configurazione per Render (`render.yaml`, Dockerfile, docker-compose)

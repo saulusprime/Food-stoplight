@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import io
 import json
 import os
@@ -6,22 +8,27 @@ import secrets
 import sqlite3
 import time
 import unicodedata
+from collections.abc import Callable, Mapping
 from datetime import date, datetime, timedelta
 from functools import wraps
+from typing import Any, TypeVar, cast
 from urllib.parse import urlsplit
 
 import click
 from flask import (
     Flask,
+    Response,
+    abort,
+    flash,
+    jsonify,
+    redirect,
     render_template,
     request,
-    redirect,
-    url_for,
-    flash,
-    abort,
     send_file,
-    session
+    session,
+    url_for,
 )
+from flask.typing import ResponseReturnValue
 from flask_login import (
     AnonymousUserMixin,
     LoginManager,
@@ -29,18 +36,28 @@ from flask_login import (
     current_user,
     login_required,
     login_user,
-    logout_user
+    logout_user,
 )
 from flask_wtf.csrf import CSRFError, CSRFProtect
+from werkzeug.exceptions import HTTPException
+from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import analisi
+import api
+import archivio
 import backup
+import calcoli
+import database
 import esportazione
 import importazione
 import nutrienti
 import usda
+from archivio import Alimento
 from config import carica_config
+
+# Funzione di vista di Flask (per il decoratore solo_admin)
+Vista = TypeVar("Vista", bound=Callable[..., Any])
 
 app = Flask(__name__)
 app.config.update(carica_config())
@@ -55,7 +72,7 @@ app.jinja_env.globals.update(
 
 
 @app.template_filter("percentuale")
-def filtro_percentuale(valore, decimali=1):
+def filtro_percentuale(valore: float, decimali: int = 1) -> str:
     """
     59.43 -> "59,4%" (virgola decimale italiana).
     """
@@ -68,7 +85,7 @@ MESI = ("gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio",
 
 
 @app.template_filter("data_estesa")
-def filtro_data_estesa(giorno):
+def filtro_data_estesa(giorno: date) -> str:
     """
     date(2026, 11, 7) -> "sabato 7 novembre 2026".
     """
@@ -76,7 +93,7 @@ def filtro_data_estesa(giorno):
 
 
 @app.template_filter("data_breve")
-def filtro_data_breve(giorno):
+def filtro_data_breve(giorno: date) -> str:
     """
     date(2026, 11, 7) -> "sab 7/11".
     """
@@ -84,7 +101,7 @@ def filtro_data_breve(giorno):
 
 
 @app.template_filter("numero")
-def filtro_numero(valore, decimali=None):
+def filtro_numero(valore: float | None, decimali: int | None = None) -> str:
     """
     Numero con virgola decimale; senza decimali indicati usa la forma compatta (%g).
     """
@@ -98,6 +115,11 @@ DB_PATH = app.config["DATABASE_PATH"]
 UTENTI_DB_PATH = app.config["UTENTI_DB_PATH"]
 DIARIO_DB_PATH = app.config["DIARIO_DB_PATH"]
 
+# Dietro un proxy (Render, nginx...): host e schema dalle intestazioni X-Forwarded-*
+if app.config["PROXY_ATTENDIBILI"]:
+    n_proxy = app.config["PROXY_ATTENDIBILI"]
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=n_proxy, x_proto=n_proxy, x_host=n_proxy)  # type: ignore[method-assign]
+
 # Protezione CSRF su tutti i form POST (i template usano csrf_token())
 csrf = CSRFProtect(app)
 
@@ -106,196 +128,59 @@ login_manager.login_view = "login"
 login_manager.login_message = "Accedi per continuare."
 login_manager.login_message_category = "warning"
 
+# JSON dell'API leggibile: accenti così come sono, campi nell'ordine di definizione
+app.json.ensure_ascii = False  # type: ignore[attr-defined]
+app.json.sort_keys = False  # type: ignore[attr-defined]
+
 
 # ---------------------------------------------------------------
 # DATABASE
 # ---------------------------------------------------------------
 
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    # punteggio(r1..r5): punteggio sintetico 0-100, usabile in SELECT e ORDER BY
-    conn.create_function(
-        "punteggio", len(analisi.CAMPI_RISCHIO), analisi.calcola_punteggio, deterministic=True
-    )
-    return conn
+def get_db() -> sqlite3.Connection:
+    return database.connetti_alimenti(DB_PATH)
 
 
-# Colonne lette da ogni query sugli alimenti, punteggio calcolato compreso
-SELECT_ALIMENTI = (
-    "SELECT *, punteggio(" + ", ".join(analisi.CAMPI_RISCHIO) + ") AS punteggio FROM alimenti"
-)
-
-
-def get_db_utenti():
+def get_db_utenti() -> sqlite3.Connection:
     """
     Gli utenti stanno in un database separato (utenti.db, escluso da git):
     alimenti.db è versionato e non deve contenere credenziali.
     """
-    conn = sqlite3.connect(UTENTI_DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    return database.connetti(UTENTI_DB_PATH)
 
 
-def get_db_diario():
+def get_db_diario() -> sqlite3.Connection:
     """
     Il diario alimentare è personale: database separato (diario.db, escluso da git).
     """
-    conn = sqlite3.connect(DIARIO_DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    return database.connetti(DIARIO_DB_PATH)
 
 
-def init_db():
+def init_db(backup_prima: bool = True) -> list[str]:
     """
-    Crea le tabelle se non esistono e aggiunge eventuali colonne mancanti.
+    Applica le migrazioni mancanti ai tre database e restituisce quelle eseguite.
+    Prima di migrare un alimenti.db esistente ne salva un backup.
     """
-    init_db_utenti()
-    init_db_diario()
+    def copia_di_sicurezza() -> None:
+        if backup_prima:
+            backup.crea(DB_PATH, app.config["BACKUP_DIR"], "migrazione")
 
-    conn = get_db()
-
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS alimenti (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            alimento TEXT NOT NULL,
-            categoria TEXT,
-
-            kcal REAL DEFAULT 0,
-            tef_kcal REAL DEFAULT 0,
-            tef_percent REAL DEFAULT 0,
-            kcal_nette REAL DEFAULT 0,
-
-            fruttosio REAL DEFAULT 0,
-            fibre REAL DEFAULT 0,
-            rapporto REAL DEFAULT 0,
-
-            rischio_diabete TEXT,
-            rischio_colesterolo TEXT,
-            rischio_malassorbimento TEXT,
-            rischio_metabolico TEXT,
-            rischio_tumorale TEXT,
-
-            aggiornato_il TEXT
-        )
-    """)
-
-    existing = {
-        row[1]
-        for row in conn.execute("PRAGMA table_info(alimenti)").fetchall()
-    }
-
-    required_columns = {
-        "kcal": "REAL DEFAULT 0",
-        "tef_kcal": "REAL DEFAULT 0",
-        "tef_percent": "REAL DEFAULT 0",
-        "kcal_nette": "REAL DEFAULT 0",
-        "fruttosio": "REAL DEFAULT 0",
-        "fibre": "REAL DEFAULT 0",
-        "rapporto": "REAL DEFAULT 0",
-        "rischio_diabete": "TEXT",
-        "rischio_colesterolo": "TEXT",
-        "rischio_malassorbimento": "TEXT",
-        "rischio_metabolico": "TEXT",
-        "rischio_tumorale": "TEXT",
-        "aggiornato_il": "TEXT",
-        # Macro e micronutrienti, indice glicemico, NOVA, FODMAP, fonte (NULL = non disponibile)
-        **nutrienti.COLONNE_SQL,
-    }
-
-    for column_name, column_type in required_columns.items():
-        if column_name not in existing:
-            conn.execute(
-                f"ALTER TABLE alimenti ADD COLUMN {column_name} {column_type}"
-            )
-
-    conn.commit()
-    conn.close()
+    eseguite = database.migra(UTENTI_DB_PATH, "utenti")
+    eseguite += database.migra(DIARIO_DB_PATH, "diario")
+    eseguite += database.migra(DB_PATH, "alimenti", prima_di_migrare=copia_di_sicurezza)
+    return eseguite
 
 
-def init_db_diario():
-    conn = get_db_diario()
-
-    # valori: copia in JSON dei valori per 100 g al momento dell'inserimento,
-    # così il diario resta valido anche se l'alimento cambia o viene eliminato
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS diario (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            utente_id INTEGER NOT NULL,
-            data TEXT NOT NULL,
-            pasto TEXT NOT NULL
-                CHECK (pasto IN ('colazione', 'pranzo', 'cena', 'spuntino')),
-            alimento_id INTEGER,
-            alimento TEXT NOT NULL,
-            grammi REAL NOT NULL CHECK (grammi > 0),
-            valori TEXT NOT NULL,
-            creato_il TEXT
-        )
-    """)
-    conn.execute("CREATE INDEX IF NOT EXISTS diario_utente_data ON diario (utente_id, data)")
-    conn.commit()
-    conn.close()
+# Query sugli alimenti (in archivio.py, condivise con l'API)
+get_alimento = archivio.get_alimento
+get_alimenti = archivio.get_alimenti
+get_stats = archivio.get_stats
+SORT_EXPRESSIONS = archivio.SORT_EXPRESSIONS
+ETICHETTE_FILTRI = archivio.ETICHETTE_FILTRI
 
 
-def init_db_utenti():
-    conn = get_db_utenti()
-
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS utenti (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL UNIQUE COLLATE NOCASE,
-            password_hash TEXT NOT NULL,
-            ruolo TEXT NOT NULL DEFAULT 'visitatore'
-                CHECK (ruolo IN ('admin', 'visitatore')),
-            creato_il TEXT
-        )
-    """)
-
-    conn.commit()
-    conn.close()
-
-
-# ---------------------------------------------------------------
-# UTILITIES
-# ---------------------------------------------------------------
-
-def to_float(value, default=0.0):
-    """
-    Converte un valore in float.
-    Gestisce anche:
-    - virgola decimale: "5,9" -> 5.9
-    - Inf
-    - NA / ND
-    """
-    if value is None:
-        return default
-
-    text = str(value).strip().replace(" ", "")
-
-    if not text:
-        return default
-
-    low = text.lower()
-
-    if low in ("inf", "infinity", "∞"):
-        return 999999.0
-
-    if low in ("na", "n/a", "nd", "-"):
-        return default
-
-    text = text.replace(",", ".")
-
-    match = re.search(r"-?\d+(?:\.\d+)?", text)
-    if match:
-        try:
-            return float(match.group())
-        except ValueError:
-            pass
-
-    try:
-        return float(text)
-    except ValueError:
-        return default
+def leggi_filtri() -> tuple[archivio.Filtri, str, str]:
+    return archivio.leggi_filtri(request.args)
 
 
 # ---------------------------------------------------------------
@@ -304,71 +189,50 @@ def to_float(value, default=0.0):
 
 CAMPI_TESTO_FORM = ("alimento", "categoria", *analisi.CAMPI_RISCHIO)
 
+# Campi energia e fruttosio/fibre: vuoti valgono 0 (o vengono calcolati)
+CAMPI_ENERGIA_FORM = (
+    ("kcal", "Kcal", None),
+    ("tef_percent", "TEF (%)", 100.0),
+    ("tef_kcal", "TEF (Kcal)", None),
+    ("kcal_nette", "Kcal nette", None),
+    ("fruttosio", "Fruttosio", None),
+    ("fibre", "Fibre", None),
+)
 
-def parse_form():
+NOTE_MAX = 2000
+
+
+def parse_form() -> tuple[dict[str, Any], list[str]]:
     """
     Legge e sistema i dati inviati dal form CRUD: restituisce (valori, errori).
-    Calcola automaticamente alcuni campi se lasciati vuoti:
-    - TEF (Kcal) da Kcal e TEF (%)
-    - TEF (%) da TEF (Kcal) e Kcal
-    - Kcal Nette = Kcal - TEF (Kcal)
-    - Rapporto F/F = Fruttosio / Fibre
+    I campi derivati lasciati vuoti si calcolano come nell'import (calcoli.completa_energia):
+    Kcal e TEF dai macronutrienti, TEF (Kcal) <-> TEF (%), Kcal nette, rapporto F/F.
     I dati nutrizionali lasciati vuoti restano "non disponibili" (NULL).
     """
     form = request.form
-    errori = []
-    valori = {campo: (form.get(campo) or "").strip() for campo in CAMPI_TESTO_FORM}
+    errori: list[str] = []
+    valori: dict[str, Any] = {campo: (form.get(campo) or "").strip() for campo in CAMPI_TESTO_FORM}
+    forniti: set[str] = set()
 
-    kcal = to_float(form.get("kcal"))
-
-    tef_percent_raw = (form.get("tef_percent") or "").strip()
-    tef_kcal_raw = (form.get("tef_kcal") or "").strip()
-    kcal_nette_raw = (form.get("kcal_nette") or "").strip()
-
-    tef_percent = to_float(tef_percent_raw) if tef_percent_raw else 0.0
-    tef_kcal = to_float(tef_kcal_raw) if tef_kcal_raw else 0.0
-
-    if tef_kcal_raw == "" and tef_percent:
-        tef_kcal = round(kcal * tef_percent / 100, 2) if kcal else 0.0
-
-    if tef_percent_raw == "" and tef_kcal and kcal:
-        tef_percent = round(tef_kcal / kcal * 100, 2)
-
-    kcal_nette = to_float(kcal_nette_raw) if kcal_nette_raw else round(kcal - tef_kcal, 2)
-
-    fruttosio = to_float(form.get("fruttosio"))
-    fibre = to_float(form.get("fibre"))
-
-    rapporto_raw = (form.get("rapporto") or "").strip()
-    if rapporto_raw == "":
-        rapporto = round(fruttosio / fibre, 3) if fibre else 0.0
-    else:
-        rapporto = to_float(rapporto_raw)
-
-    valori.update(
-        kcal=kcal,
-        tef_kcal=tef_kcal,
-        tef_percent=tef_percent,
-        kcal_nette=kcal_nette,
-        fruttosio=fruttosio,
-        fibre=fibre,
-        rapporto=rapporto,
-    )
-
-    def numero(campo, etichetta, minimo=0.0, massimo=None):
+    def numero(campo: str, etichetta: str, minimo: float = 0.0, massimo: float | None = None) -> float | str | None:
         testo = (form.get(campo) or "").strip()
 
         if not testo:
             return None
 
-        valore, valido = importazione.leggi_numero(testo)
+        valore, valido = calcoli.leggi_numero(testo)
 
         if not valido or valore is None or valore < minimo or (massimo is not None and valore > massimo):
             intervallo = f" tra {minimo:g} e {massimo:g}" if massimo is not None else " maggiore o uguale a 0"
             errori.append(f"{etichetta}: «{testo}» non è valido, serve un numero{intervallo}.")
             return testo
 
+        forniti.add(campo)
         return valore
+
+    for campo, etichetta, massimo in CAMPI_ENERGIA_FORM:
+        valore = numero(campo, etichetta, 0, massimo)
+        valori[campo] = 0.0 if valore is None else valore
 
     for campo, etichetta, *_ in nutrienti.NUTRIENTI:
         valori[campo] = numero(campo, etichetta)
@@ -403,338 +267,33 @@ def parse_form():
     if fdc and not fdc.isdigit():
         errori.append("FDC ID: serve un numero intero.")
 
+    note = (form.get("note") or "").strip()
+    valori["note"] = note or None
+
+    if len(note) > NOTE_MAX:
+        errori.append(f"Note: al massimo {NOTE_MAX} caratteri.")
+
+    if not errori:
+        calcoli.completa_energia(valori, forniti, nuovo=True)
+
     return valori, errori
 
 
-def salva_alimento(valori, alimento_id=None):
-    """
-    Inserisce (alimento_id None) o aggiorna un alimento con tutti i campi del form.
-    """
-    campi = (*importazione.CAMPI, "aggiornato_il")
-    dati = [valori.get(campo) for campo in importazione.CAMPI]
-    dati.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
-    conn = get_db()
-
-    try:
-        if alimento_id is None:
-            cursore = conn.execute(
-                f"INSERT INTO alimenti ({', '.join(campi)}) VALUES ({', '.join('?' for _ in campi)})",
-                dati,
-            )
-            alimento_id = cursore.lastrowid
-        else:
-            conn.execute(
-                f"UPDATE alimenti SET {', '.join(f'{c} = ?' for c in campi)} WHERE id = ?",
-                dati + [alimento_id],
-            )
-
-        conn.commit()
-    finally:
-        conn.close()
-
-    return alimento_id
+def salva_alimento(valori: dict[str, Any], alimento_id: int | None = None) -> int:
+    return archivio.salva_alimento(valori, alimento_id)
 
 
-def get_alimento(alimento_id):
-    """
-    Restituisce un singolo alimento oppure None.
-    """
-    conn = get_db()
-    row = conn.execute(
-        f"{SELECT_ALIMENTI} WHERE id = ?",
-        (alimento_id,)
-    ).fetchone()
-    conn.close()
-
-    if row is None:
-        return None
-
-    return dict(row)
+def get_filter_options() -> dict[str, list[archivio.Opzione]]:
+    return archivio.get_filter_options()
 
 
-# ---------------------------------------------------------------
-# QUERY / FILTRI / STATISTICHE
-# ---------------------------------------------------------------
-
-SORT_EXPRESSIONS = {
-    "alimento": "LOWER(alimento)",
-    "categoria": "LOWER(COALESCE(categoria, ''))",
-    "kcal": "COALESCE(kcal, 0)",
-    "tef_kcal": "COALESCE(tef_kcal, 0)",
-    "tef_percent": "COALESCE(tef_percent, 0)",
-    "kcal_nette": "COALESCE(kcal_nette, 0)",
-    "fruttosio": "COALESCE(fruttosio, 0)",
-    "fibre": "COALESCE(fibre, 0)",
-    "rapporto": "COALESCE(rapporto, 0)",
-    "rischio_diabete": "LOWER(COALESCE(rischio_diabete, ''))",
-    "rischio_colesterolo": "LOWER(COALESCE(rischio_colesterolo, ''))",
-    "rischio_malassorbimento": "LOWER(COALESCE(rischio_malassorbimento, ''))",
-    "rischio_metabolico": "LOWER(COALESCE(rischio_metabolico, ''))",
-    "rischio_tumorale": "LOWER(COALESCE(rischio_tumorale, ''))",
-    "punteggio": "COALESCE(punteggio(" + ", ".join(analisi.CAMPI_RISCHIO) + "), -1)",
-}
-
-# Parametri di filtro della home (e degli export), con le etichette per i file esportati
-ETICHETTE_FILTRI = {
-    "categoria": "Categoria",
-    **{campo: f"Rischio {etichetta.lower()}" for campo, etichetta in analisi.RISCHI},
-}
-
-
-def leggi_filtri():
-    """
-    (filtri, sort, direction) dalla query string, già validati.
-    """
-    filtri = {
-        campo: request.args.get(campo, "").strip()
-        for campo in ETICHETTE_FILTRI
-    }
-
-    sort = request.args.get("sort", "alimento").strip()
-    if sort not in SORT_EXPRESSIONS:
-        sort = "alimento"
-
-    direction = request.args.get("dir", "asc").strip().lower()
-    if direction not in ("asc", "desc"):
-        direction = "asc"
-
-    return filtri, sort, direction
-
-
-def get_alimenti(
-    categoria="",
-    rischio_diabete="",
-    rischio_colesterolo="",
-    rischio_malassorbimento="",
-    rischio_metabolico="",
-    rischio_tumorale="",
-    sort="alimento",
-    direction="asc"
-):
-    """
-    Restituisce gli alimenti filtrati e ordinati.
-    """
-    sort_expr = SORT_EXPRESSIONS.get(sort, SORT_EXPRESSIONS["alimento"])
-    dir_sql = "DESC" if direction.lower() == "desc" else "ASC"
-
-    clauses = []
-    params = []
-
-    if categoria:
-        clauses.append("LOWER(COALESCE(categoria, '')) = LOWER(?)")
-        params.append(categoria)
-
-    if rischio_diabete:
-        clauses.append("LOWER(COALESCE(rischio_diabete, '')) = LOWER(?)")
-        params.append(rischio_diabete)
-
-    if rischio_colesterolo:
-        clauses.append("LOWER(COALESCE(rischio_colesterolo, '')) = LOWER(?)")
-        params.append(rischio_colesterolo)
-
-    if rischio_malassorbimento:
-        clauses.append("LOWER(COALESCE(rischio_malassorbimento, '')) = LOWER(?)")
-        params.append(rischio_malassorbimento)
-
-    if rischio_metabolico:
-        clauses.append("LOWER(COALESCE(rischio_metabolico, '')) = LOWER(?)")
-        params.append(rischio_metabolico)
-
-    if rischio_tumorale:
-        clauses.append("LOWER(COALESCE(rischio_tumorale, '')) = LOWER(?)")
-        params.append(rischio_tumorale)
-
-    sql = SELECT_ALIMENTI
-
-    if clauses:
-        sql += " WHERE " + " AND ".join(clauses)
-
-    sql += f" ORDER BY {sort_expr} {dir_sql}, LOWER(alimento) ASC"
-
-    conn = get_db()
-    rows = conn.execute(sql, params).fetchall()
-    conn.close()
-
-    return [dict(row) for row in rows]
-
-
-def get_stats():
-    """
-    Restituisce:
-    - totale alimenti
-    - alimenti con dati TEF
-    """
-    conn = get_db()
-
-    total = conn.execute("SELECT COUNT(*) AS n FROM alimenti").fetchone()["n"]
-
-    con_tef = conn.execute("""
-        SELECT COUNT(*) AS n
-        FROM alimenti
-        WHERE COALESCE(tef_kcal, 0) > 0
-           OR COALESCE(tef_percent, 0) > 0
-    """).fetchone()["n"]
-
-    conn.close()
-
-    return total, con_tef
-
-
-def make_options(default_labels, db_values):
-    """
-    Crea una lista di opzioni per i campi select.
-    default_labels è una lista di tuple: (valore, etichetta)
-    """
-    options = []
-    seen = set()
-
-    for value, label in default_labels:
-        options.append({
-            "value": value,
-            "label": label
-        })
-        seen.add(value.lower())
-
-    for value in db_values:
-        if value is None:
-            continue
-
-        value = str(value).strip()
-
-        if value and value.lower() not in seen:
-            options.append({
-                "value": value,
-                "label": value
-            })
-            seen.add(value.lower())
-
-    return options
-
-
-def get_filter_options():
-    """
-    Recupera categorie e rischi disponibili dal database.
-    Aggiunge comunque i valori standard previsti dal template.
-    """
-    conn = get_db()
-
-    categories = [
-        row["categoria"]
-        for row in conn.execute("""
-            SELECT DISTINCT categoria
-            FROM alimenti
-            WHERE categoria IS NOT NULL
-              AND TRIM(categoria) != ''
-            ORDER BY categoria
-        """).fetchall()
-    ]
-
-    diabete_values = [
-        row["rischio_diabete"]
-        for row in conn.execute("""
-            SELECT DISTINCT rischio_diabete
-            FROM alimenti
-            WHERE rischio_diabete IS NOT NULL
-              AND TRIM(rischio_diabete) != ''
-            ORDER BY rischio_diabete
-        """).fetchall()
-    ]
-
-    colesterolo_values = [
-        row["rischio_colesterolo"]
-        for row in conn.execute("""
-            SELECT DISTINCT rischio_colesterolo
-            FROM alimenti
-            WHERE rischio_colesterolo IS NOT NULL
-              AND TRIM(rischio_colesterolo) != ''
-            ORDER BY rischio_colesterolo
-        """).fetchall()
-    ]
-
-    malassorbimento_values = [
-        row["rischio_malassorbimento"]
-        for row in conn.execute("""
-            SELECT DISTINCT rischio_malassorbimento
-            FROM alimenti
-            WHERE rischio_malassorbimento IS NOT NULL
-              AND TRIM(rischio_malassorbimento) != ''
-            ORDER BY rischio_malassorbimento
-        """).fetchall()
-    ]
-
-    metabolic_values = [
-        row["rischio_metabolico"]
-        for row in conn.execute("""
-            SELECT DISTINCT rischio_metabolico
-            FROM alimenti
-            WHERE rischio_metabolico IS NOT NULL
-              AND TRIM(rischio_metabolico) != ''
-            ORDER BY rischio_metabolico
-        """).fetchall()
-    ]
-
-    tumorale_values = [
-        row["rischio_tumorale"]
-        for row in conn.execute("""
-            SELECT DISTINCT rischio_tumorale
-            FROM alimenti
-            WHERE rischio_tumorale IS NOT NULL
-              AND TRIM(rischio_tumorale) != ''
-            ORDER BY rischio_tumorale
-        """).fetchall()
-    ]
-
-    conn.close()
-
-    category_options = [
-        {"value": c, "label": c}
-        for c in categories
-    ]
-
-    # Scala a 4 livelli (analisi.LIVELLI), più eventuali altri valori presenti nel DB
-    livelli_standard = [
-        (liv["etichetta"], f"{liv['emoji']} {liv['etichetta']}")
-        for liv in analisi.LIVELLI
-    ]
-
-    diabete_options = make_options(livelli_standard, diabete_values)
-    colesterolo_options = make_options(livelli_standard, colesterolo_values)
-    malassorbimento_options = make_options(livelli_standard, malassorbimento_values)
-    metabolic_options = make_options(livelli_standard, metabolic_values)
-    tumorale_options = make_options(livelli_standard, tumorale_values)
-
-    return (
-        category_options,
-        diabete_options,
-        colesterolo_options,
-        malassorbimento_options,
-        metabolic_options,
-        tumorale_options
-    )
-
-
-def get_form_options():
+def get_form_options() -> dict[str, Any]:
     """
     Suggerimenti per i campi testuali del form nuovo/modifica
-    (categorie e livelli di rischio), indicizzati per nome del campo.
+    (categorie e livelli di rischio) e opzioni dei menu NOVA e FODMAP.
     """
-    (
-        category_options,
-        diabete_options,
-        colesterolo_options,
-        malassorbimento_options,
-        metabolic_options,
-        tumorale_options
-    ) = get_filter_options()
-
     return {
-        "categoria": category_options,
-        "rischio_diabete": diabete_options,
-        "rischio_colesterolo": colesterolo_options,
-        "rischio_malassorbimento": malassorbimento_options,
-        "rischio_metabolico": metabolic_options,
-        "rischio_tumorale": tumorale_options,
+        **get_filter_options(),
         "nova": [
             (gruppo, f"{gruppo} – {info['etichetta']}")
             for gruppo, info in nutrienti.NOVA.items()
@@ -757,13 +316,13 @@ HASH_FITTIZIO = generate_password_hash(secrets.token_hex(16))
 
 
 class Utente(UserMixin):
-    def __init__(self, row):
+    def __init__(self, row: sqlite3.Row) -> None:
         self.id = row["id"]
         self.username = row["username"]
         self.ruolo = row["ruolo"]
 
     @property
-    def is_admin(self):
+    def is_admin(self) -> bool:
         return self.ruolo == "admin"
 
 
@@ -777,7 +336,7 @@ login_manager.anonymous_user = Anonimo
 
 
 @login_manager.user_loader
-def carica_utente(user_id):
+def carica_utente(user_id: str) -> Utente | None:
     conn = get_db_utenti()
     row = conn.execute(
         "SELECT id, username, ruolo FROM utenti WHERE id = ?",
@@ -788,13 +347,13 @@ def carica_utente(user_id):
     return Utente(row) if row else None
 
 
-def solo_admin(view):
+def solo_admin(view: Vista) -> Vista:
     """
     Riserva una route agli amministratori:
     anonimo -> pagina di login, visitatore -> 403.
     """
     @wraps(view)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> ResponseReturnValue:
         if not current_user.is_authenticated:
             return login_manager.unauthorized()
 
@@ -803,24 +362,27 @@ def solo_admin(view):
 
         return view(*args, **kwargs)
 
-    return wrapper
+    return cast(Vista, wrapper)
 
 
 @app.before_request
-def controlla_accesso():
+def controlla_accesso() -> ResponseReturnValue | None:
     """
     Con ACCESSO_PUBBLICO=false serve il login anche per consultare.
     """
     if app.config["ACCESSO_PUBBLICO"] or current_user.is_authenticated:
         return None
 
-    if request.endpoint in ("login", "static"):
+    if request.endpoint in ("login", "static", "salute"):
         return None
+
+    if request.path.startswith("/api"):
+        return jsonify({"errore": "Autenticazione richiesta.", "stato": 401}), 401
 
     return login_manager.unauthorized()
 
 
-def url_sicuro(target):
+def url_sicuro(target: str | None) -> str | None:
     """
     Accetta solo percorsi interni all'applicazione (evita open redirect).
     """
@@ -837,7 +399,7 @@ def url_sicuro(target):
     return target
 
 
-def pagina_precedente():
+def pagina_precedente() -> str | None:
     """
     Percorso della pagina di provenienza, solo se è sullo stesso host.
     """
@@ -850,7 +412,7 @@ def pagina_precedente():
 
 
 @app.route("/login", methods=["GET", "POST"])
-def login():
+def login() -> ResponseReturnValue:
     if current_user.is_authenticated:
         return redirect(url_for("index"))
 
@@ -882,7 +444,7 @@ def login():
 
 
 @app.route("/logout", methods=["POST"])
-def logout():
+def logout() -> ResponseReturnValue:
     logout_user()
     flash("Disconnessione effettuata.", "info")
     return redirect(url_for("index"))
@@ -893,7 +455,7 @@ def logout():
 # ---------------------------------------------------------------
 
 @app.route("/")
-def index():
+def index() -> ResponseReturnValue:
     filtri, sort, direction = leggi_filtri()
 
     filter_categoria = filtri["categoria"]
@@ -903,18 +465,11 @@ def index():
     filter_metabolico = filtri["rischio_metabolico"]
     filter_tumorale = filtri["rischio_tumorale"]
 
-    alimenti = get_alimenti(**filtri, sort=sort, direction=direction)
+    alimenti = get_alimenti(filtri, sort, direction)
 
     total_alimenti, con_dati_tef = get_stats()
 
-    (
-        category_options,
-        diabete_options,
-        colesterolo_options,
-        malassorbimento_options,
-        metabolic_options,
-        tumorale_options
-    ) = get_filter_options()
+    opzioni = get_filter_options()
 
     filtri_attivi = any(filtri.values())
 
@@ -957,23 +512,23 @@ def index():
         total_alimenti=total_alimenti,
         con_dati_tef=con_dati_tef,
         visualizzati=len(alimenti),
-        category_options=category_options,
-        diabete_options=diabete_options,
-        colesterolo_options=colesterolo_options,
-        malassorbimento_options=malassorbimento_options,
-        metabolic_options=metabolic_options,
-        tumorale_options=tumorale_options
+        category_options=opzioni["categoria"],
+        diabete_options=opzioni["rischio_diabete"],
+        colesterolo_options=opzioni["rischio_colesterolo"],
+        malassorbimento_options=opzioni["rischio_malassorbimento"],
+        metabolic_options=opzioni["rischio_metabolico"],
+        tumorale_options=opzioni["rischio_tumorale"],
     )
 
 
 @app.route("/alimento/<int:alimento_id>")
-def scheda(alimento_id):
+def scheda(alimento_id: int) -> ResponseReturnValue:
     item = get_alimento(alimento_id)
 
     if not item:
         abort(404)
 
-    grammi = nutrienti.leggi_grammi(request.args.get("grammi"), 100)
+    grammi = nutrienti.leggi_grammi(request.args.get("grammi")) or 100.0
     tutti = get_alimenti()
     medaglie = analisi.medaglie_per_alimento(tutti).get(alimento_id, [])
 
@@ -1001,7 +556,7 @@ def scheda(alimento_id):
 
 @app.route("/nuovo", methods=["GET", "POST"])
 @solo_admin
-def nuovo():
+def nuovo() -> ResponseReturnValue:
     pagina = {
         "titolo": "Nuovo alimento",
         "sottotitolo": "Inserisci un nuovo alimento nel database.",
@@ -1029,7 +584,7 @@ def nuovo():
 
 @app.route("/modifica/<int:alimento_id>", methods=["GET", "POST"])
 @solo_admin
-def modifica(alimento_id):
+def modifica(alimento_id: int) -> ResponseReturnValue:
     item = get_alimento(alimento_id)
 
     if not item:
@@ -1062,23 +617,13 @@ def modifica(alimento_id):
 
 @app.route("/elimina/<int:alimento_id>", methods=["POST"])
 @solo_admin
-def elimina(alimento_id):
+def elimina(alimento_id: int) -> ResponseReturnValue:
     item = get_alimento(alimento_id)
 
     if not item:
         abort(404)
 
-    conn = get_db()
-    conn.execute(
-        """
-        DELETE FROM alimenti
-        WHERE id = ?
-        """,
-        (alimento_id,)
-    )
-    conn.commit()
-    conn.close()
-
+    archivio.elimina_alimento(alimento_id)
     flash("Alimento eliminato.", "warning")
     return redirect(url_for("index"))
 
@@ -1096,7 +641,7 @@ FORMATI_EXPORT = {
 ETICHETTE_ORDINAMENTO = {**importazione.ETICHETTE, "punteggio": "Punteggio"}
 
 
-def invia_file(dati, nome, mimetype):
+def invia_file(dati: bytes, nome: str, mimetype: str) -> Response:
     """
     Risposta di download per un file generato in memoria.
     """
@@ -1111,7 +656,7 @@ def invia_file(dati, nome, mimetype):
     return risposta
 
 
-def nome_file_sicuro(testo, alternativa):
+def nome_file_sicuro(testo: str | None, alternativa: str) -> str:
     """
     "Pane integrale (100%)" -> "pane-integrale-100" per i nomi dei file scaricati.
     """
@@ -1120,7 +665,7 @@ def nome_file_sicuro(testo, alternativa):
     return nome or alternativa
 
 
-def info_export(filtri, sort, direction, totale):
+def info_export(filtri: archivio.Filtri, sort: str, direction: str, totale: int) -> esportazione.InfoExport:
     return {
         "filtri": [
             (ETICHETTE_FILTRI[campo], valore)
@@ -1137,7 +682,7 @@ def info_export(filtri, sort, direction, totale):
 
 
 @app.route("/esporta/<formato>")
-def esporta(formato):
+def esporta(formato: str) -> ResponseReturnValue:
     """
     Tabella con gli stessi filtri e lo stesso ordinamento della home.
     """
@@ -1145,7 +690,7 @@ def esporta(formato):
         abort(404)
 
     filtri, sort, direction = leggi_filtri()
-    alimenti = get_alimenti(**filtri, sort=sort, direction=direction)
+    alimenti = get_alimenti(filtri, sort, direction)
     info = info_export(filtri, sort, direction, len(alimenti))
 
     if formato == "csv":
@@ -1161,7 +706,7 @@ def esporta(formato):
 
 
 @app.route("/alimento/<int:alimento_id>/pdf")
-def scheda_pdf(alimento_id):
+def scheda_pdf(alimento_id: int) -> ResponseReturnValue:
     item = get_alimento(alimento_id)
 
     if not item:
@@ -1186,19 +731,19 @@ ANTEPRIMA_AVVISI = 50
 TOKEN_IMPORT_RE = re.compile(r"^[A-Za-z0-9_-]{20,64}$")
 
 
-def cartella_import():
+def cartella_import() -> str:
     os.makedirs(app.config["IMPORT_DIR"], exist_ok=True)
     return app.config["IMPORT_DIR"]
 
 
-def percorso_import(token):
+def percorso_import(token: str | None) -> str | None:
     if not token or not TOKEN_IMPORT_RE.match(token):
         return None
 
     return os.path.join(cartella_import(), f"{token}.json")
 
 
-def pulisci_import_scaduti():
+def pulisci_import_scaduti() -> None:
     limite = time.time() - IMPORT_SCADENZA_SECONDI
 
     for voce in os.scandir(cartella_import()):
@@ -1209,7 +754,7 @@ def pulisci_import_scaduti():
             pass
 
 
-def carica_import():
+def carica_import() -> dict[str, Any] | None:
     """
     File letto e in attesa di conferma per questa sessione, oppure None.
     """
@@ -1222,7 +767,7 @@ def carica_import():
         return json.load(f)
 
 
-def scarta_import():
+def scarta_import() -> None:
     percorso = percorso_import(session.pop("import_token", None))
 
     if percorso and os.path.isfile(percorso):
@@ -1231,7 +776,7 @@ def scarta_import():
 
 @app.route("/importa", methods=["GET", "POST"])
 @solo_admin
-def importa():
+def importa() -> ResponseReturnValue:
     if request.method == "POST":
         file = request.files.get("file")
 
@@ -1255,8 +800,10 @@ def importa():
         pulisci_import_scaduti()
 
         token = secrets.token_urlsafe(24)
+        percorso = percorso_import(token)
+        assert percorso is not None  # token appena generato, sempre valido
 
-        with open(percorso_import(token), "w", encoding="utf-8") as f:
+        with open(percorso, "w", encoding="utf-8") as f:
             json.dump(letto, f, ensure_ascii=False)
 
         session["import_token"] = token
@@ -1270,7 +817,7 @@ def importa():
     )
 
 
-def campi_anteprima(letto):
+def campi_anteprima(letto: dict[str, Any]) -> list[str]:
     """
     Colonne della tabella di anteprima: i campi di base sempre,
     quelli nutrizionali solo se il file li contiene.
@@ -1284,7 +831,7 @@ def campi_anteprima(letto):
 
 @app.route("/importa/anteprima")
 @solo_admin
-def importa_anteprima():
+def importa_anteprima() -> ResponseReturnValue:
     letto = carica_import()
 
     if letto is None:
@@ -1327,7 +874,7 @@ def importa_anteprima():
 
 @app.route("/importa/conferma", methods=["POST"])
 @solo_admin
-def importa_conferma():
+def importa_conferma() -> ResponseReturnValue:
     letto = carica_import()
 
     if letto is None:
@@ -1395,7 +942,7 @@ def importa_conferma():
 
 @app.route("/importa/annulla", methods=["POST"])
 @solo_admin
-def importa_annulla():
+def importa_annulla() -> ResponseReturnValue:
     scarta_import()
     flash("Import annullato: il database non è stato modificato.", "info")
     return redirect(url_for("importa"))
@@ -1410,7 +957,7 @@ MIMETYPE_SQLITE = "application/vnd.sqlite3"
 
 @app.route("/backup")
 @solo_admin
-def backup_pagina():
+def backup_pagina() -> ResponseReturnValue:
     return render_template(
         "backup.html",
         backups=backup.elenco(app.config["BACKUP_DIR"]),
@@ -1422,14 +969,14 @@ def backup_pagina():
 
 @app.route("/backup/scarica")
 @solo_admin
-def backup_scarica():
+def backup_scarica() -> ResponseReturnValue:
     dati = backup.istantanea(DB_PATH)
     return invia_file(dati, f"alimenti_{datetime.now():%Y%m%d-%H%M%S}.db", MIMETYPE_SQLITE)
 
 
 @app.route("/backup/scarica/<nome>")
 @solo_admin
-def backup_scarica_salvato(nome):
+def backup_scarica_salvato(nome: str) -> ResponseReturnValue:
     percorso = backup.percorso(app.config["BACKUP_DIR"], nome)
 
     if not percorso:
@@ -1441,13 +988,13 @@ def backup_scarica_salvato(nome):
 
 @app.route("/backup/crea", methods=["POST"])
 @solo_admin
-def backup_crea():
+def backup_crea() -> ResponseReturnValue:
     nome = backup.crea(DB_PATH, app.config["BACKUP_DIR"], "manuale")
     flash(f"Backup salvato: {nome}.", "success")
     return redirect(url_for("backup_pagina"))
 
 
-def esegui_ripristino(file_db, etichetta):
+def esegui_ripristino(file_db: str, etichetta: str) -> None:
     try:
         alimenti = backup.verifica(file_db)
     except backup.ErroreBackup as exc:
@@ -1462,8 +1009,9 @@ def esegui_ripristino(file_db, etichetta):
     backup.ripristina(file_db, DB_PATH)
     backup.pota(cartella)
 
-    # Un backup di una versione precedente può non avere tutte le colonne
-    init_db()
+    # Un backup di una versione precedente si porta allo schema attuale
+    # (il database da sostituire è già nel backup appena creato)
+    init_db(backup_prima=False)
 
     flash(
         f"Database ripristinato da {etichetta}: {alimenti} alimenti. "
@@ -1474,7 +1022,7 @@ def esegui_ripristino(file_db, etichetta):
 
 @app.route("/backup/ripristina", methods=["POST"])
 @solo_admin
-def backup_ripristina():
+def backup_ripristina() -> ResponseReturnValue:
     file = request.files.get("file")
 
     if not file or not file.filename:
@@ -1498,7 +1046,7 @@ def backup_ripristina():
 
 @app.route("/backup/ripristina/<nome>", methods=["POST"])
 @solo_admin
-def backup_ripristina_salvato(nome):
+def backup_ripristina_salvato(nome: str) -> ResponseReturnValue:
     percorso = backup.percorso(app.config["BACKUP_DIR"], nome)
 
     if not percorso:
@@ -1525,19 +1073,10 @@ CAMPI_DIARIO = (
 )
 
 
-def elenco_per_ricerca():
-    """
-    Alimenti per il campo di ricerca (datalist) di pasto e diario.
-    """
-    conn = get_db()
-    righe = conn.execute(
-        "SELECT id, alimento, categoria, kcal FROM alimenti ORDER BY LOWER(alimento), id"
-    ).fetchall()
-    conn.close()
-    return [dict(r) for r in righe]
+elenco_per_ricerca = archivio.elenco_per_ricerca
 
 
-def trova_alimento_da_modulo(form):
+def trova_alimento_da_modulo(form: Mapping[str, str]) -> tuple[Alimento | None, str | None]:
     """
     (alimento, errore) dal campo alimento_id, dal testo "Nome · Categoria · #id"
     scelto nella ricerca, oppure da un nome esatto se non è ambiguo.
@@ -1556,14 +1095,10 @@ def trova_alimento_da_modulo(form):
     if not testo:
         return None, "Scegli un alimento dall'elenco."
 
-    conn = get_db()
-    righe = conn.execute(
-        "SELECT id FROM alimenti WHERE LOWER(alimento) = LOWER(?)", (testo,)
-    ).fetchall()
-    conn.close()
+    righe = archivio.ids_per_nome(testo)
 
     if len(righe) == 1:
-        return get_alimento(righe[0]["id"]), None
+        return get_alimento(righe[0]), None
 
     if righe:
         return None, f"Ci sono {len(righe)} alimenti «{testo}»: scegline uno dall'elenco."
@@ -1571,14 +1106,14 @@ def trova_alimento_da_modulo(form):
     return None, f"Nessun alimento «{testo}»: scegline uno dall'elenco."
 
 
-def grammi_non_validi():
+def grammi_non_validi() -> None:
     flash(
         f"Grammi non validi: servono da {nutrienti.GRAMMI_MIN} a {nutrienti.GRAMMI_MAX} g.",
         "danger"
     )
 
 
-def leggi_pasto():
+def leggi_pasto() -> list[dict[str, Any]]:
     voci = []
 
     for voce in session.get("pasto", []):
@@ -1590,21 +1125,14 @@ def leggi_pasto():
     return voci[:PASTO_MAX_VOCI]
 
 
-def carica_voci(voci):
+def carica_voci(voci: list[dict[str, Any]]) -> list[tuple[Alimento, float, int]]:
     """
     [(alimento, grammi, indice)] per le voci del pasto il cui alimento esiste ancora.
     """
     if not voci:
         return []
 
-    ids = sorted({voce["id"] for voce in voci})
-    conn = get_db()
-    righe = conn.execute(
-        f"{SELECT_ALIMENTI} WHERE id IN ({', '.join('?' for _ in ids)})", ids
-    ).fetchall()
-    conn.close()
-
-    per_id = {riga["id"]: dict(riga) for riga in righe}
+    per_id = archivio.get_alimenti_per_id(sorted({voce["id"] for voce in voci}))
     return [
         (per_id[voce["id"]], voce["grammi"], indice)
         for indice, voce in enumerate(voci)
@@ -1612,7 +1140,7 @@ def carica_voci(voci):
     ]
 
 
-def riepilogo_nutrizionale(voci):
+def riepilogo_nutrizionale(voci: list[tuple[Alimento, float]]) -> dict[str, Any] | None:
     """
     Totali, dati mancanti e profilo di rischio (con radar) di una lista di (alimento, grammi).
     """
@@ -1631,7 +1159,7 @@ def riepilogo_nutrizionale(voci):
     }
 
 
-def pasto_dell_ora():
+def pasto_dell_ora() -> str:
     ora = datetime.now().hour
 
     if ora < 11:
@@ -1647,7 +1175,7 @@ def pasto_dell_ora():
 
 
 @app.route("/pasto")
-def pasto():
+def pasto() -> ResponseReturnValue:
     voci = carica_voci(leggi_pasto())
 
     return render_template(
@@ -1662,13 +1190,13 @@ def pasto():
 
 
 @app.route("/pasto/aggiungi", methods=["POST"])
-def pasto_aggiungi():
+def pasto_aggiungi() -> ResponseReturnValue:
     destinazione = url_sicuro(request.form.get("next")) or url_for("pasto")
     item, errore = trova_alimento_da_modulo(request.form)
     grammi = nutrienti.leggi_grammi(request.form.get("grammi"))
 
-    if errore:
-        flash(errore, "danger")
+    if errore or item is None:
+        flash(errore or "Alimento non trovato.", "danger")
         return redirect(destinazione)
 
     if grammi is None:
@@ -1692,7 +1220,7 @@ def pasto_aggiungi():
 
 
 @app.route("/pasto/aggiorna", methods=["POST"])
-def pasto_aggiorna():
+def pasto_aggiorna() -> ResponseReturnValue:
     voci = leggi_pasto()
     rimuovi = (request.form.get("rimuovi") or "").strip()
 
@@ -1719,24 +1247,26 @@ def pasto_aggiorna():
 
 
 @app.route("/pasto/svuota", methods=["POST"])
-def pasto_svuota():
+def pasto_svuota() -> ResponseReturnValue:
     session.pop("pasto", None)
     flash("Pasto svuotato.", "info")
     return redirect(url_for("pasto"))
 
 
-def leggi_giorno(testo):
+def leggi_giorno(testo: str | None) -> date | None:
     try:
         return date.fromisoformat((testo or "").strip())
     except ValueError:
         return None
 
 
-def istantanea_diario(item):
+def istantanea_diario(item: Alimento) -> str:
     return json.dumps({campo: item.get(campo) for campo in CAMPI_DIARIO}, ensure_ascii=False)
 
 
-def inserisci_diario(conn, giorno, pasto_chiave, item, grammi):
+def inserisci_diario(
+    conn: sqlite3.Connection, giorno: date, pasto_chiave: str, item: Alimento, grammi: float
+) -> None:
     conn.execute(
         """
         INSERT INTO diario (utente_id, data, pasto, alimento_id, alimento, grammi, valori, creato_il)
@@ -1749,7 +1279,7 @@ def inserisci_diario(conn, giorno, pasto_chiave, item, grammi):
     )
 
 
-def voci_diario(utente_id, dal, al=None):
+def voci_diario(utente_id: int, dal: date, al: date | None = None) -> list[dict[str, Any]]:
     """
     Voci del diario tra due date (comprese), con i valori per 100 g salvati.
     """
@@ -1778,7 +1308,7 @@ def voci_diario(utente_id, dal, al=None):
     return voci
 
 
-def collegamenti_schede(voci):
+def collegamenti_schede(voci: list[dict[str, Any]]) -> set[int]:
     """
     ID degli alimenti ancora presenti con lo stesso nome (per il link alla scheda).
     """
@@ -1787,23 +1317,18 @@ def collegamenti_schede(voci):
     if not ids:
         return set()
 
-    conn = get_db()
-    righe = conn.execute(
-        f"SELECT id, alimento FROM alimenti WHERE id IN ({', '.join('?' for _ in ids)})", ids
-    ).fetchall()
-    conn.close()
-
+    presenti = archivio.get_alimenti_per_id(ids)
     nomi = {v["alimento_id"]: v["alimento"] for v in voci}
-    return {r["id"] for r in righe if r["alimento"] == nomi.get(r["id"])}
+    return {i for i, a in presenti.items() if a["alimento"] == nomi.get(i)}
 
 
-def torna_al_diario(giorno):
+def torna_al_diario(giorno: date) -> ResponseReturnValue:
     return redirect(url_for("diario", data=giorno.isoformat()))
 
 
 @app.route("/diario")
 @login_required
-def diario():
+def diario() -> ResponseReturnValue:
     giorno = leggi_giorno(request.args.get("data")) or date.today()
     voci = voci_diario(current_user.id, giorno)
 
@@ -1816,7 +1341,7 @@ def diario():
 
     # Ultimi giorni fino a quello mostrato: Kcal nette e TEF per giorno
     inizio = giorno - timedelta(days=GIORNI_RIEPILOGO - 1)
-    settimana = []
+    settimana: list[dict[str, Any]] = []
 
     for i in range(GIORNI_RIEPILOGO):
         g = inizio + timedelta(days=i)
@@ -1849,7 +1374,7 @@ def diario():
 
 @app.route("/diario/aggiungi", methods=["POST"])
 @login_required
-def diario_aggiungi():
+def diario_aggiungi() -> ResponseReturnValue:
     giorno = leggi_giorno(request.form.get("data")) or date.today()
     pasto_chiave = request.form.get("pasto", "")
     item, errore = trova_alimento_da_modulo(request.form)
@@ -1857,8 +1382,8 @@ def diario_aggiungi():
 
     if pasto_chiave not in CHIAVI_PASTI:
         flash("Scegli il pasto: colazione, pranzo, cena o spuntino.", "danger")
-    elif errore:
-        flash(errore, "danger")
+    elif errore or item is None:
+        flash(errore or "Alimento non trovato.", "danger")
     elif grammi is None:
         grammi_non_validi()
     else:
@@ -1873,7 +1398,7 @@ def diario_aggiungi():
 
 @app.route("/diario/aggiungi-pasto", methods=["POST"])
 @login_required
-def diario_aggiungi_pasto():
+def diario_aggiungi_pasto() -> ResponseReturnValue:
     giorno = leggi_giorno(request.form.get("data")) or date.today()
     pasto_chiave = request.form.get("pasto", "")
     voci = carica_voci(leggi_pasto())
@@ -1901,7 +1426,7 @@ def diario_aggiungi_pasto():
     return torna_al_diario(giorno)
 
 
-def voce_diario_propria(voce_id):
+def voce_diario_propria(voce_id: int) -> sqlite3.Row:
     """
     Voce del diario dell'utente connesso, altrimenti 404 (anche se è di un altro utente).
     """
@@ -1919,7 +1444,7 @@ def voce_diario_propria(voce_id):
 
 @app.route("/diario/voce/<int:voce_id>/aggiorna", methods=["POST"])
 @login_required
-def diario_aggiorna(voce_id):
+def diario_aggiorna(voce_id: int) -> ResponseReturnValue:
     riga = voce_diario_propria(voce_id)
     grammi = nutrienti.leggi_grammi(request.form.get("grammi"))
 
@@ -1936,7 +1461,7 @@ def diario_aggiorna(voce_id):
 
 @app.route("/diario/voce/<int:voce_id>/elimina", methods=["POST"])
 @login_required
-def diario_elimina(voce_id):
+def diario_elimina(voce_id: int) -> ResponseReturnValue:
     riga = voce_diario_propria(voce_id)
 
     conn = get_db_diario()
@@ -1956,7 +1481,7 @@ def diario_elimina(voce_id):
 #   flask --app app elimina-utente <username>
 # ---------------------------------------------------------------
 
-def valida_username(ctx, param, username):
+def valida_username(ctx: click.Context, param: click.Parameter, username: str) -> str:
     if not USERNAME_RE.match(username):
         raise click.BadParameter(
             "usa 3-32 caratteri tra lettere, numeri, punto, trattino e underscore."
@@ -1965,7 +1490,7 @@ def valida_username(ctx, param, username):
     return username
 
 
-def valida_password(ctx, param, password):
+def valida_password(ctx: click.Context, param: click.Parameter, password: str) -> str:
     if len(password) < PASSWORD_MIN:
         raise click.BadParameter(f"servono almeno {PASSWORD_MIN} caratteri.")
 
@@ -1987,7 +1512,7 @@ def valida_password(ctx, param, password):
     confirmation_prompt="Ripeti la password",
     callback=valida_password
 )
-def crea_utente_cmd(username, ruolo, password):
+def crea_utente_cmd(username: str, ruolo: str, password: str) -> None:
     """Crea un nuovo utente."""
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -2010,6 +1535,44 @@ def crea_utente_cmd(username, ruolo, password):
     click.echo(f"Utente '{username}' creato con ruolo {ruolo}.")
 
 
+@app.cli.command("crea-admin-iniziale")
+def crea_admin_iniziale_cmd() -> None:
+    """Crea l'amministratore da ADMIN_USERNAME e ADMIN_PASSWORD se non ne esiste nessuno (primo deploy)."""
+    username = os.environ.get("ADMIN_USERNAME", "").strip()
+    password = os.environ.get("ADMIN_PASSWORD", "")
+
+    if not username or not password:
+        click.echo("ADMIN_USERNAME e ADMIN_PASSWORD non impostate: nessun amministratore creato.")
+        return
+
+    if not USERNAME_RE.match(username):
+        raise click.ClickException(
+            "ADMIN_USERNAME: usa 3-32 caratteri tra lettere, numeri, punto, trattino e underscore."
+        )
+
+    if len(password) < PASSWORD_MIN:
+        raise click.ClickException(f"ADMIN_PASSWORD: servono almeno {PASSWORD_MIN} caratteri.")
+
+    conn = get_db_utenti()
+
+    try:
+        if conn.execute("SELECT COUNT(*) FROM utenti WHERE ruolo = 'admin'").fetchone()[0]:
+            click.echo("Esiste già un amministratore: nessun utente creato.")
+            return
+
+        conn.execute(
+            "INSERT INTO utenti (username, password_hash, ruolo, creato_il) VALUES (?, ?, 'admin', ?)",
+            (username, generate_password_hash(password), datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        raise click.ClickException(f"L'utente '{username}' esiste già (non come amministratore).") from None
+    finally:
+        conn.close()
+
+    click.echo(f"Amministratore '{username}' creato. Puoi togliere ADMIN_PASSWORD dalla configurazione.")
+
+
 @app.cli.command("imposta-password")
 @click.argument("username")
 @click.password_option(
@@ -2018,7 +1581,7 @@ def crea_utente_cmd(username, ruolo, password):
     confirmation_prompt="Ripeti la password",
     callback=valida_password
 )
-def imposta_password_cmd(username, password):
+def imposta_password_cmd(username: str, password: str) -> None:
     """Cambia la password di un utente."""
     conn = get_db_utenti()
     cur = conn.execute(
@@ -2035,7 +1598,7 @@ def imposta_password_cmd(username, password):
 
 
 @app.cli.command("elenco-utenti")
-def elenco_utenti_cmd():
+def elenco_utenti_cmd() -> None:
     """Elenca gli utenti registrati."""
     conn = get_db_utenti()
     rows = conn.execute(
@@ -2057,7 +1620,7 @@ def elenco_utenti_cmd():
 @app.cli.command("elimina-utente")
 @click.argument("username")
 @click.confirmation_option(prompt="Confermi l'eliminazione dell'utente?")
-def elimina_utente_cmd(username):
+def elimina_utente_cmd(username: str) -> None:
     """Elimina un utente."""
     conn = get_db_utenti()
     riga = conn.execute("SELECT id FROM utenti WHERE username = ?", (username,)).fetchone()
@@ -2086,7 +1649,7 @@ def elimina_utente_cmd(username):
               help="Pagine da 200 alimenti dell'elenco USDA.")
 @click.option("--sovrascrivi", is_flag=True, help="Sostituisce anche i valori già presenti.")
 @click.option("--prova", is_flag=True, help="Mostra cosa cambierebbe senza scrivere.")
-def usda_nutrienti_cmd(api_key, pagine, sovrascrivi, prova):
+def usda_nutrienti_cmd(api_key: str, pagine: int, sovrascrivi: bool, prova: bool) -> None:
     """Compila macro e micronutrienti degli alimenti USDA (abbinati per nome)."""
     try:
         alimenti_usda = usda.scarica(api_key, pagine)
@@ -2123,18 +1686,39 @@ def usda_nutrienti_cmd(api_key, pagine, sovrascrivi, prova):
 # ERROR HANDLER
 # ---------------------------------------------------------------
 
+def richiesta_api() -> bool:
+    return request.path == "/api" or request.path.startswith("/api/")
+
+
 @app.errorhandler(403)
-def forbidden(error):
+def forbidden(error: HTTPException) -> ResponseReturnValue:
+    if richiesta_api():
+        return api.errore_json(error)
+
     return "<h1>403</h1><p>Operazione riservata agli amministratori.</p>", 403
 
 
 @app.errorhandler(404)
-def not_found(error):
+def not_found(error: HTTPException) -> ResponseReturnValue:
+    if richiesta_api():
+        return api.errore_json(error)
+
     return "<h1>404</h1><p>Risorsa non trovata.</p>", 404
 
 
+@app.errorhandler(HTTPException)
+def errore_http(error: HTTPException) -> ResponseReturnValue:
+    """
+    Gli altri errori HTTP (400, 405...) restano quelli di Flask, in JSON per l'API.
+    """
+    if richiesta_api():
+        return api.errore_json(error)
+
+    return error
+
+
 @app.errorhandler(413)
-def file_troppo_grande(error):
+def file_troppo_grande(error: HTTPException) -> ResponseReturnValue:
     flash(
         f"File troppo grande: il limite è {app.config['MAX_UPLOAD_MB']} MB.",
         "danger"
@@ -2144,7 +1728,7 @@ def file_troppo_grande(error):
 
 
 @app.errorhandler(CSRFError)
-def csrf_non_valido(error):
+def csrf_non_valido(error: CSRFError) -> ResponseReturnValue:
     flash("Sessione scaduta o richiesta non valida: riprova.", "danger")
     return redirect(pagina_precedente() or url_for("index"))
 
@@ -2154,7 +1738,7 @@ def csrf_non_valido(error):
 # ---------------------------------------------------------------
 
 @app.after_request
-def intestazioni_sicurezza(response):
+def intestazioni_sicurezza(response: Response) -> Response:
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "same-origin")
@@ -2165,8 +1749,39 @@ def intestazioni_sicurezza(response):
 # AVVIO
 # ---------------------------------------------------------------
 
-# Crea/aggiorna le tabelle anche quando l'app è avviata con "flask run"
-# o da un server WSGI, non solo con "python app.py".
+# ---------------------------------------------------------------
+# API E CONTROLLO DI SALUTE
+# ---------------------------------------------------------------
+
+app.register_blueprint(api.bp)
+
+
+@app.route("/salute")
+def salute() -> ResponseReturnValue:
+    """
+    Controllo per Docker e Render: risponde 200 se il database è leggibile.
+    """
+    try:
+        versione, ultima = database.stato(DB_PATH, "alimenti")
+        conn = get_db()
+        conn.execute("SELECT 1 FROM alimenti LIMIT 1").fetchall()
+        conn.close()
+    except sqlite3.Error:
+        return jsonify({"stato": "errore"}), 503
+
+    return jsonify({"stato": "ok", "schema_alimenti": versione, "schema_aggiornato": versione == ultima})
+
+
+@app.cli.command("db-stato")
+def db_stato_cmd() -> None:
+    """Mostra la versione dello schema dei tre database."""
+    for nome, percorso in (("alimenti", DB_PATH), ("utenti", UTENTI_DB_PATH), ("diario", DIARIO_DB_PATH)):
+        versione, ultima = database.stato(percorso, nome)
+        click.echo(f"{nome:9} versione {versione} di {ultima}  ({percorso})")
+
+
+# Crea/aggiorna le tabelle (migrazioni) anche quando l'app è avviata con
+# "flask run" o da un server WSGI, non solo con "python app.py".
 init_db()
 
 

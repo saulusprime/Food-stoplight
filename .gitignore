@@ -31,3 +31,7 @@ diario.db
 
 # Dati locali dell'istanza: backup del database e file in attesa di import
 instance/
+
+# Cache degli strumenti di sviluppo
+.ruff_cache/
+.pytest_cache/
