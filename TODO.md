@@ -1,14 +1,10 @@
 # 📋 TO-DO — Food-stoplight
 
 Idee, funzionalità e implementazioni future per l'applicazione.
+Le attività completate sono in [ASIS.md](ASIS.md).
 
 ## 🔐 Sicurezza e configurazione
 
-- [x] Spostare la `secret_key` di Flask in una variabile d'ambiente (`FLASK_SECRET_KEY`) con file `.env` e `python-dotenv`
-- [x] Aggiungere autenticazione utente (login) per proteggere le operazioni di scrittura (nuovo/modifica/elimina/import)
-- [x] Ruoli utente: amministratore (CRUD completo) e visitatore (sola consultazione)
-- [x] Protezione CSRF sui form (Flask-WTF)
-- [x] Configurazione separata sviluppo/produzione (debug off, host/porta configurabili)
 - [ ] Limitare i tentativi di login falliti (es. Flask-Limiter) contro gli attacchi a forza bruta
 
 ## 🔍 Ricerca e consultazione
@@ -21,14 +17,6 @@ Idee, funzionalità e implementazioni future per l'applicazione.
 - [ ] Ordinamento multiplo (es. categoria + kcal)
 - [ ] Filtro rapido "solo alimenti sicuri" (tutti i rischi bassi/trascurabili)
 
-## 📊 Visualizzazione dati
-
-- [x] Grafici riassuntivi in home page (distribuzione per categoria, per livello di rischio)
-- [x] Grafico radar del profilo di rischio nella scheda alimento
-- [x] Punteggio complessivo sintetico per alimento (indice 0–100 combinando i 5 rischi)
-- [x] Badge/medaglie "top alimenti" (più protettivi, migliore rapporto F/F, meno calorici)
-- [x] Modalità scura (dark mode)
-
 ## 🍽️ Funzionalità nutrizionali
 
 - [ ] Aggiungere i **macronutrienti completi** (proteine, carboidrati, grassi, grassi saturi, zuccheri, colesterolo) anche nella web app — già supportati da `update.py`
@@ -40,15 +28,6 @@ Idee, funzionalità e implementazioni future per l'applicazione.
 - [ ] **Composizione pasti**: sommare più alimenti e vedere totali e profilo di rischio del pasto
 - [ ] Diario alimentare giornaliero con totali di Kcal nette e TEF
 - [ ] Suggerimenti di alimenti alternativi con profilo di rischio migliore nella stessa categoria
-
-## 📥 Import / Export
-
-- [x] **Export CSV/Excel** della tabella filtrata dall'interfaccia web
-- [x] Export PDF della scheda alimento o della tabella
-- [x] Import da file Excel (.xlsx) oltre che CSV
-- [x] Anteprima dell'import con conferma prima della scrittura (mostrare le prime righe mappate)
-- [x] Aggiornamento (upsert) da interfaccia web invece del solo inserimento — logica già presente in `update.py`
-- [x] Backup/restore del database dall'interfaccia
 
 ## 🌐 Integrazione dati
 
