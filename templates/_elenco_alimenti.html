@@ -1,0 +1,6 @@
+{# Elenco per i campi di ricerca (input list="elenco-alimenti"): una volta per pagina #}
+<datalist id="elenco-alimenti">
+    {% for a in elenco %}
+        <option value="{{ a.alimento }} · {{ a.categoria or 'senza categoria' }} · {{ a.kcal|numero }} Kcal · #{{ a.id }}"></option>
+    {% endfor %}
+</datalist>

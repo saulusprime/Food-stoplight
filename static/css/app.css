@@ -803,23 +803,10 @@ pre {
     font-weight: 600;
 }
 
-.radar .etichetta-anello {
-    fill: var(--testo-tenue);
-    font-size: 9.5px;
-    paint-order: stroke;
-    stroke: var(--superficie);
-    stroke-width: 3px;
-    stroke-linejoin: round;
-}
-
 /* Il radar si rimpicciolisce con lo schermo: testi più grandi in unità SVG */
 @media (max-width: 576px) {
     .radar .etichetta-asse {
         font-size: 16px;
-    }
-
-    .radar .etichetta-anello {
-        font-size: 12.5px;
     }
 }
 
@@ -1004,4 +991,175 @@ pre {
 .elenco-avvisi-riga {
     color: var(--testo-secondario);
     font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------
+   Scheda: calcolatore della porzione, indicatori, alternative
+   --------------------------------------------------------------- */
+.porzione-riga {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.porzione-campo {
+    width: 8.5rem;
+}
+
+.porzione-rapide {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.porzione-rapide .btn[aria-current="true"] {
+    border-color: var(--accento);
+    color: var(--accento);
+    font-weight: 600;
+}
+
+/* Con JavaScript il ricalcolo è immediato: il pulsante serve solo senza */
+.js .porzione-ricalcola {
+    display: none;
+}
+
+.dettagli-micro summary {
+    cursor: pointer;
+    color: var(--link);
+    font-size: 0.9375rem;
+}
+
+.scheda-indicatori {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 0.75rem 1.5rem;
+    margin: 0.5rem 0 1rem;
+}
+
+.scheda-indicatori dt {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--testo-secondario);
+    margin-bottom: 0.2rem;
+}
+
+.scheda-indicatori dd {
+    margin: 0;
+}
+
+.elenco-alternative {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.elenco-alternative li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid var(--griglia);
+}
+
+.elenco-alternative li:last-child {
+    border-bottom: 0;
+}
+
+.elenco-alternative-dati {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------
+   Pasto e diario
+   --------------------------------------------------------------- */
+.contatore-pasto {
+    display: inline-block;
+    min-width: 1.35rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    background: #fff;
+    color: #14532d;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.35rem;
+    text-align: center;
+}
+
+.campo-grammi {
+    width: 6rem;
+    display: inline-block;
+    text-align: right;
+}
+
+.modulo-grammi {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.tabella-pasto td,
+.tabella-diario td {
+    font-variant-numeric: tabular-nums;
+}
+
+.tabella-pasto th:first-child,
+.tabella-pasto td:first-child,
+.tabella-diario th:first-child,
+.tabella-diario td:first-child {
+    padding-left: 1.25rem;
+}
+
+.tabella-pasto th:last-child,
+.tabella-pasto td:last-child,
+.tabella-diario th:last-child,
+.tabella-diario td:last-child {
+    padding-right: 1.25rem;
+}
+
+.tabella-diario .riga-pasto th {
+    background: var(--superficie-2);
+    font-size: 0.9375rem;
+}
+
+.barra-giorni {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.barra-giorni input[type="date"] {
+    width: auto;
+}
+
+.tabella-settimana td,
+.tabella-settimana th {
+    vertical-align: middle;
+    font-variant-numeric: tabular-nums;
+}
+
+.tabella-settimana .barra-traccia {
+    border-left: 1px solid var(--asse);
+}
+
+.tabella-settimana .barra {
+    width: calc(var(--v) * 1%);
+    height: 12px;
+    background: var(--accento);
+    border-radius: 0 4px 4px 0;
+}
+
+.tabella-settimana .giorno-corrente th,
+.tabella-settimana .giorno-corrente td {
+    font-weight: 600;
+}
+
+.sezione-form summary {
+    cursor: pointer;
 }

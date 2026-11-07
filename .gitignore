@@ -26,5 +26,8 @@ venv/
 # Database degli utenti (contiene gli hash delle password)
 utenti.db
 
+# Diario alimentare degli utenti (dati personali)
+diario.db
+
 # Dati locali dell'istanza: backup del database e file in attesa di import
 instance/

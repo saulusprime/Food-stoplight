@@ -153,3 +153,96 @@
         }
     });
 })();
+
+// ---------------------------------------------------------------
+// Calcolatore della porzione nella scheda alimento: ricalcola i valori
+// con data-per100 senza ricaricare la pagina (senza JS: pulsante Ricalcola)
+// ---------------------------------------------------------------
+(function () {
+    "use strict";
+
+    var campo = document.getElementById("porzione-grammi");
+
+    if (!campo) {
+        return;
+    }
+
+    var MIN = parseFloat(campo.min) || 1;
+    var MAX = parseFloat(campo.max) || 2000;
+
+    function formatta(valore, decimali) {
+        return valore.toLocaleString("it-IT", {
+            maximumFractionDigits: decimali,
+            useGrouping: false
+        });
+    }
+
+    function livelloCarico(carico) {
+        if (carico <= 10) {
+            return ["good", "Basso"];
+        }
+        return carico < 20 ? ["warning", "Medio"] : ["critical", "Alto"];
+    }
+
+    function aggiorna(grammi) {
+        if (!(grammi >= MIN && grammi <= MAX)) {
+            return;
+        }
+
+        var fattore = grammi / 100;
+
+        document.querySelectorAll("[data-per100]").forEach(function (el) {
+            var decimali = parseInt(el.getAttribute("data-decimali"), 10) || 0;
+            el.textContent = formatta(parseFloat(el.getAttribute("data-per100")) * fattore, decimali);
+        });
+
+        document.querySelectorAll("[data-grammi-testo]").forEach(function (el) {
+            el.textContent = formatta(grammi, 1);
+        });
+
+        document.querySelectorAll("[data-grammi-campo]").forEach(function (el) {
+            el.value = grammi;
+        });
+
+        document.querySelectorAll("[data-cg100]").forEach(function (el) {
+            var carico = Math.round(parseFloat(el.getAttribute("data-cg100")) * fattore * 10) / 10;
+            var livello = livelloCarico(carico);
+            el.className = "badge-risk stato-" + livello[0];
+            el.querySelector("[data-cg-valore]").textContent = formatta(carico, 1);
+            el.querySelector("[data-cg-livello]").textContent = livello[1];
+        });
+
+        document.querySelectorAll(".porzione-rapide [data-grammi]").forEach(function (el) {
+            if (parseFloat(el.getAttribute("data-grammi")) === grammi) {
+                el.setAttribute("aria-current", "true");
+            } else {
+                el.removeAttribute("aria-current");
+            }
+        });
+
+        try {
+            var url = new URL(window.location.href);
+            url.searchParams.set("grammi", grammi);
+            window.history.replaceState(null, "", url);
+
+            // Dopo "Aggiungi al pasto" si torna alla scheda con la stessa porzione
+            document.querySelectorAll("[data-ritorno]").forEach(function (el) {
+                el.value = url.pathname + url.search;
+            });
+        } catch (e) {
+            // URL non modificabile (es. anteprima): il ricalcolo resta valido
+        }
+    }
+
+    campo.addEventListener("input", function () {
+        aggiorna(parseFloat(String(campo.value).replace(",", ".")));
+    });
+
+    document.querySelectorAll(".porzione-rapide [data-grammi]").forEach(function (link) {
+        link.addEventListener("click", function (evento) {
+            evento.preventDefault();
+            campo.value = link.getAttribute("data-grammi");
+            aggiorna(parseFloat(campo.value));
+        });
+    });
+})();

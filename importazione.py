@@ -22,6 +22,7 @@ from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
 
 import analisi
+import nutrienti
 
 # Limite di righe di dati per file (oltre si chiede di dividerlo)
 MAX_RIGHE = 20000
@@ -41,7 +42,11 @@ CAMPI = (
     *CAMPI_NUMERICI,
     "rapporto",
     *analisi.CAMPI_RISCHIO,
+    # Dati nutrizionali: None = non disponibile, anche dopo l'import
+    *nutrienti.CAMPI_NULLABILI,
 )
+
+CAMPI_NULLABILI = set(nutrienti.CAMPI_NULLABILI)
 
 ETICHETTE = {
     "id": "ID",
@@ -55,6 +60,7 @@ ETICHETTE = {
     "fibre": "Fibre (g)",
     "rapporto": "Rapporto F/F",
     **{campo: f"Rischio {etichetta.lower()}" for campo, etichetta in analisi.RISCHI},
+    **nutrienti.ETICHETTE,
 }
 
 MODALITA = {
@@ -113,6 +119,37 @@ def campo_colonna(intestazione):
     if norm == "id":
         return "id"
 
+    # Valori derivati, ricalcolati dall'app: si ignorano
+    if "carico" in norm or norm in ("fodmap", "punteggio"):
+        return None
+
+    if "fodmap" in norm or "eccesso" in norm:
+        return _campo_fodmap(norm)
+
+    if "fdc" in norm:
+        return "fdc_id"
+
+    if "url" in norm or "link" in norm:
+        return "url_fonte"
+
+    if "fonte" in norm:
+        # Le vecchie colonne Fonte Kcal / Fonte TEF di update.py non sono nella web app
+        return None if ("kcal" in norm or "tef" in norm) else "fonte_nutrienti"
+
+    if "rischio" in norm:
+        return _campo_rischio(norm)
+
+    if "glicemic" in norm or norm in ("ig", "gi"):
+        return "indice_glicemico"
+
+    if "nova" in norm.split():
+        return "nova"
+
+    nutriente = _campo_nutriente(norm)
+
+    if nutriente:
+        return nutriente
+
     if "rapporto" in norm:
         return "rapporto"
 
@@ -140,10 +177,24 @@ def campo_colonna(intestazione):
     if "categoria" in norm:
         return "categoria"
 
+    # Rischi anche senza la parola "rischio" (file vecchi), tranne il colesterolo,
+    # che senza "rischio" è il nutriente in mg
+    rischio = _campo_rischio(norm, colesterolo=False)
+
+    if rischio:
+        return rischio
+
+    if "alimento" in norm or "nome" in norm:
+        return "alimento"
+
+    return None
+
+
+def _campo_rischio(norm, colesterolo=True):
     if "diabete" in norm:
         return "rischio_diabete"
 
-    if "colesterolo" in norm:
+    if colesterolo and "colesterolo" in norm:
         return "rischio_colesterolo"
 
     if "malassorb" in norm:
@@ -155,8 +206,55 @@ def campo_colonna(intestazione):
     if "tumoral" in norm:
         return "rischio_tumorale"
 
-    if "alimento" in norm or "nome" in norm:
-        return "alimento"
+    return None
+
+
+def _campo_fodmap(norm):
+    if "fruttan" in norm:
+        return "fodmap_fruttani"
+
+    if "gos" in norm.split() or "galatto" in norm:
+        return "fodmap_gos"
+
+    if "lattosio" in norm:
+        return "fodmap_lattosio"
+
+    if "fruttosio" in norm:
+        return "fodmap_fruttosio"
+
+    if "polioli" in norm or "poliolo" in norm or "sorbitolo" in norm or "mannitolo" in norm:
+        return "fodmap_polioli"
+
+    return None
+
+
+# Parole chiave dei nutrienti nelle intestazioni (dopo normalize_header)
+_NUTRIENTI_RE = (
+    (re.compile(r"\bsatur"), "grassi_saturi"),
+    (re.compile(r"\b(grassi|lipidi)\b"), "grassi"),
+    (re.compile(r"\bprotein"), "proteine"),
+    (re.compile(r"\bzuccher"), "zuccheri"),
+    (re.compile(r"\bcarboidrat"), "carboidrati"),
+    (re.compile(r"\bcolesterolo\b"), "colesterolo"),
+    (re.compile(r"\bvit(amina)? a\b"), "vitamina_a"),
+    (re.compile(r"\bvit(amina)? c\b"), "vitamina_c"),
+    (re.compile(r"\bvit(amina)? d\b"), "vitamina_d"),
+    (re.compile(r"\bvit(amina)? e\b"), "vitamina_e"),
+    (re.compile(r"\bvit(amina)? b12\b"), "vitamina_b12"),
+    (re.compile(r"\bfolat|\bacido folico"), "folati"),
+    (re.compile(r"\bcalcio\b"), "calcio"),
+    (re.compile(r"\bferro\b"), "ferro"),
+    (re.compile(r"\bmagnesio\b"), "magnesio"),
+    (re.compile(r"\bpotassio\b"), "potassio"),
+    (re.compile(r"\bsodio\b"), "sodio"),
+    (re.compile(r"\bzinco\b"), "zinco"),
+)
+
+
+def _campo_nutriente(norm):
+    for espressione, campo in _NUTRIENTI_RE:
+        if espressione.search(norm):
+            return campo
 
     return None
 
@@ -466,6 +564,8 @@ def normalizza_riga(numero, celle, mappa):
         else:
             avvisi.append(f"{ETICHETTE[campo]}: livello «{testo}» non riconosciuto, ignorato")
 
+    _normalizza_nutrienti(grezzo, valori, forniti, avvisi)
+
     return {
         "riga": numero,
         "id": id_riga,
@@ -473,6 +573,90 @@ def normalizza_riga(numero, celle, mappa):
         "forniti": forniti,
         "avvisi": avvisi,
     }
+
+
+def _normalizza_nutrienti(grezzo, valori, forniti, avvisi):
+    """
+    Macro e micronutrienti, indice glicemico, NOVA, FODMAP e fonte.
+    """
+    def assente(testo):
+        return not testo or testo.lower() in VALORI_ASSENTI
+
+    for campo in nutrienti.CAMPI_NUTRIENTI:
+        testo = grezzo(campo)
+
+        if assente(testo):
+            continue
+
+        valore, valido = leggi_numero(testo)
+
+        if not valido or valore is None or valore < 0:
+            avvisi.append(f"{ETICHETTE[campo]}: «{testo}» non è un numero valido, ignorato")
+        else:
+            valori[campo] = valore
+            forniti.append(campo)
+
+    testo = grezzo("indice_glicemico")
+
+    if not assente(testo):
+        valore, valido = leggi_numero(testo)
+
+        if valido and valore is not None and 0 <= valore <= 100:
+            valori["indice_glicemico"] = valore
+            forniti.append("indice_glicemico")
+        else:
+            avvisi.append(f"Indice glicemico: «{testo}» fuori scala (0-100), ignorato")
+
+    testo = grezzo("nova")
+
+    if not assente(testo):
+        gruppo = nutrienti.leggi_nova(testo)
+
+        if gruppo:
+            valori["nova"] = gruppo
+            forniti.append("nova")
+        else:
+            avvisi.append(f"NOVA: «{testo}» non è un gruppo da 1 a 4, ignorato")
+
+    for campo in nutrienti.CAMPI_FODMAP:
+        testo = grezzo(campo)
+
+        if assente(testo):
+            continue
+
+        livello_fodmap = nutrienti.livello_fodmap(testo)
+
+        if livello_fodmap:
+            valori[campo] = livello_fodmap["etichetta"]
+            forniti.append(campo)
+        else:
+            avvisi.append(f"{ETICHETTE[campo]}: livello «{testo}» non riconosciuto, ignorato")
+
+    testo = grezzo("fonte_nutrienti")
+
+    if not assente(testo):
+        valori["fonte_nutrienti"] = testo
+        forniti.append("fonte_nutrienti")
+
+    testo = grezzo("url_fonte")
+
+    if not assente(testo):
+        if nutrienti.URL_RE.match(testo):
+            valori["url_fonte"] = testo
+            forniti.append("url_fonte")
+        else:
+            avvisi.append(f"URL fonte: «{testo[:60]}» non è un indirizzo http(s), ignorato")
+
+    testo = grezzo("fdc_id")
+
+    if not assente(testo):
+        valore, _ = leggi_numero(testo)
+
+        if valore is not None and valore > 0 and float(valore).is_integer():
+            valori["fdc_id"] = int(valore)
+            forniti.append("fdc_id")
+        else:
+            avvisi.append(f"FDC ID: «{testo}» non valido, ignorato")
 
 
 def leggi_file(nome_file, raw):
@@ -542,6 +726,7 @@ VUOTO = {
     **{campo: 0.0 for campo in CAMPI_NUMERICI},
     "rapporto": 0.0,
     **{campo: "" for campo in analisi.CAMPI_RISCHIO},
+    **{campo: None for campo in nutrienti.CAMPI_NULLABILI},
 }
 
 
@@ -565,7 +750,7 @@ def completa_derivati(base, valori, forniti, nuovo):
     if not nuovo:
         # Contano solo i valori che cambiano davvero: TEF e Kcal nette ricopiati
         # invariati da un export non devono impedire il ricalcolo se cambiano le Kcal
-        forniti = {c for c in forniti if c not in valori or _diverso(valori[c], base.get(c))}
+        forniti = {c for c in forniti if c not in valori or _diverso(valori[c], base.get(c), c)}
 
     v = dict(base)
     v.update(valori)
@@ -594,7 +779,11 @@ def completa_derivati(base, valori, forniti, nuovo):
     return v
 
 
-def _diverso(a, b):
+def _diverso(a, b, campo=None):
+    # Nei dati nutrizionali "non disponibile" (None) è diverso da 0
+    if campo in CAMPI_NULLABILI and (a is None) != (b is None):
+        return True
+
     if isinstance(a, (int, float)) or isinstance(b, (int, float)):
         return abs(float(a or 0) - float(b or 0)) > 1e-9
 
@@ -691,7 +880,7 @@ def pianifica(conn, letto, modalita):
 
             if esistente is not None:
                 aggiornato = completa_derivati(esistente, valori, forniti, nuovo=False)
-                modificati = [c for c in CAMPI if _diverso(aggiornato[c], esistente[c])]
+                modificati = [c for c in CAMPI if _diverso(aggiornato[c], esistente[c], c)]
 
                 voce = _voce(
                     riga,

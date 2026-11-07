@@ -1,0 +1,58 @@
+{#
+    Radar dei 5 rischi. Variabili:
+    - radar: geometria da analisi.radar()
+    - radar_titolo: id dell'elemento che fa da titolo
+    - radar_descrizione: testo per i lettori di schermo
+#}
+<svg
+    class="radar"
+    viewBox="-20 0 400 285"
+    role="group"
+    aria-labelledby="{{ radar_titolo }}"
+    aria-describedby="{{ radar_titolo }}-descrizione"
+>
+    <desc id="{{ radar_titolo }}-descrizione">{{ radar_descrizione }}</desc>
+
+    {% for anello in radar.anelli %}
+        <polygon class="anello{% if loop.last %} anello-esterno{% endif %}" points="{{ anello.punti }}"></polygon>
+    {% endfor %}
+
+    {% for asse in radar.assi %}
+        <line
+            class="asse"
+            x1="{{ radar.centro[0] }}" y1="{{ radar.centro[1] }}"
+            x2="{{ asse.fine[0] }}" y2="{{ asse.fine[1] }}"
+        ></line>
+    {% endfor %}
+
+    <polygon class="area" points="{{ radar.poligono }}"></polygon>
+
+    {# Gli anelli non hanno etichette nel grafico: coprirebbero i vertici quando un
+       valore cade sull'anello o tra due anelli. Li spiega il sottotitolo. #}
+
+    {% for v in radar.vertici %}
+        <g class="stato-{{ v.stato }}">
+            <circle class="vertice" cx="{{ v.x }}" cy="{{ v.y }}" r="5"></circle>
+            <circle
+                class="bersaglio"
+                cx="{{ v.x }}" cy="{{ v.y }}" r="13"
+                tabindex="0"
+                role="img"
+                aria-label="{{ v.etichetta }}: {{ v.valore }}"
+                data-tooltip="{{ v.etichetta }}"
+                data-tooltip-stato="{{ v.stato }}"
+                data-tooltip-valore="{{ v.valore }}"
+            ></circle>
+        </g>
+    {% endfor %}
+
+    {% for asse in radar.assi %}
+        <text
+            class="etichetta-asse"
+            x="{{ asse.etichetta_xy[0] }}"
+            y="{{ asse.etichetta_xy[1] }}"
+            text-anchor="{{ asse.ancora }}"
+            aria-hidden="true"
+        >{{ asse.etichetta }}</text>
+    {% endfor %}
+</svg>

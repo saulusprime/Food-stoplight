@@ -6,7 +6,7 @@ import secrets
 import sqlite3
 import time
 import unicodedata
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from functools import wraps
 from urllib.parse import urlsplit
 
@@ -27,6 +27,7 @@ from flask_login import (
     LoginManager,
     UserMixin,
     current_user,
+    login_required,
     login_user,
     logout_user
 )
@@ -37,6 +38,8 @@ import analisi
 import backup
 import esportazione
 import importazione
+import nutrienti
+import usda
 from config import carica_config
 
 app = Flask(__name__)
@@ -44,6 +47,7 @@ app.config.update(carica_config())
 
 # Funzioni di analisi disponibili nei template
 app.jinja_env.globals.update(
+    nutrienti=nutrienti,
     stato_rischio=analisi.stato,
     livello_punteggio=analisi.livello_punteggio,
     LIVELLI_RISCHIO=analisi.LIVELLI,
@@ -56,6 +60,27 @@ def filtro_percentuale(valore, decimali=1):
     59.43 -> "59,4%" (virgola decimale italiana).
     """
     return f"{valore:.{decimali}f}".replace(".", ",") + "%"
+
+
+GIORNI_SETTIMANA = ("lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica")
+MESI = ("gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio",
+        "agosto", "settembre", "ottobre", "novembre", "dicembre")
+
+
+@app.template_filter("data_estesa")
+def filtro_data_estesa(giorno):
+    """
+    date(2026, 11, 7) -> "sabato 7 novembre 2026".
+    """
+    return f"{GIORNI_SETTIMANA[giorno.weekday()]} {giorno.day} {MESI[giorno.month - 1]} {giorno.year}"
+
+
+@app.template_filter("data_breve")
+def filtro_data_breve(giorno):
+    """
+    date(2026, 11, 7) -> "sab 7/11".
+    """
+    return f"{GIORNI_SETTIMANA[giorno.weekday()][:3]} {giorno.day}/{giorno.month}"
 
 
 @app.template_filter("numero")
@@ -71,6 +96,7 @@ def filtro_numero(valore, decimali=None):
 
 DB_PATH = app.config["DATABASE_PATH"]
 UTENTI_DB_PATH = app.config["UTENTI_DB_PATH"]
+DIARIO_DB_PATH = app.config["DIARIO_DB_PATH"]
 
 # Protezione CSRF su tutti i form POST (i template usano csrf_token())
 csrf = CSRFProtect(app)
@@ -111,11 +137,21 @@ def get_db_utenti():
     return conn
 
 
+def get_db_diario():
+    """
+    Il diario alimentare è personale: database separato (diario.db, escluso da git).
+    """
+    conn = sqlite3.connect(DIARIO_DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
 def init_db():
     """
     Crea le tabelle se non esistono e aggiunge eventuali colonne mancanti.
     """
     init_db_utenti()
+    init_db_diario()
 
     conn = get_db()
 
@@ -163,6 +199,8 @@ def init_db():
         "rischio_metabolico": "TEXT",
         "rischio_tumorale": "TEXT",
         "aggiornato_il": "TEXT",
+        # Macro e micronutrienti, indice glicemico, NOVA, FODMAP, fonte (NULL = non disponibile)
+        **nutrienti.COLONNE_SQL,
     }
 
     for column_name, column_type in required_columns.items():
@@ -171,6 +209,30 @@ def init_db():
                 f"ALTER TABLE alimenti ADD COLUMN {column_name} {column_type}"
             )
 
+    conn.commit()
+    conn.close()
+
+
+def init_db_diario():
+    conn = get_db_diario()
+
+    # valori: copia in JSON dei valori per 100 g al momento dell'inserimento,
+    # così il diario resta valido anche se l'alimento cambia o viene eliminato
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS diario (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            utente_id INTEGER NOT NULL,
+            data TEXT NOT NULL,
+            pasto TEXT NOT NULL
+                CHECK (pasto IN ('colazione', 'pranzo', 'cena', 'spuntino')),
+            alimento_id INTEGER,
+            alimento TEXT NOT NULL,
+            grammi REAL NOT NULL CHECK (grammi > 0),
+            valori TEXT NOT NULL,
+            creato_il TEXT
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS diario_utente_data ON diario (utente_id, data)")
     conn.commit()
     conn.close()
 
@@ -240,23 +302,28 @@ def to_float(value, default=0.0):
 # FORM / CRUD HELPERS
 # ---------------------------------------------------------------
 
+CAMPI_TESTO_FORM = ("alimento", "categoria", *analisi.CAMPI_RISCHIO)
+
+
 def parse_form():
     """
-    Legge e sistema i dati inviati dal form CRUD.
+    Legge e sistema i dati inviati dal form CRUD: restituisce (valori, errori).
     Calcola automaticamente alcuni campi se lasciati vuoti:
     - TEF (Kcal) da Kcal e TEF (%)
     - TEF (%) da TEF (Kcal) e Kcal
     - Kcal Nette = Kcal - TEF (Kcal)
     - Rapporto F/F = Fruttosio / Fibre
+    I dati nutrizionali lasciati vuoti restano "non disponibili" (NULL).
     """
-    alimento_val = (request.form.get("alimento") or "").strip()
-    categoria = (request.form.get("categoria") or "").strip()
+    form = request.form
+    errori = []
+    valori = {campo: (form.get(campo) or "").strip() for campo in CAMPI_TESTO_FORM}
 
-    kcal = to_float(request.form.get("kcal"))
+    kcal = to_float(form.get("kcal"))
 
-    tef_percent_raw = (request.form.get("tef_percent") or "").strip()
-    tef_kcal_raw = (request.form.get("tef_kcal") or "").strip()
-    kcal_nette_raw = (request.form.get("kcal_nette") or "").strip()
+    tef_percent_raw = (form.get("tef_percent") or "").strip()
+    tef_kcal_raw = (form.get("tef_kcal") or "").strip()
+    kcal_nette_raw = (form.get("kcal_nette") or "").strip()
 
     tef_percent = to_float(tef_percent_raw) if tef_percent_raw else 0.0
     tef_kcal = to_float(tef_kcal_raw) if tef_kcal_raw else 0.0
@@ -269,37 +336,104 @@ def parse_form():
 
     kcal_nette = to_float(kcal_nette_raw) if kcal_nette_raw else round(kcal - tef_kcal, 2)
 
-    fruttosio = to_float(request.form.get("fruttosio"))
-    fibre = to_float(request.form.get("fibre"))
+    fruttosio = to_float(form.get("fruttosio"))
+    fibre = to_float(form.get("fibre"))
 
-    rapporto_raw = (request.form.get("rapporto") or "").strip()
+    rapporto_raw = (form.get("rapporto") or "").strip()
     if rapporto_raw == "":
         rapporto = round(fruttosio / fibre, 3) if fibre else 0.0
     else:
         rapporto = to_float(rapporto_raw)
 
-    rischio_diabete = (request.form.get("rischio_diabete") or "").strip()
-    rischio_colesterolo = (request.form.get("rischio_colesterolo") or "").strip()
-    rischio_malassorbimento = (request.form.get("rischio_malassorbimento") or "").strip()
-    rischio_metabolico = (request.form.get("rischio_metabolico") or "").strip()
-    rischio_tumorale = (request.form.get("rischio_tumorale") or "").strip()
-
-    return (
-        alimento_val,
-        categoria,
-        kcal,
-        tef_kcal,
-        tef_percent,
-        kcal_nette,
-        fruttosio,
-        fibre,
-        rapporto,
-        rischio_diabete,
-        rischio_colesterolo,
-        rischio_malassorbimento,
-        rischio_metabolico,
-        rischio_tumorale
+    valori.update(
+        kcal=kcal,
+        tef_kcal=tef_kcal,
+        tef_percent=tef_percent,
+        kcal_nette=kcal_nette,
+        fruttosio=fruttosio,
+        fibre=fibre,
+        rapporto=rapporto,
     )
+
+    def numero(campo, etichetta, minimo=0.0, massimo=None):
+        testo = (form.get(campo) or "").strip()
+
+        if not testo:
+            return None
+
+        valore, valido = importazione.leggi_numero(testo)
+
+        if not valido or valore is None or valore < minimo or (massimo is not None and valore > massimo):
+            intervallo = f" tra {minimo:g} e {massimo:g}" if massimo is not None else " maggiore o uguale a 0"
+            errori.append(f"{etichetta}: «{testo}» non è valido, serve un numero{intervallo}.")
+            return testo
+
+        return valore
+
+    for campo, etichetta, *_ in nutrienti.NUTRIENTI:
+        valori[campo] = numero(campo, etichetta)
+
+    valori["indice_glicemico"] = numero("indice_glicemico", "Indice glicemico", 0, 100)
+
+    nova = (form.get("nova") or "").strip()
+    valori["nova"] = nutrienti.leggi_nova(nova) if nova else None
+
+    if nova and valori["nova"] is None:
+        errori.append("NOVA: scegli un gruppo da 1 a 4.")
+
+    for campo, etichetta in nutrienti.FODMAP:
+        testo = (form.get(campo) or "").strip()
+        livello_fodmap = nutrienti.livello_fodmap(testo) if testo else None
+        valori[campo] = livello_fodmap["etichetta"] if livello_fodmap else None
+
+        if testo and not livello_fodmap:
+            errori.append(f"FODMAP {etichetta.lower()}: livello «{testo}» non riconosciuto.")
+
+    valori["fonte_nutrienti"] = (form.get("fonte_nutrienti") or "").strip() or None
+
+    url = (form.get("url_fonte") or "").strip()
+    valori["url_fonte"] = url or None
+
+    if url and not nutrienti.URL_RE.match(url):
+        errori.append("URL della fonte: serve un indirizzo che inizia con http:// o https://.")
+
+    fdc = (form.get("fdc_id") or "").strip()
+    valori["fdc_id"] = int(fdc) if fdc.isdigit() else (fdc or None)
+
+    if fdc and not fdc.isdigit():
+        errori.append("FDC ID: serve un numero intero.")
+
+    return valori, errori
+
+
+def salva_alimento(valori, alimento_id=None):
+    """
+    Inserisce (alimento_id None) o aggiorna un alimento con tutti i campi del form.
+    """
+    campi = (*importazione.CAMPI, "aggiornato_il")
+    dati = [valori.get(campo) for campo in importazione.CAMPI]
+    dati.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+    conn = get_db()
+
+    try:
+        if alimento_id is None:
+            cursore = conn.execute(
+                f"INSERT INTO alimenti ({', '.join(campi)}) VALUES ({', '.join('?' for _ in campi)})",
+                dati,
+            )
+            alimento_id = cursore.lastrowid
+        else:
+            conn.execute(
+                f"UPDATE alimenti SET {', '.join(f'{c} = ?' for c in campi)} WHERE id = ?",
+                dati + [alimento_id],
+            )
+
+        conn.commit()
+    finally:
+        conn.close()
+
+    return alimento_id
 
 
 def get_alimento(alimento_id):
@@ -601,6 +735,11 @@ def get_form_options():
         "rischio_malassorbimento": malassorbimento_options,
         "rischio_metabolico": metabolic_options,
         "rischio_tumorale": tumorale_options,
+        "nova": [
+            (gruppo, f"{gruppo} – {info['etichetta']}")
+            for gruppo, info in nutrienti.NOVA.items()
+        ],
+        "fodmap": [(liv["etichetta"], liv["etichetta"]) for liv in nutrienti.LIVELLI_FODMAP],
     }
 
 
@@ -834,7 +973,9 @@ def scheda(alimento_id):
     if not item:
         abort(404)
 
-    medaglie = analisi.medaglie_per_alimento(get_alimenti()).get(alimento_id, [])
+    grammi = nutrienti.leggi_grammi(request.args.get("grammi"), 100)
+    tutti = get_alimenti()
+    medaglie = analisi.medaglie_per_alimento(tutti).get(alimento_id, [])
 
     return render_template(
         "scheda.html",
@@ -847,115 +988,43 @@ def scheda(alimento_id):
         medaglie=medaglie,
         posti_medaglia=analisi.POSTI_MEDAGLIA,
         livello=analisi.livello_punteggio(item.get("punteggio")),
+        grammi=grammi,
+        porzione=nutrienti.per_porzione(item, grammi),
+        carico_100=nutrienti.carico_glicemico(item),
+        carico_porzione=nutrienti.carico_glicemico(item, grammi),
+        disponibili=nutrienti.carboidrati_disponibili(item),
+        fodmap=nutrienti.fodmap_complessivo(item),
+        nova=nutrienti.gruppo_nova(item),
+        alternative=nutrienti.alternative(item, tutti),
     )
 
 
 @app.route("/nuovo", methods=["GET", "POST"])
 @solo_admin
 def nuovo():
+    pagina = {
+        "titolo": "Nuovo alimento",
+        "sottotitolo": "Inserisci un nuovo alimento nel database.",
+        "action": url_for("nuovo"),
+    }
+
     if request.method == "POST":
-        (
-            alimento_val,
-            categoria,
-            kcal,
-            tef_kcal,
-            tef_percent,
-            kcal_nette,
-            fruttosio,
-            fibre,
-            rapporto,
-            rischio_diabete,
-            rischio_colesterolo,
-            rischio_malassorbimento,
-            rischio_metabolico,
-            rischio_tumorale
-        ) = parse_form()
+        valori, errori = parse_form()
 
-        if not alimento_val:
-            flash("Il campo Alimento è obbligatorio.", "danger")
+        if not valori["alimento"]:
+            errori.insert(0, "Il campo Alimento è obbligatorio.")
 
-            item = {
-                "alimento": alimento_val,
-                "categoria": categoria,
-                "kcal": kcal,
-                "tef_kcal": tef_kcal,
-                "tef_percent": tef_percent,
-                "kcal_nette": kcal_nette,
-                "fruttosio": fruttosio,
-                "fibre": fibre,
-                "rapporto": rapporto,
-                "rischio_diabete": rischio_diabete,
-                "rischio_colesterolo": rischio_colesterolo,
-                "rischio_malassorbimento": rischio_malassorbimento,
-                "rischio_metabolico": rischio_metabolico,
-                "rischio_tumorale": rischio_tumorale,
-            }
+        if errori:
+            for errore in errori:
+                flash(errore, "danger")
 
-            return render_template(
-                "form.html",
-                titolo="Nuovo alimento",
-                sottotitolo="Inserisci un nuovo alimento nel database.",
-                action=url_for("nuovo"),
-                item=item,
-                opzioni=get_form_options()
-            )
+            return render_template("form.html", **pagina, item=valori, opzioni=get_form_options())
 
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        conn = get_db()
-        conn.execute(
-            """
-            INSERT INTO alimenti (
-                alimento,
-                categoria,
-                kcal,
-                tef_kcal,
-                tef_percent,
-                kcal_nette,
-                fruttosio,
-                fibre,
-                rapporto,
-                rischio_diabete,
-                rischio_colesterolo,
-                rischio_malassorbimento,
-                rischio_metabolico,
-                rischio_tumorale,
-                aggiornato_il
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                alimento_val,
-                categoria,
-                kcal,
-                tef_kcal,
-                tef_percent,
-                kcal_nette,
-                fruttosio,
-                fibre,
-                rapporto,
-                rischio_diabete,
-                rischio_colesterolo,
-                rischio_malassorbimento,
-                rischio_metabolico,
-                rischio_tumorale,
-                now
-            )
-        )
-        conn.commit()
-        conn.close()
-
+        nuovo_id = salva_alimento(valori)
         flash("Alimento aggiunto correttamente.", "success")
-        return redirect(url_for("index"))
+        return redirect(url_for("scheda", alimento_id=nuovo_id))
 
-    return render_template(
-        "form.html",
-        titolo="Nuovo alimento",
-        sottotitolo="Inserisci un nuovo alimento nel database.",
-        action=url_for("nuovo"),
-        item=None,
-        opzioni=get_form_options()
-    )
+    return render_template("form.html", **pagina, item=None, opzioni=get_form_options())
 
 
 @app.route("/modifica/<int:alimento_id>", methods=["GET", "POST"])
@@ -966,110 +1035,29 @@ def modifica(alimento_id):
     if not item:
         abort(404)
 
+    pagina = {
+        "titolo": "Modifica alimento",
+        "sottotitolo": "Aggiorna i dati dell'alimento.",
+        "action": url_for("modifica", alimento_id=alimento_id),
+    }
+
     if request.method == "POST":
-        (
-            alimento_val,
-            categoria,
-            kcal,
-            tef_kcal,
-            tef_percent,
-            kcal_nette,
-            fruttosio,
-            fibre,
-            rapporto,
-            rischio_diabete,
-            rischio_colesterolo,
-            rischio_malassorbimento,
-            rischio_metabolico,
-            rischio_tumorale
-        ) = parse_form()
+        valori, errori = parse_form()
 
-        if not alimento_val:
-            flash("Il campo Alimento è obbligatorio.", "danger")
+        if not valori["alimento"]:
+            errori.insert(0, "Il campo Alimento è obbligatorio.")
 
-            item.update({
-                "alimento": alimento_val,
-                "categoria": categoria,
-                "kcal": kcal,
-                "tef_kcal": tef_kcal,
-                "tef_percent": tef_percent,
-                "kcal_nette": kcal_nette,
-                "fruttosio": fruttosio,
-                "fibre": fibre,
-                "rapporto": rapporto,
-                "rischio_diabete": rischio_diabete,
-                "rischio_colesterolo": rischio_colesterolo,
-                "rischio_malassorbimento": rischio_malassorbimento,
-                "rischio_metabolico": rischio_metabolico,
-                "rischio_tumorale": rischio_tumorale,
-            })
+        if errori:
+            for errore in errori:
+                flash(errore, "danger")
 
-            return render_template(
-                "form.html",
-                titolo="Modifica alimento",
-                sottotitolo="Aggiorna i dati dell'alimento.",
-                action=url_for("modifica", alimento_id=alimento_id),
-                item=item,
-                opzioni=get_form_options()
-            )
+            return render_template("form.html", **pagina, item={**item, **valori}, opzioni=get_form_options())
 
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        conn = get_db()
-        conn.execute(
-            """
-            UPDATE alimenti
-            SET
-                alimento = ?,
-                categoria = ?,
-                kcal = ?,
-                tef_kcal = ?,
-                tef_percent = ?,
-                kcal_nette = ?,
-                fruttosio = ?,
-                fibre = ?,
-                rapporto = ?,
-                rischio_diabete = ?,
-                rischio_colesterolo = ?,
-                rischio_malassorbimento = ?,
-                rischio_metabolico = ?,
-                rischio_tumorale = ?,
-                aggiornato_il = ?
-            WHERE id = ?
-            """,
-            (
-                alimento_val,
-                categoria,
-                kcal,
-                tef_kcal,
-                tef_percent,
-                kcal_nette,
-                fruttosio,
-                fibre,
-                rapporto,
-                rischio_diabete,
-                rischio_colesterolo,
-                rischio_malassorbimento,
-                rischio_metabolico,
-                rischio_tumorale,
-                now,
-                alimento_id
-            )
-        )
-        conn.commit()
-        conn.close()
-
+        salva_alimento(valori, alimento_id)
         flash("Alimento aggiornato correttamente.", "success")
-        return redirect(url_for("index"))
+        return redirect(url_for("scheda", alimento_id=alimento_id))
 
-    return render_template(
-        "form.html",
-        titolo="Modifica alimento",
-        sottotitolo="Aggiorna i dati dell'alimento.",
-        action=url_for("modifica", alimento_id=alimento_id),
-        item=item,
-        opzioni=get_form_options()
-    )
+    return render_template("form.html", **pagina, item=item, opzioni=get_form_options())
 
 
 @app.route("/elimina/<int:alimento_id>", methods=["POST"])
@@ -1282,6 +1270,18 @@ def importa():
     )
 
 
+def campi_anteprima(letto):
+    """
+    Colonne della tabella di anteprima: i campi di base sempre,
+    quelli nutrizionali solo se il file li contiene.
+    """
+    nel_file = {colonna["campo"] for colonna in letto["colonne"]}
+    return [
+        campo for campo in importazione.CAMPI
+        if campo not in importazione.CAMPI_NULLABILI or campo in nel_file
+    ]
+
+
 @app.route("/importa/anteprima")
 @solo_admin
 def importa_anteprima():
@@ -1318,7 +1318,7 @@ def importa_anteprima():
         voci=[v for v in voci if v["azione"] != "invariato"][:ANTEPRIMA_RIGHE],
         voci_con_avvisi=[v for v in voci if v["avvisi"]][:ANTEPRIMA_AVVISI],
         totale_db=totale_db,
-        campi=importazione.CAMPI,
+        campi=campi_anteprima(letto),
         etichette=importazione.ETICHETTE,
         anteprima_righe=ANTEPRIMA_RIGHE,
         anteprima_avvisi=ANTEPRIMA_AVVISI,
@@ -1509,6 +1509,446 @@ def backup_ripristina_salvato(nome):
 
 
 # ---------------------------------------------------------------
+# PASTO (nella sessione) E DIARIO ALIMENTARE (per utente)
+# ---------------------------------------------------------------
+
+PASTO_MAX_VOCI = 30
+GIORNI_RIEPILOGO = 7
+ID_IN_TESTO_RE = re.compile(r"#(\d+)\s*$")
+CHIAVI_PASTI = {chiave for chiave, _ in nutrienti.PASTI}
+
+# Valori per 100 g copiati nel diario al momento dell'inserimento
+CAMPI_DIARIO = (
+    "categoria", "tef_percent", "indice_glicemico",
+    *nutrienti.CAMPI_PER_PORZIONE,
+    *analisi.CAMPI_RISCHIO,
+)
+
+
+def elenco_per_ricerca():
+    """
+    Alimenti per il campo di ricerca (datalist) di pasto e diario.
+    """
+    conn = get_db()
+    righe = conn.execute(
+        "SELECT id, alimento, categoria, kcal FROM alimenti ORDER BY LOWER(alimento), id"
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in righe]
+
+
+def trova_alimento_da_modulo(form):
+    """
+    (alimento, errore) dal campo alimento_id, dal testo "Nome · Categoria · #id"
+    scelto nella ricerca, oppure da un nome esatto se non è ambiguo.
+    """
+    testo_id = (form.get("alimento_id") or "").strip()
+    testo = (form.get("cerca") or "").strip()
+
+    if not testo_id:
+        corrispondenza = ID_IN_TESTO_RE.search(testo)
+        testo_id = corrispondenza.group(1) if corrispondenza else ""
+
+    if testo_id.isdigit():
+        item = get_alimento(int(testo_id))
+        return (item, None) if item else (None, "Alimento non trovato.")
+
+    if not testo:
+        return None, "Scegli un alimento dall'elenco."
+
+    conn = get_db()
+    righe = conn.execute(
+        "SELECT id FROM alimenti WHERE LOWER(alimento) = LOWER(?)", (testo,)
+    ).fetchall()
+    conn.close()
+
+    if len(righe) == 1:
+        return get_alimento(righe[0]["id"]), None
+
+    if righe:
+        return None, f"Ci sono {len(righe)} alimenti «{testo}»: scegline uno dall'elenco."
+
+    return None, f"Nessun alimento «{testo}»: scegline uno dall'elenco."
+
+
+def grammi_non_validi():
+    flash(
+        f"Grammi non validi: servono da {nutrienti.GRAMMI_MIN} a {nutrienti.GRAMMI_MAX} g.",
+        "danger"
+    )
+
+
+def leggi_pasto():
+    voci = []
+
+    for voce in session.get("pasto", []):
+        try:
+            voci.append({"id": int(voce["id"]), "grammi": float(voce["grammi"])})
+        except (KeyError, TypeError, ValueError):
+            continue
+
+    return voci[:PASTO_MAX_VOCI]
+
+
+def carica_voci(voci):
+    """
+    [(alimento, grammi, indice)] per le voci del pasto il cui alimento esiste ancora.
+    """
+    if not voci:
+        return []
+
+    ids = sorted({voce["id"] for voce in voci})
+    conn = get_db()
+    righe = conn.execute(
+        f"{SELECT_ALIMENTI} WHERE id IN ({', '.join('?' for _ in ids)})", ids
+    ).fetchall()
+    conn.close()
+
+    per_id = {riga["id"]: dict(riga) for riga in righe}
+    return [
+        (per_id[voce["id"]], voce["grammi"], indice)
+        for indice, voce in enumerate(voci)
+        if voce["id"] in per_id
+    ]
+
+
+def riepilogo_nutrizionale(voci):
+    """
+    Totali, dati mancanti e profilo di rischio (con radar) di una lista di (alimento, grammi).
+    """
+    if not voci:
+        return None
+
+    somme, mancanti = nutrienti.totali(voci)
+    profilo = nutrienti.profilo_rischio(voci)
+
+    return {
+        "totali": somme,
+        "mancanti": mancanti,
+        "profilo": profilo,
+        "radar": analisi.radar({}, punti={r["campo"]: r["punti"] for r in profilo["rischi"]}),
+        "voci": len(voci),
+    }
+
+
+def pasto_dell_ora():
+    ora = datetime.now().hour
+
+    if ora < 11:
+        return "colazione"
+
+    if ora < 15:
+        return "pranzo"
+
+    if ora < 18:
+        return "spuntino"
+
+    return "cena"
+
+
+@app.route("/pasto")
+def pasto():
+    voci = carica_voci(leggi_pasto())
+
+    return render_template(
+        "pasto.html",
+        voci=voci,
+        riepilogo=riepilogo_nutrizionale([(item, grammi) for item, grammi, _ in voci]),
+        elenco=elenco_per_ricerca(),
+        oggi=date.today().isoformat(),
+        pasto_suggerito=pasto_dell_ora(),
+        max_voci=PASTO_MAX_VOCI,
+    )
+
+
+@app.route("/pasto/aggiungi", methods=["POST"])
+def pasto_aggiungi():
+    destinazione = url_sicuro(request.form.get("next")) or url_for("pasto")
+    item, errore = trova_alimento_da_modulo(request.form)
+    grammi = nutrienti.leggi_grammi(request.form.get("grammi"))
+
+    if errore:
+        flash(errore, "danger")
+        return redirect(destinazione)
+
+    if grammi is None:
+        grammi_non_validi()
+        return redirect(destinazione)
+
+    voci = leggi_pasto()
+    esistente = next((voce for voce in voci if voce["id"] == item["id"]), None)
+
+    if esistente:
+        esistente["grammi"] = min(round(esistente["grammi"] + grammi, 1), nutrienti.GRAMMI_MAX)
+    elif len(voci) >= PASTO_MAX_VOCI:
+        flash(f"Il pasto può contenere al massimo {PASTO_MAX_VOCI} alimenti.", "warning")
+        return redirect(destinazione)
+    else:
+        voci.append({"id": item["id"], "grammi": grammi})
+
+    session["pasto"] = voci
+    flash(f"Aggiunto al pasto: {item['alimento']}, {filtro_numero(grammi)} g.", "success")
+    return redirect(destinazione)
+
+
+@app.route("/pasto/aggiorna", methods=["POST"])
+def pasto_aggiorna():
+    voci = leggi_pasto()
+    rimuovi = (request.form.get("rimuovi") or "").strip()
+
+    if rimuovi.isdigit():
+        if int(rimuovi) < len(voci):
+            del voci[int(rimuovi)]
+    else:
+        for indice, voce in enumerate(voci):
+            testo = request.form.get(f"grammi_{indice}")
+
+            if testo is None:
+                continue
+
+            grammi = nutrienti.leggi_grammi(testo)
+
+            if grammi is None:
+                grammi_non_validi()
+                return redirect(url_for("pasto"))
+
+            voce["grammi"] = grammi
+
+    session["pasto"] = voci
+    return redirect(url_for("pasto"))
+
+
+@app.route("/pasto/svuota", methods=["POST"])
+def pasto_svuota():
+    session.pop("pasto", None)
+    flash("Pasto svuotato.", "info")
+    return redirect(url_for("pasto"))
+
+
+def leggi_giorno(testo):
+    try:
+        return date.fromisoformat((testo or "").strip())
+    except ValueError:
+        return None
+
+
+def istantanea_diario(item):
+    return json.dumps({campo: item.get(campo) for campo in CAMPI_DIARIO}, ensure_ascii=False)
+
+
+def inserisci_diario(conn, giorno, pasto_chiave, item, grammi):
+    conn.execute(
+        """
+        INSERT INTO diario (utente_id, data, pasto, alimento_id, alimento, grammi, valori, creato_il)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            current_user.id, giorno.isoformat(), pasto_chiave, item["id"], item["alimento"],
+            grammi, istantanea_diario(item), datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        ),
+    )
+
+
+def voci_diario(utente_id, dal, al=None):
+    """
+    Voci del diario tra due date (comprese), con i valori per 100 g salvati.
+    """
+    conn = get_db_diario()
+    righe = conn.execute(
+        """
+        SELECT id, data, pasto, alimento_id, alimento, grammi, valori
+        FROM diario
+        WHERE utente_id = ? AND data BETWEEN ? AND ?
+        ORDER BY data, id
+        """,
+        (utente_id, dal.isoformat(), (al or dal).isoformat()),
+    ).fetchall()
+    conn.close()
+
+    voci = []
+
+    for riga in righe:
+        try:
+            valori = json.loads(riga["valori"])
+        except (TypeError, ValueError):
+            valori = {}
+
+        voci.append({**dict(riga), "item": {**valori, "alimento": riga["alimento"]}})
+
+    return voci
+
+
+def collegamenti_schede(voci):
+    """
+    ID degli alimenti ancora presenti con lo stesso nome (per il link alla scheda).
+    """
+    ids = sorted({v["alimento_id"] for v in voci if v["alimento_id"]})
+
+    if not ids:
+        return set()
+
+    conn = get_db()
+    righe = conn.execute(
+        f"SELECT id, alimento FROM alimenti WHERE id IN ({', '.join('?' for _ in ids)})", ids
+    ).fetchall()
+    conn.close()
+
+    nomi = {v["alimento_id"]: v["alimento"] for v in voci}
+    return {r["id"] for r in righe if r["alimento"] == nomi.get(r["id"])}
+
+
+def torna_al_diario(giorno):
+    return redirect(url_for("diario", data=giorno.isoformat()))
+
+
+@app.route("/diario")
+@login_required
+def diario():
+    giorno = leggi_giorno(request.args.get("data")) or date.today()
+    voci = voci_diario(current_user.id, giorno)
+
+    per_pasto = []
+
+    for chiave, etichetta in nutrienti.PASTI:
+        del_pasto = [v for v in voci if v["pasto"] == chiave]
+        kcal = sum((v["item"].get("kcal") or 0) * v["grammi"] / 100 for v in del_pasto)
+        per_pasto.append((chiave, etichetta, del_pasto, kcal))
+
+    # Ultimi giorni fino a quello mostrato: Kcal nette e TEF per giorno
+    inizio = giorno - timedelta(days=GIORNI_RIEPILOGO - 1)
+    settimana = []
+
+    for i in range(GIORNI_RIEPILOGO):
+        g = inizio + timedelta(days=i)
+        del_giorno = [(v["item"], v["grammi"]) for v in voci_diario(current_user.id, g)]
+        somme, _ = nutrienti.totali(del_giorno) if del_giorno else ({}, {})
+        settimana.append({
+            "giorno": g,
+            "voci": len(del_giorno),
+            "kcal_nette": somme.get("kcal_nette", 0),
+            "tef_kcal": somme.get("tef_kcal", 0),
+        })
+
+    massimo = max((s["kcal_nette"] + s["tef_kcal"] for s in settimana), default=0)
+
+    return render_template(
+        "diario.html",
+        giorno=giorno,
+        oggi=date.today(),
+        precedente=giorno - timedelta(days=1),
+        successivo=giorno + timedelta(days=1),
+        per_pasto=per_pasto,
+        riepilogo=riepilogo_nutrizionale([(v["item"], v["grammi"]) for v in voci]),
+        collegati=collegamenti_schede(voci),
+        settimana=settimana,
+        massimo_settimana=massimo,
+        elenco=elenco_per_ricerca(),
+        pasto_suggerito=pasto_dell_ora() if giorno == date.today() else "pranzo",
+    )
+
+
+@app.route("/diario/aggiungi", methods=["POST"])
+@login_required
+def diario_aggiungi():
+    giorno = leggi_giorno(request.form.get("data")) or date.today()
+    pasto_chiave = request.form.get("pasto", "")
+    item, errore = trova_alimento_da_modulo(request.form)
+    grammi = nutrienti.leggi_grammi(request.form.get("grammi"))
+
+    if pasto_chiave not in CHIAVI_PASTI:
+        flash("Scegli il pasto: colazione, pranzo, cena o spuntino.", "danger")
+    elif errore:
+        flash(errore, "danger")
+    elif grammi is None:
+        grammi_non_validi()
+    else:
+        conn = get_db_diario()
+        inserisci_diario(conn, giorno, pasto_chiave, item, grammi)
+        conn.commit()
+        conn.close()
+        flash(f"Aggiunto al diario: {item['alimento']}, {filtro_numero(grammi)} g.", "success")
+
+    return torna_al_diario(giorno)
+
+
+@app.route("/diario/aggiungi-pasto", methods=["POST"])
+@login_required
+def diario_aggiungi_pasto():
+    giorno = leggi_giorno(request.form.get("data")) or date.today()
+    pasto_chiave = request.form.get("pasto", "")
+    voci = carica_voci(leggi_pasto())
+
+    if pasto_chiave not in CHIAVI_PASTI:
+        flash("Scegli il pasto: colazione, pranzo, cena o spuntino.", "danger")
+        return redirect(url_for("pasto"))
+
+    if not voci:
+        flash("Il pasto è vuoto.", "warning")
+        return redirect(url_for("pasto"))
+
+    conn = get_db_diario()
+
+    for item, grammi, _ in voci:
+        inserisci_diario(conn, giorno, pasto_chiave, item, grammi)
+
+    conn.commit()
+    conn.close()
+
+    if request.form.get("svuota") == "1":
+        session.pop("pasto", None)
+
+    flash(f"Salvati nel diario {len(voci)} alimenti.", "success")
+    return torna_al_diario(giorno)
+
+
+def voce_diario_propria(voce_id):
+    """
+    Voce del diario dell'utente connesso, altrimenti 404 (anche se è di un altro utente).
+    """
+    conn = get_db_diario()
+    riga = conn.execute(
+        "SELECT id, data FROM diario WHERE id = ? AND utente_id = ?", (voce_id, current_user.id)
+    ).fetchone()
+    conn.close()
+
+    if riga is None:
+        abort(404)
+
+    return riga
+
+
+@app.route("/diario/voce/<int:voce_id>/aggiorna", methods=["POST"])
+@login_required
+def diario_aggiorna(voce_id):
+    riga = voce_diario_propria(voce_id)
+    grammi = nutrienti.leggi_grammi(request.form.get("grammi"))
+
+    if grammi is None:
+        grammi_non_validi()
+    else:
+        conn = get_db_diario()
+        conn.execute("UPDATE diario SET grammi = ? WHERE id = ?", (grammi, voce_id))
+        conn.commit()
+        conn.close()
+
+    return torna_al_diario(date.fromisoformat(riga["data"]))
+
+
+@app.route("/diario/voce/<int:voce_id>/elimina", methods=["POST"])
+@login_required
+def diario_elimina(voce_id):
+    riga = voce_diario_propria(voce_id)
+
+    conn = get_db_diario()
+    conn.execute("DELETE FROM diario WHERE id = ?", (voce_id,))
+    conn.commit()
+    conn.close()
+
+    flash("Voce eliminata dal diario.", "info")
+    return torna_al_diario(date.fromisoformat(riga["data"]))
+
+
+# ---------------------------------------------------------------
 # GESTIONE UTENTI (riga di comando)
 #   flask --app app crea-utente <username> [--ruolo admin|visitatore]
 #   flask --app app imposta-password <username>
@@ -1620,14 +2060,63 @@ def elenco_utenti_cmd():
 def elimina_utente_cmd(username):
     """Elimina un utente."""
     conn = get_db_utenti()
-    cur = conn.execute("DELETE FROM utenti WHERE username = ?", (username,))
+    riga = conn.execute("SELECT id FROM utenti WHERE username = ?", (username,)).fetchone()
+
+    if riga is None:
+        conn.close()
+        raise click.ClickException(f"Utente '{username}' non trovato.")
+
+    conn.execute("DELETE FROM utenti WHERE id = ?", (riga["id"],))
     conn.commit()
     conn.close()
 
-    if cur.rowcount == 0:
-        raise click.ClickException(f"Utente '{username}' non trovato.")
+    # Il diario è personale: si elimina insieme all'utente
+    conn = get_db_diario()
+    voci = conn.execute("DELETE FROM diario WHERE utente_id = ?", (riga["id"],)).rowcount
+    conn.commit()
+    conn.close()
 
-    click.echo(f"Utente '{username}' eliminato.")
+    click.echo(f"Utente '{username}' eliminato" + (f", con {voci} voci di diario." if voci else "."))
+
+
+@app.cli.command("usda-nutrienti")
+@click.option("--api-key", envvar="USDA_API_KEY", default="DEMO_KEY", show_default=True,
+              help="Chiave USDA FoodData Central (variabile USDA_API_KEY).")
+@click.option("--pagine", default=1, show_default=True, type=click.IntRange(1, 20),
+              help="Pagine da 200 alimenti dell'elenco USDA.")
+@click.option("--sovrascrivi", is_flag=True, help="Sostituisce anche i valori già presenti.")
+@click.option("--prova", is_flag=True, help="Mostra cosa cambierebbe senza scrivere.")
+def usda_nutrienti_cmd(api_key, pagine, sovrascrivi, prova):
+    """Compila macro e micronutrienti degli alimenti USDA (abbinati per nome)."""
+    try:
+        alimenti_usda = usda.scarica(api_key, pagine)
+    except usda.ErroreUsda as exc:
+        raise click.ClickException(str(exc)) from None
+
+    conn = get_db()
+
+    try:
+        piano = usda.pianifica(conn, alimenti_usda, sovrascrivi)
+        campi = sum(len(voce["valori"]) for voce in piano)
+        click.echo(
+            f"Scaricati {len(alimenti_usda)} alimenti USDA: {len(piano)} da aggiornare "
+            f"nel database ({campi} valori)."
+        )
+
+        for voce in piano[:5]:
+            click.echo(f"  - {voce['alimento']} (FDC {voce['fdc_id']}): {len(voce['valori'])} valori")
+
+        if prova or not piano:
+            click.echo("Nessuna modifica scritta." if prova else "Niente da aggiornare.")
+            return
+
+        nome_backup = backup.crea(DB_PATH, app.config["BACKUP_DIR"], "usda")
+        usda.applica(conn, piano, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        conn.commit()
+    finally:
+        conn.close()
+
+    click.echo(f"Aggiornati {len(piano)} alimenti. Backup del database precedente: {nome_backup}.")
 
 
 # ---------------------------------------------------------------

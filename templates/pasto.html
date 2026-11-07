@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}
+Componi un pasto
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>🍽️ Componi un pasto</h1>
+    <p>
+        Somma più alimenti con le loro porzioni e guarda totali e profilo di rischio del pasto.
+        Il pasto resta in questo browser finché non lo svuoti{% if current_user.is_authenticated %} o lo salvi nel diario{% endif %}.
+    </p>
+</div>
+
+{% include "_elenco_alimenti.html" %}
+
+<section class="card card-form shadow-sm p-4 mb-3" aria-labelledby="titolo-aggiungi">
+    <h2 class="grafico-titolo" id="titolo-aggiungi">Aggiungi un alimento</h2>
+
+    <form method="post" action="{{ url_for('pasto_aggiungi') }}" class="row g-2 align-items-end">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="col-md-8">
+            <label for="cerca-pasto" class="form-label">Alimento</label>
+            <input type="text" class="form-control" id="cerca-pasto" name="cerca" list="elenco-alimenti"
+                   autocomplete="off" placeholder="Scrivi per cercare, es. mela" required>
+        </div>
+
+        <div class="col-6 col-md-2">
+            <label for="grammi-pasto" class="form-label">Grammi</label>
+            <input type="number" class="form-control" id="grammi-pasto" name="grammi" value="100"
+                   min="{{ nutrienti.GRAMMI_MIN }}" max="{{ nutrienti.GRAMMI_MAX }}" step="any" required>
+        </div>
+
+        <div class="col-6 col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Aggiungi</button>
+        </div>
+    </form>
+</section>
+
+{% if voci %}
+    <section class="card table-card mb-3" aria-labelledby="titolo-alimenti-pasto">
+        <div class="card-body pb-2">
+            <h2 class="grafico-titolo" id="titolo-alimenti-pasto">Alimenti del pasto</h2>
+            <p class="grafico-sottotitolo mb-0">{{ voci|length }} di massimo {{ max_voci }}. Cambia i grammi e premi «Aggiorna».</p>
+        </div>
+
+        <form method="post" action="{{ url_for('pasto_aggiorna') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 tabella-pasto">
+                    <thead>
+                        <tr>
+                            <th scope="col">Alimento</th>
+                            <th scope="col" class="text-end">Grammi</th>
+                            <th scope="col" class="text-end">Kcal</th>
+                            <th scope="col" class="text-end">Kcal nette</th>
+                            <th scope="col" class="text-end">Punteggio</th>
+                            <th scope="col"><span class="visually-hidden">Azioni</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item, grammi, indice in voci %}
+                            {% set liv = livello_punteggio(item.punteggio) %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('scheda', alimento_id=item.id, grammi=grammi) }}">{{ item.alimento }}</a>
+                                    <small class="text-muted d-block">{{ item.categoria or 'Senza categoria' }}</small>
+                                </td>
+                                <td class="text-end">
+                                    <label class="visually-hidden" for="grammi_{{ indice }}">Grammi di {{ item.alimento }}</label>
+                                    <input type="number" class="form-control form-control-sm campo-grammi" id="grammi_{{ indice }}"
+                                           name="grammi_{{ indice }}" value="{{ grammi|round(1)|numero|replace(',', '.') }}"
+                                           min="{{ nutrienti.GRAMMI_MIN }}" max="{{ nutrienti.GRAMMI_MAX }}" step="any">
+                                </td>
+                                <td class="text-end">{{ ((item.kcal or 0) * grammi / 100)|round(0)|numero }}</td>
+                                <td class="text-end">{{ ((item.kcal_nette or 0) * grammi / 100)|round(0)|numero }}</td>
+                                <td class="text-end">
+                                    {% if item.punteggio is not none %}
+                                        <span class="punteggio stato-{{ liv.stato }}" title="Livello medio: {{ liv.etichetta }}">{{ item.punteggio }}</span>
+                                    {% else %}–{% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <button type="submit" name="rimuovi" value="{{ indice }}" class="btn btn-sm btn-outline-danger"
+                                            formnovalidate aria-label="Togli {{ item.alimento }} dal pasto">Togli</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-body d-flex flex-wrap gap-2 pt-3">
+                <button type="submit" class="btn btn-outline-primary btn-sm">Aggiorna i grammi</button>
+                <button type="submit" formaction="{{ url_for('pasto_svuota') }}" formnovalidate
+                        class="btn btn-outline-secondary btn-sm">Svuota il pasto</button>
+            </div>
+        </form>
+    </section>
+
+    {% with prefisso="pasto", titolo="del pasto" %}
+        {% include "_riepilogo_pasto.html" %}
+    {% endwith %}
+
+    <section class="card card-form shadow-sm p-4 mt-3" aria-labelledby="titolo-salva">
+        <h2 class="grafico-titolo" id="titolo-salva">Salva nel diario</h2>
+
+        {% if current_user.is_authenticated %}
+            <form method="post" action="{{ url_for('diario_aggiungi_pasto') }}" class="row g-2 align-items-end">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="col-6 col-md-3">
+                    <label for="data-salva" class="form-label">Giorno</label>
+                    <input type="date" class="form-control" id="data-salva" name="data" value="{{ oggi }}" required>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <label for="pasto-salva" class="form-label">Pasto</label>
+                    <select class="form-select" id="pasto-salva" name="pasto">
+                        {% for chiave, etichetta in nutrienti.PASTI %}
+                            <option value="{{ chiave }}" {% if chiave == pasto_suggerito %}selected{% endif %}>{{ etichetta }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="svuota-salva" name="svuota" value="1" checked>
+                        <label class="form-check-label" for="svuota-salva">Poi svuota il pasto</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Salva nel diario</button>
+                </div>
+            </form>
+        {% else %}
+            <p class="mb-0">
+                <a href="{{ url_for('login', next=request.full_path.rstrip('?')) }}">Accedi</a>
+                per salvare i pasti nel tuo diario alimentare.
+            </p>
+        {% endif %}
+    </section>
+{% else %}
+    <div class="card grafico-card">
+        <div class="card-body">
+            <p class="mb-0">
+                Il pasto è vuoto: aggiungi gli alimenti qui sopra oppure con «Aggiungi al pasto»
+                dalla scheda di un alimento.
+            </p>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

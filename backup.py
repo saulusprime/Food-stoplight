@@ -22,6 +22,7 @@ MOTIVI = {
     "manuale": "Manuale",
     "import": "Prima di un import",
     "ripristino": "Prima di un ripristino",
+    "usda": "Prima dei nutrienti USDA",
 }
 
 NOME_RE = re.compile(r"^alimenti_(\d{8}-\d{6})(?:-(\d+))?_([a-z]+)\.db$")

@@ -17,24 +17,14 @@ Le attività completate sono in [ASIS.md](ASIS.md).
 - [ ] Ordinamento multiplo (es. categoria + kcal)
 - [ ] Filtro rapido "solo alimenti sicuri" (tutti i rischi bassi/trascurabili)
 
-## 🍽️ Funzionalità nutrizionali
-
-- [ ] Aggiungere i **macronutrienti completi** (proteine, carboidrati, grassi, grassi saturi, zuccheri, colesterolo) anche nella web app — già supportati da `update.py`
-- [ ] Micronutrienti: vitamine e sali minerali principali
-- [ ] **Indice glicemico e carico glicemico** per alimento
-- [ ] Classificazione FODMAP completa (non solo fruttosio)
-- [ ] Grado di processazione (classificazione NOVA)
-- [ ] **Calcolatore porzioni**: ricalcolo dei valori per grammatura personalizzata (es. 150 g invece di 100 g)
-- [ ] **Composizione pasti**: sommare più alimenti e vedere totali e profilo di rischio del pasto
-- [ ] Diario alimentare giornaliero con totali di Kcal nette e TEF
-- [ ] Suggerimenti di alimenti alternativi con profilo di rischio migliore nella stessa categoria
-
 ## 🌐 Integrazione dati
 
 - [ ] Sincronizzazione periodica con **USDA FoodData Central** (chiave API configurabile, non demo)
 - [ ] Integrazione con database CREA (Tabelle di composizione degli alimenti italiane)
 - [ ] Integrazione con Open Food Facts (ricerca per codice a barre)
 - [ ] Campi fonte/URL visibili nella web app per la tracciabilità dei dati (già nello schema di `update.py`)
+- [ ] Sostituire gli 805 alimenti sintetici generati da `autogen.py` (valori casuali, omonimi) con dati reali USDA o CREA
+- [ ] Popolare indice glicemico, FODMAP e NOVA da una fonte documentata (tabelle internazionali IG, Monash, Open Food Facts per NOVA)
 - [ ] Revisione scientifica dei punteggi di rischio con riferimenti bibliografici espliciti
 
 ## 🏗️ Architettura e qualità del codice

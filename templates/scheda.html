@@ -6,6 +6,22 @@
 
 {% block content %}
 
+{#
+    Riga di valore che cambia con la porzione: data-per100 serve al
+    ricalcolo immediato in static/js/app.js (senza JS vale il modulo "Ricalcola").
+#}
+{% macro riga_porzione(etichetta, campo, unita, decimali) %}
+    {% set valore = porzione[campo] %}
+    <tr>
+        <th scope="row">{{ etichetta }}{% if unita %} <span class="text-muted fw-normal">({{ unita }})</span>{% endif %}</th>
+        {% if valore is none %}
+            <td><span class="text-muted">–</span></td>
+        {% else %}
+            <td data-per100="{{ item[campo] }}" data-decimali="{{ decimali }}">{{ valore|round(decimali)|numero }}</td>
+        {% endif %}
+    </tr>
+{% endmacro %}
+
 <div class="page-header">
     <h1>{{ item.alimento }}</h1>
     <p>
@@ -90,28 +106,112 @@
             </section>
         {% endif %}
 
+        {# --- Valori nutrizionali con calcolatore della porzione --------- #}
         <section class="card grafico-card" aria-labelledby="titolo-valori">
             <div class="card-body">
-                <h2 class="grafico-titolo" id="titolo-valori">Valori per 100 g</h2>
+                <h2 class="grafico-titolo" id="titolo-valori">
+                    Valori per <span data-grammi-testo>{{ grammi|numero }}</span> g
+                </h2>
 
-                <table class="table table-sm dati-nutrizionali mb-0 mt-2">
+                <form method="get" class="porzione" aria-label="Calcolatore della porzione">
+                    <label for="porzione-grammi" class="form-label mb-1">Porzione</label>
+
+                    <div class="porzione-riga">
+                        <div class="input-group porzione-campo">
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="porzione-grammi"
+                                name="grammi"
+                                value="{{ grammi|round(1)|numero|replace(',', '.') }}"
+                                min="{{ nutrienti.GRAMMI_MIN }}"
+                                max="{{ nutrienti.GRAMMI_MAX }}"
+                                step="any"
+                                inputmode="decimal"
+                            >
+                            <span class="input-group-text">g</span>
+                        </div>
+
+                        <div class="porzione-rapide" role="group" aria-label="Porzioni rapide">
+                            {% for g in (50, 100, 150, 200) %}
+                                <a
+                                    href="{{ url_for('scheda', alimento_id=item.id, grammi=g) }}"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    data-grammi="{{ g }}"
+                                    {% if g == grammi %}aria-current="true"{% endif %}
+                                >{{ g }} g</a>
+                            {% endfor %}
+                        </div>
+
+                        <button type="submit" class="btn btn-sm btn-outline-primary porzione-ricalcola">Ricalcola</button>
+                    </div>
+                </form>
+
+                <table class="table table-sm dati-nutrizionali mb-2 mt-3">
+                    <caption class="visually-hidden">Energia, fruttosio, fibre e macronutrienti della porzione</caption>
                     <tbody>
-                        <tr><th scope="row">Kcal</th><td>{{ item.kcal|numero }}</td></tr>
-                        <tr><th scope="row">TEF (Kcal)</th><td>{{ item.tef_kcal|numero }}</td></tr>
-                        <tr><th scope="row">TEF (%)</th><td>{{ item.tef_percent|numero }}</td></tr>
-                        <tr><th scope="row">Kcal nette</th><td>{{ item.kcal_nette|numero }}</td></tr>
-                        <tr><th scope="row">Fruttosio (g)</th><td>{{ item.fruttosio|numero(2) }}</td></tr>
-                        <tr><th scope="row">Fibre (g)</th><td>{{ item.fibre|numero(2) }}</td></tr>
+                        {{ riga_porzione('Kcal', 'kcal', '', 1) }}
+                        {{ riga_porzione('TEF', 'tef_kcal', 'Kcal', 1) }}
+                        <tr><th scope="row">TEF <span class="text-muted fw-normal">(%)</span></th><td>{{ item.tef_percent|numero }}</td></tr>
+                        {{ riga_porzione('Kcal nette', 'kcal_nette', '', 1) }}
+                        {% for campo, etichetta, unita, decimali, _ in nutrienti.MACRO %}
+                            {{ riga_porzione(etichetta, campo, unita, decimali) }}
+                        {% endfor %}
+                        {{ riga_porzione('Fibre', 'fibre', 'g', 2) }}
+                        {{ riga_porzione('Fruttosio', 'fruttosio', 'g', 2) }}
                         <tr><th scope="row">Rapporto fruttosio/fibre</th><td>{{ item.rapporto|numero(2) }}</td></tr>
                     </tbody>
                 </table>
+
+                {% set ns = namespace(micro=false) %}
+                {% for micro in nutrienti.MICRO %}{% if porzione[micro[0]] is not none %}{% set ns.micro = true %}{% endif %}{% endfor %}
+
+                {% if ns.micro %}
+                    <details class="dettagli-micro">
+                        <summary>Vitamine e sali minerali</summary>
+                        <table class="table table-sm dati-nutrizionali mb-0 mt-2">
+                            <caption class="visually-hidden">Micronutrienti della porzione</caption>
+                            <tbody>
+                                {% for campo, etichetta, unita, decimali, _ in nutrienti.MICRO %}
+                                    {{ riga_porzione(etichetta, campo, unita, decimali) }}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </details>
+                {% else %}
+                    <p class="small text-muted mb-0">Vitamine e sali minerali non disponibili per questo alimento.</p>
+                {% endif %}
+
+                <p class="small text-muted mt-2 mb-3">
+                    {% if item.fonte_nutrienti or item.url_fonte %}
+                        Fonte dei nutrienti:
+                        {% if item.url_fonte %}
+                            <a href="{{ item.url_fonte }}" target="_blank" rel="noopener noreferrer">{{ item.fonte_nutrienti or item.url_fonte }}</a>{% if item.fdc_id %} (FDC {{ item.fdc_id }}){% endif %}.
+                        {% else %}
+                            {{ item.fonte_nutrienti }}{% if item.fdc_id %} (FDC {{ item.fdc_id }}){% endif %}.
+                        {% endif %}
+                    {% else %}
+                        I valori indicati con «–» non sono disponibili.
+                    {% endif %}
+                </p>
+
+                <form method="post" action="{{ url_for('pasto_aggiungi') }}" class="d-flex flex-wrap align-items-center gap-2">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="alimento_id" value="{{ item.id }}">
+                    <input type="hidden" name="grammi" value="{{ grammi }}" data-grammi-campo>
+                    <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}" data-ritorno>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        ➕ Aggiungi al pasto (<span data-grammi-testo>{{ grammi|numero }}</span> g)
+                    </button>
+                    <a href="{{ url_for('pasto') }}" class="btn btn-link btn-sm">Vai al pasto</a>
+                </form>
             </div>
         </section>
 
     </div>
 
-    <div class="col-lg-7">
-        <section class="card grafico-card h-100" aria-labelledby="titolo-radar">
+    <div class="col-lg-7 d-flex flex-column gap-3">
+        <section class="card grafico-card" aria-labelledby="titolo-radar">
             <div class="card-body">
                 <h2 class="grafico-titolo" id="titolo-radar">Profilo di rischio</h2>
                 <p class="grafico-sottotitolo">
@@ -119,66 +219,10 @@
                     Anelli dal centro: Trascurabile, Basso, Medio, Alto.
                 </p>
 
-                <svg
-                    class="radar"
-                    viewBox="-20 0 400 285"
-                    role="group"
-                    aria-labelledby="titolo-radar"
-                    aria-describedby="radar-descrizione"
-                >
-                    <desc id="radar-descrizione">
-                        {% for etichetta, valore in rischi %}{{ etichetta }}: {{ valore or 'non classificato' }}{% if not loop.last %}; {% endif %}{% endfor %}
-                    </desc>
-
-                    {% for anello in radar.anelli %}
-                        <polygon class="anello{% if loop.last %} anello-esterno{% endif %}" points="{{ anello.punti }}"></polygon>
-                    {% endfor %}
-
-                    {% for asse in radar.assi %}
-                        <line
-                            class="asse"
-                            x1="{{ radar.centro[0] }}" y1="{{ radar.centro[1] }}"
-                            x2="{{ asse.fine[0] }}" y2="{{ asse.fine[1] }}"
-                        ></line>
-                    {% endfor %}
-
-                    <polygon class="area" points="{{ radar.poligono }}"></polygon>
-
-                    {% for anello in radar.anelli %}
-                        <text
-                            class="etichetta-anello"
-                            x="{{ anello.etichetta_xy[0] }}"
-                            y="{{ anello.etichetta_xy[1] }}"
-                            aria-hidden="true"
-                        >{{ anello.etichetta }}</text>
-                    {% endfor %}
-
-                    {% for v in radar.vertici %}
-                        <g class="stato-{{ v.stato }}">
-                            <circle class="vertice" cx="{{ v.x }}" cy="{{ v.y }}" r="5"></circle>
-                            <circle
-                                class="bersaglio"
-                                cx="{{ v.x }}" cy="{{ v.y }}" r="13"
-                                tabindex="0"
-                                role="img"
-                                aria-label="{{ v.etichetta }}: {{ v.valore }}"
-                                data-tooltip="{{ v.etichetta }}"
-                                data-tooltip-stato="{{ v.stato }}"
-                                data-tooltip-valore="{{ v.valore }}"
-                            ></circle>
-                        </g>
-                    {% endfor %}
-
-                    {% for asse in radar.assi %}
-                        <text
-                            class="etichetta-asse"
-                            x="{{ asse.etichetta_xy[0] }}"
-                            y="{{ asse.etichetta_xy[1] }}"
-                            text-anchor="{{ asse.ancora }}"
-                            aria-hidden="true"
-                        >{{ asse.etichetta }}</text>
-                    {% endfor %}
-                </svg>
+                {% set descrizione %}{% for etichetta, valore in rischi %}{{ etichetta }}: {{ valore or 'non classificato' }}{% if not loop.last %}; {% endif %}{% endfor %}{% endset %}
+                {% with radar_titolo="titolo-radar", radar_descrizione=descrizione %}
+                    {% include "_radar.html" %}
+                {% endwith %}
 
                 <table class="table table-sm mt-3 mb-0">
                     <caption class="visually-hidden">Livelli di rischio</caption>
@@ -205,6 +249,124 @@
                 </table>
             </div>
         </section>
+
+        {# --- Indice glicemico, NOVA, FODMAP ------------------------------ #}
+        <section class="card grafico-card" aria-labelledby="titolo-glicemico">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-glicemico">Indice glicemico, processazione e FODMAP</h2>
+
+                <dl class="scheda-indicatori">
+                    <div>
+                        <dt>Indice glicemico</dt>
+                        <dd>
+                            {% if item.indice_glicemico is not none %}
+                                {% set liv_ig = nutrienti.livello_indice_glicemico(item.indice_glicemico) %}
+                                <span class="badge-risk stato-{{ liv_ig.stato }}">{{ item.indice_glicemico|numero }} · {{ liv_ig.etichetta }}</span>
+                            {% else %}
+                                <span class="text-muted">Non disponibile</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Carico glicemico della porzione</dt>
+                        <dd>
+                            {% if carico_porzione is not none %}
+                                {% set liv_cg = nutrienti.livello_carico_glicemico(carico_porzione) %}
+                                <span
+                                    class="badge-risk stato-{{ liv_cg.stato }}"
+                                    data-cg100="{{ carico_100 }}"
+                                ><span data-cg-valore>{{ carico_porzione|numero }}</span> · <span data-cg-livello>{{ liv_cg.etichetta }}</span></span>
+                                <small class="text-muted d-block">
+                                    {{ carico_100|numero }} per 100 g · indice × {{ disponibili|round(1)|numero }} g di carboidrati disponibili ÷ 100
+                                </small>
+                            {% elif item.indice_glicemico is not none %}
+                                <span class="text-muted">Servono i carboidrati</span>
+                            {% else %}
+                                <span class="text-muted">Non disponibile</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Processazione (NOVA)</dt>
+                        <dd>
+                            {% if nova %}
+                                <span class="badge-risk stato-{{ nova.stato }}">NOVA {{ nova.gruppo }} · {{ nova.etichetta }}</span>
+                            {% else %}
+                                <span class="text-muted">Non disponibile</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>FODMAP complessivo</dt>
+                        <dd>
+                            {% if fodmap %}
+                                <span class="badge-risk stato-{{ fodmap.stato }}">{{ fodmap.etichetta }}</span>
+                            {% else %}
+                                <span class="text-muted">Non classificato</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+
+                {% if fodmap %}
+                    <table class="table table-sm mb-0">
+                        <caption class="visually-hidden">FODMAP per categoria</caption>
+                        <tbody>
+                            {% for campo, etichetta in nutrienti.FODMAP %}
+                                {% set liv_f = nutrienti.livello_fodmap(item[campo]) %}
+                                <tr>
+                                    <th scope="row" class="fw-normal">{{ etichetta }}</th>
+                                    <td class="text-end">
+                                        {% if liv_f %}
+                                            <span class="badge-risk stato-{{ liv_f.stato }}">{{ liv_f.etichetta }}</span>
+                                        {% else %}
+                                            <span class="text-muted">Non classificato</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+                <p class="small text-muted mt-2 mb-0">
+                    Indice glicemico: basso fino a 55, medio 56–69, alto da 70.
+                    Carico glicemico per porzione: basso fino a 10, medio 11–19, alto da 20.
+                </p>
+            </div>
+        </section>
+
+        {# --- Alternative -------------------------------------------------- #}
+        {% if item.punteggio is not none and item.categoria %}
+            <section class="card grafico-card" aria-labelledby="titolo-alternative">
+                <div class="card-body">
+                    <h2 class="grafico-titolo" id="titolo-alternative">Alternative con profilo migliore</h2>
+                    <p class="grafico-sottotitolo">
+                        Nella categoria {{ item.categoria }}, dal punteggio più alto; a parità, con Kcal più vicine.
+                    </p>
+
+                    {% if alternative %}
+                        <ul class="elenco-alternative">
+                            {% for a in alternative %}
+                                {% set liv_a = livello_punteggio(a.punteggio) %}
+                                <li>
+                                    <a href="{{ url_for('scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
+                                    <span class="elenco-alternative-dati">
+                                        <span class="punteggio stato-{{ liv_a.stato }}" title="Livello medio: {{ liv_a.etichetta }}">{{ a.punteggio }}</span>
+                                        <span class="text-muted">+{{ a.guadagno }} punti · {{ a.kcal|numero }} Kcal</span>
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="mb-0">Nessun alimento della categoria ha un punteggio più alto.</p>
+                    {% endif %}
+                </div>
+            </section>
+        {% endif %}
     </div>
 
 </div>

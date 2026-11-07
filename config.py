@@ -137,6 +137,7 @@ def carica_config():
 
         "DATABASE_PATH": env_percorso("DATABASE_PATH", "alimenti.db"),
         "UTENTI_DB_PATH": env_percorso("UTENTI_DB_PATH", "utenti.db"),
+        "DIARIO_DB_PATH": env_percorso("DIARIO_DB_PATH", "diario.db"),
 
         # Backup automatici e manuali del database alimenti
         "BACKUP_DIR": env_percorso("BACKUP_DIR", os.path.join("instance", "backup")),

@@ -50,6 +50,31 @@
     </div>
 {% endmacro %}
 
+{# Menu a tendina: opzioni = lista di (valore, etichetta); valore vuoto = non disponibile #}
+{% macro scelta(name, label, opzioni_scelta, col='col-md-3', aiuto='') %}
+    {% set valore = (item[name] if item and item[name] is not none else '')|string %}
+
+    <div class="{{ col }}">
+        <label for="{{ name }}" class="form-label">{{ label }}</label>
+
+        <select
+            class="form-select"
+            id="{{ name }}"
+            name="{{ name }}"
+            {% if aiuto %}aria-describedby="{{ name }}-aiuto"{% endif %}
+        >
+            <option value="">Non disponibile</option>
+            {% for valore_opzione, etichetta in opzioni_scelta %}
+                <option value="{{ valore_opzione }}" {% if valore == valore_opzione|string %}selected{% endif %}>{{ etichetta }}</option>
+            {% endfor %}
+        </select>
+
+        {% if aiuto %}
+            <small id="{{ name }}-aiuto" class="form-text text-muted">{{ aiuto }}</small>
+        {% endif %}
+    </div>
+{% endmacro %}
+
 
 <div class="page-header">
     <h1>{{ titolo|default('Alimento') }}</h1>
@@ -92,6 +117,53 @@
         {{ campo('fibre', 'Fibre (g/100 g)', col='col-md-4', tipo='numero') }}
         {{ campo('rapporto', 'Rapporto F/Fibre', col='col-md-4', tipo='numero',
                  aiuto='Vuoto: Fruttosio ÷ Fibre.') }}
+    </div>
+
+    <h2 class="h5 mb-1">Macronutrienti</h2>
+    <p class="text-muted small mb-3">Per 100 g. Lasciare vuoto se il dato non è disponibile.</p>
+
+    <div class="row g-3 mb-4">
+        {% for nome_campo, etichetta, unita, _, _ in nutrienti.MACRO %}
+            {{ campo(nome_campo, etichetta ~ ' (' ~ unita ~ ')', col='col-6 col-md-4 col-xl-2', tipo='numero') }}
+        {% endfor %}
+    </div>
+
+    {# Sezione aperta se c'è almeno un micronutriente compilato #}
+    {% set ns = namespace(aperta=false) %}
+    {% if item %}
+        {% for micro in nutrienti.MICRO %}
+            {% if item[micro[0]] is not none and item[micro[0]] != '' %}{% set ns.aperta = true %}{% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <details class="mb-4 sezione-form"{% if ns.aperta %} open{% endif %}>
+        <summary class="h5 mb-3">Micronutrienti</summary>
+
+        <div class="row g-3">
+            {% for nome_campo, etichetta, unita, _, _ in nutrienti.MICRO %}
+                {{ campo(nome_campo, etichetta ~ ' (' ~ unita ~ ')', col='col-6 col-md-3', tipo='numero') }}
+            {% endfor %}
+        </div>
+    </details>
+
+    <h2 class="h5 mb-3">Indice glicemico, FODMAP e processazione</h2>
+
+    <div class="row g-3 mb-4">
+        {{ campo('indice_glicemico', 'Indice glicemico (0–100)', col='col-md-4', tipo='numero',
+                 aiuto='Il carico glicemico si calcola da indice e carboidrati.') }}
+        {{ scelta('nova', 'Grado di processazione (NOVA)', opzioni.nova, col='col-md-8') }}
+
+        {% for nome_campo, etichetta in nutrienti.FODMAP %}
+            {{ scelta(nome_campo, 'FODMAP: ' ~ etichetta, opzioni.fodmap, col='col-md-4') }}
+        {% endfor %}
+    </div>
+
+    <h2 class="h5 mb-3">Fonte dei dati nutrizionali</h2>
+
+    <div class="row g-3 mb-4">
+        {{ campo('fonte_nutrienti', 'Fonte', col='col-md-4') }}
+        {{ campo('url_fonte', 'URL della fonte', col='col-md-5', aiuto='Indirizzo http:// o https://.') }}
+        {{ campo('fdc_id', 'FDC ID (USDA)', col='col-md-3', tipo='numero') }}
     </div>
 
     <h2 class="h5 mb-3">Profilo di rischio</h2>

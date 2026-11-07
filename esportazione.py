@@ -16,6 +16,7 @@ from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
 import analisi
+import nutrienti
 
 # Colonne esportate: (campo, intestazione, formato numerico Excel)
 COLONNE = (
@@ -31,6 +32,17 @@ COLONNE = (
     ("fibre", "Fibre (g/100g)", "0.00"),
     ("rapporto", "Rapporto F/Fibre", "0.000"),
     *((campo, f"Rischio {etichetta}", None) for campo, etichetta in analisi.RISCHI),
+    # Dati nutrizionali per 100 g (vuoti = non disponibili)
+    *((campo, f"{etichetta[0].upper()}{etichetta[1:]} ({unita})".replace("Di cui zuccheri", "Zuccheri").replace("Di cui saturi", "Grassi saturi"),
+       "0" if decimali == 0 else "0." + "0" * decimali)
+      for campo, etichetta, unita, decimali, _ in nutrienti.NUTRIENTI),
+    ("indice_glicemico", "Indice glicemico", "0"),
+    ("carico_glicemico", "Carico glicemico (per 100 g)", "0.0"),
+    ("nova", "NOVA", "0"),
+    *((campo, nutrienti.ETICHETTE[campo], None) for campo in nutrienti.CAMPI_FODMAP),
+    ("fonte_nutrienti", "Fonte nutrienti", None),
+    ("url_fonte", "URL fonte", None),
+    ("fdc_id", "FDC ID", "0"),
     ("aggiornato_il", "Aggiornato il", None),
 )
 
@@ -141,6 +153,16 @@ def proteggi_formula(testo):
     return testo
 
 
+def valore_colonna(alimento, campo):
+    """
+    Valore di una colonna esportata; il carico glicemico si calcola al momento.
+    """
+    if campo == "carico_glicemico":
+        return nutrienti.carico_glicemico(alimento)
+
+    return alimento.get(campo)
+
+
 def _valore_csv(campo, valore):
     if valore is None:
         return ""
@@ -162,7 +184,7 @@ def csv_bytes(alimenti):
     scrittore.writerow([intestazione for _, intestazione, _ in COLONNE])
 
     for alimento in alimenti:
-        scrittore.writerow([_valore_csv(campo, alimento.get(campo)) for campo, _, _ in COLONNE])
+        scrittore.writerow([_valore_csv(campo, valore_colonna(alimento, campo)) for campo, _, _ in COLONNE])
 
     return ("﻿" + buffer.getvalue()).encode("utf-8")
 
@@ -172,6 +194,8 @@ def csv_bytes(alimenti):
 # ---------------------------------------------------------------
 
 LARGHEZZE_EXCEL = {
+    "fonte_nutrienti": 30,
+    "url_fonte": 48,
     "id": 7,
     "alimento": 46,
     "categoria": 20,
@@ -220,7 +244,7 @@ def xlsx_bytes(alimenti, info):
 
     for riga, alimento in enumerate(alimenti, start=2):
         for colonna, (campo, _, formato) in enumerate(COLONNE, start=1):
-            valore = alimento.get(campo)
+            valore = valore_colonna(alimento, campo)
             cella = foglio.cell(row=riga, column=colonna)
 
             if valore is None or valore == "":
@@ -271,11 +295,14 @@ def _foglio_informazioni(cartella, info, riempimenti):
         ("", ""),
         ("Punteggio", "100 × (1 − media dei punti ÷ 3), sui rischi disponibili: 100 = tutti trascurabili, 0 = tutti alti."),
         ("Rapporto F/Fibre", "Fruttosio ÷ fibre (0 se le fibre sono 0)."),
+        ("Nutrienti", "Valori per 100 g; celle vuote = dato non disponibile. Fonte e link nelle colonne Fonte nutrienti e URL fonte."),
+        ("Carico glicemico", "Indice glicemico × (carboidrati − fibre) ÷ 100, per 100 g."),
+        ("NOVA", "1 non trasformati, 2 ingredienti culinari, 3 trasformati, 4 ultra-trasformati."),
         (
             "Reimportare",
             "Il foglio «Alimenti» si può modificare e reimportare da «Importa» con la modalità "
             "«Aggiorna o aggiungi»: le righe si abbinano per ID. Le colonne Punteggio, "
-            "Rapporto F/Fibre e Aggiornato il vengono ricalcolate.",
+            "Rapporto F/Fibre, Carico glicemico e Aggiornato il vengono ricalcolate.",
         ),
         ("Nota", DISCLAIMER),
     ]
@@ -603,21 +630,33 @@ def pdf_scheda(item, medaglie, posti_medaglia, data):
         pdf.set_font("Helvetica", size=9)
         pdf.cell(larghezza, 6, "Nessun rischio classificato.", new_x="LEFT", new_y="NEXT")
 
+    # --- Indice glicemico, NOVA, FODMAP ------------------------------------
+    pdf.ln(5)
+    pdf.sezione("Indice glicemico, NOVA e FODMAP", x_sx, larghezza)
+    pdf.ln(0.5)
+    _indicatori(pdf, x_sx, item)
+
     y_fine_sx = pdf.get_y()
 
     # --- Valori per 100 g ------------------------------------------------
     pdf.set_y(y_riga)
     pdf.sezione("Valori per 100 g", x_dx, larghezza)
-    valori = (
+    valori = [
         ("Kcal", numero_it(item.get("kcal"))),
         ("TEF (Kcal)", numero_it(item.get("tef_kcal"))),
         ("TEF (%)", numero_it(item.get("tef_percent"))),
         ("Kcal nette", numero_it(item.get("kcal_nette"))),
-        ("Fruttosio (g)", numero_it(item.get("fruttosio"), 2)),
+    ]
+    valori += [
+        (f"{etichetta} ({unita})", _valore_nutriente(item.get(campo), decimali))
+        for campo, etichetta, unita, decimali, _ in nutrienti.MACRO
+    ]
+    valori += [
         ("Fibre (g)", numero_it(item.get("fibre"), 2)),
+        ("Fruttosio (g)", numero_it(item.get("fruttosio"), 2)),
         ("Rapporto fruttosio/fibre", numero_it(item.get("rapporto"), 2)),
-    )
-    _tabella_chiave_valore(pdf, x_dx, larghezza, valori)
+    ]
+    _tabella_chiave_valore(pdf, x_dx, larghezza, valori, altezza=5.3)
     y_fine_dx = pdf.get_y()
 
     # --- Radar e rischi --------------------------------------------------
@@ -649,7 +688,47 @@ def pdf_scheda(item, medaglie, posti_medaglia, data):
     rischi = [(etichetta, item.get(campo)) for campo, etichetta in analisi.RISCHI]
     _tabella_rischi(pdf, x_dx, larghezza, rischi)
 
+    if nutrienti.fodmap_complessivo(item):
+        pdf.ln(4)
+        pdf.sezione("FODMAP per categoria", x_dx, larghezza)
+        _tabella_rischi(pdf, x_dx, larghezza, [
+            (etichetta.split(" (")[0], item.get(campo)) for campo, etichetta in nutrienti.FODMAP
+        ], colori=_colori_fodmap)
+
     pdf.set_y(max(pdf.get_y(), y_fine_radar) + 6)
+
+    # --- Micronutrienti e fonte -----------------------------------------
+    micro = [
+        (f"{etichetta} ({unita})", _valore_nutriente(item.get(campo), decimali))
+        for campo, etichetta, unita, decimali, _ in nutrienti.MICRO
+    ]
+
+    if any(item.get(campo) is not None for campo in nutrienti.CAMPI_NUTRIENTI[len(nutrienti.MACRO):]):
+        if pdf.get_y() > pdf.h - 60:
+            pdf.add_page()
+
+        pdf.sezione("Vitamine e sali minerali per 100 g", x_sx, 180)
+        y_micro = pdf.get_y()
+        meta = (len(micro) + 1) // 2
+        _tabella_chiave_valore(pdf, x_sx, larghezza, micro[:meta], altezza=5.3)
+        y_fine_micro = pdf.get_y()
+        pdf.set_y(y_micro)
+        _tabella_chiave_valore(pdf, x_dx, larghezza, micro[meta:], altezza=5.3)
+        pdf.set_y(max(pdf.get_y(), y_fine_micro) + 3)
+
+    if item.get("fonte_nutrienti") or item.get("url_fonte"):
+        pdf.set_x(x_sx)
+        pdf.set_font("Helvetica", size=7.5)
+        pdf.set_text_color(*_rgb(INCHIOSTRO_SECONDARIO))
+        fonte = item.get("fonte_nutrienti") or "Fonte"
+        if item.get("fdc_id"):
+            fonte += f" (FDC {item['fdc_id']})"
+        if item.get("url_fonte"):
+            fonte += f": {item['url_fonte']}"
+        pdf.multi_cell(180, 3.6, testo_pdf(f"Fonte dei nutrienti: {fonte}"), align="L",
+                       new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(5)
 
     # --- Medaglie --------------------------------------------------------
     if medaglie:
@@ -713,6 +792,11 @@ def _come_leggere(pdf, x, larghezza):
                    "l'energia spesa per digerirlo; Kcal nette = Kcal - TEF."),
         ("Fruttosio/fibre", "Fruttosio diviso fibre (0 se le fibre sono 0): più è basso, "
                             "meglio è tollerato il fruttosio."),
+        ("Indice glicemico", "Basso fino a 55, medio 56-69, alto da 70. Carico glicemico = indice x "
+                             "carboidrati disponibili (carboidrati - fibre) / 100; per porzione basso "
+                             "fino a 10, medio 11-19, alto da 20."),
+        ("NOVA", "Grado di processazione: 1 non trasformati, 2 ingredienti culinari, "
+                 "3 trasformati, 4 ultra-trasformati."),
     )
 
     for titolo, testo in voci:
@@ -743,25 +827,82 @@ def _etichetta_livello(pdf, x, testo, stato):
     pdf.cell(80, 5.2, testo_pdf(testo), new_x="LMARGIN", new_y="NEXT")
 
 
-def _tabella_chiave_valore(pdf, x, larghezza, righe):
+def _valore_nutriente(valore, decimali):
+    return "–" if valore is None else numero_it(round(valore, decimali))
+
+
+def _colori_fodmap(valore):
+    liv = nutrienti.livello_fodmap(valore)
+
+    if not liv:
+        return None
+
+    sfondo = COLORI_STATO[liv["stato"]]
+    return sfondo, colore_testo(sfondo)
+
+
+def _indicatori(pdf, x, item):
+    """
+    Indice glicemico, carico glicemico (100 g), NOVA e FODMAP complessivo:
+    pallino colorato + testo, oppure "non disponibile".
+    """
+    ig = item.get("indice_glicemico")
+    cg = nutrienti.carico_glicemico(item)
+    nova = nutrienti.gruppo_nova(item)
+    fodmap = nutrienti.fodmap_complessivo(item)
+
+    voci = []
+
+    if ig is not None:
+        liv = nutrienti.livello_indice_glicemico(ig)
+        voci.append((f"Indice glicemico: {numero_it(ig)} ({liv['etichetta'].lower()})", liv["stato"]))
+    else:
+        voci.append(("Indice glicemico: non disponibile", None))
+
+    if cg is not None:
+        liv = nutrienti.livello_carico_glicemico(cg)
+        voci.append((f"Carico glicemico per 100 g: {numero_it(cg)} ({liv['etichetta'].lower()})", liv["stato"]))
+
+    if nova:
+        voci.append((f"NOVA {nova['gruppo']}: {nova['etichetta']}", nova["stato"]))
+    else:
+        voci.append(("NOVA: non disponibile", None))
+
+    if fodmap:
+        voci.append((f"FODMAP complessivo: {fodmap['etichetta']}", fodmap["stato"]))
+    else:
+        voci.append(("FODMAP: non classificato", None))
+
+    for testo, stato in voci:
+        if stato:
+            _etichetta_livello(pdf, x, testo, stato)
+        else:
+            pdf.set_xy(x + 4.5, pdf.get_y())
+            pdf.set_font("Helvetica", size=9)
+            pdf.set_text_color(*_rgb(INCHIOSTRO_SECONDARIO))
+            pdf.cell(80, 5.2, testo_pdf(testo), new_x="LMARGIN", new_y="NEXT")
+
+
+def _tabella_chiave_valore(pdf, x, larghezza, righe, altezza=6):
     pdf.set_font("Helvetica", size=9)
     pdf.set_text_color(*_rgb(INCHIOSTRO))
 
     for etichetta, valore in righe:
         pdf.set_x(x)
-        pdf.cell(larghezza * 0.65, 6, testo_pdf(etichetta), border="B")
-        pdf.cell(larghezza * 0.35, 6, valore, border="B", align="R", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(larghezza * 0.65, altezza, testo_pdf(etichetta), border="B")
+        pdf.cell(larghezza * 0.35, altezza, valore, border="B", align="R", new_x="LMARGIN", new_y="NEXT")
 
 
-def _tabella_rischi(pdf, x, larghezza, rischi):
+def _tabella_rischi(pdf, x, larghezza, rischi, colori=colori_livello):
     pdf.set_font("Helvetica", size=9)
+    calcola_colori = colori
 
     for etichetta, valore in rischi:
         pdf.set_x(x)
         pdf.set_text_color(*_rgb(INCHIOSTRO))
         pdf.cell(larghezza * 0.55, 7, testo_pdf(etichetta), border="B")
 
-        colori = colori_livello(valore)
+        colori = calcola_colori(valore)
         testo = testo_pdf(valore) if valore else "Non classificato"
 
         if colori:

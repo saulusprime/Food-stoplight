@@ -265,11 +265,13 @@ def punteggio_medio(alimenti):
     return round(sum(valori) / len(valori)) if valori else None
 
 
-def radar(alimento, raggio=110, centro=(180, 150)):
+def radar(alimento, raggio=110, centro=(180, 150), punti=None):
     """
     Geometria SVG del radar dei 5 rischi.
     Il raggio indica il livello: anello 1 = Trascurabile ... anello 4 = Alto
     (il centro resta per i valori mancanti, così il profilo non sparisce mai).
+    punti: {campo: media dei punti 0-3} per pasti e giornate, dove il valore
+    cade anche tra due anelli; sostituisce i livelli dell'alimento.
     """
     cx, cy = centro
     anelli = len(LIVELLI)
@@ -283,9 +285,16 @@ def radar(alimento, raggio=110, centro=(180, 150)):
     vertici = []
 
     for i, (campo, etichetta) in enumerate(RISCHI):
-        valore = alimento.get(campo)
-        liv = livello(valore)
-        gradino = liv["punti"] + 1 if liv else 0
+        if punti is not None:
+            media = punti.get(campo)
+            liv = LIVELLI[min(int(media + 0.5), len(LIVELLI) - 1)] if media is not None else None
+            valore = f"{liv['etichetta']} ({media:.1f} su {PUNTI_MAX})".replace(".", ",") if liv else ""
+            gradino = media + 1 if media is not None else 0
+        else:
+            valore = alimento.get(campo)
+            liv = livello(valore)
+            gradino = liv["punti"] + 1 if liv else 0
+
         x, y = punto(i, raggio * gradino / anelli)
 
         lx, ly = punto(i, raggio + 18)

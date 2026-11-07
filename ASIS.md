@@ -32,3 +32,17 @@ Commit `4d114f1` — 7 novembre 2026
 - [x] Anteprima dell'import con conferma prima della scrittura (mostrare le prime righe mappate)
 - [x] Aggiornamento (upsert) da interfaccia web invece del solo inserimento — logica già presente in `update.py`
 - [x] Backup/restore del database dall'interfaccia
+
+## 🍽️ Funzionalità nutrizionali
+
+7 novembre 2026 — macro e micronutrienti reali per i 199 alimenti USDA; indice glicemico, FODMAP e NOVA hanno i campi ma ancora nessun valore (vedi TODO, Integrazione dati)
+
+- [x] Aggiungere i **macronutrienti completi** (proteine, carboidrati, grassi, grassi saturi, zuccheri, colesterolo) anche nella web app — già supportati da `update.py`
+- [x] Micronutrienti: vitamine e sali minerali principali
+- [x] **Indice glicemico e carico glicemico** per alimento
+- [x] Classificazione FODMAP completa (non solo fruttosio)
+- [x] Grado di processazione (classificazione NOVA)
+- [x] **Calcolatore porzioni**: ricalcolo dei valori per grammatura personalizzata (es. 150 g invece di 100 g)
+- [x] **Composizione pasti**: sommare più alimenti e vedere totali e profilo di rischio del pasto
+- [x] Diario alimentare giornaliero con totali di Kcal nette e TEF
+- [x] Suggerimenti di alimenti alternativi con profilo di rischio migliore nella stessa categoria
