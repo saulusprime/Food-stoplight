@@ -150,13 +150,33 @@
                         Tabella
                     </a>
 
-                    <a class="nav-link" href="{{ url_for('nuovo') }}">
-                        Nuovo alimento
-                    </a>
+                    {% if current_user.is_admin %}
+                        <a class="nav-link" href="{{ url_for('nuovo') }}">
+                            Nuovo alimento
+                        </a>
 
-                    <a class="nav-link" href="{{ url_for('importa') }}">
-                        Importa CSV
-                    </a>
+                        <a class="nav-link" href="{{ url_for('importa') }}">
+                            Importa CSV
+                        </a>
+                    {% endif %}
+
+                    {% if current_user.is_authenticated %}
+                        <span class="navbar-text text-white ms-lg-3">
+                            👤 {{ current_user.username }}
+                            <small class="opacity-75">({{ current_user.ruolo }})</small>
+                        </span>
+
+                        <form method="post" action="{{ url_for('logout') }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="nav-link btn btn-link border-0">
+                                Esci
+                            </button>
+                        </form>
+                    {% elif request.endpoint != 'login' %}
+                        <a class="nav-link" href="{{ url_for('login', next=request.full_path.rstrip('?')) }}">
+                            Accedi
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

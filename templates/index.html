@@ -229,7 +229,9 @@ Database Alimenti - Analisi Completa
                     {{ th_sortable('rischio_metabolico', 'Metabolico') }}
                     {{ th_sortable('rischio_tumorale', 'Tumorale') }}
 
-                    <th class="text-end">Azioni</th>
+                    {% if current_user.is_admin %}
+                        <th class="text-end">Azioni</th>
+                    {% endif %}
                 </tr>
             </thead>
 
@@ -292,6 +294,7 @@ Database Alimenti - Analisi Completa
                             {{ risk_badge(a.rischio_tumorale) }}
                         </td>
 
+                        {% if current_user.is_admin %}
                         <td class="text-end actions-cell">
                             <div class="d-inline-flex gap-1">
                                 <a
@@ -308,6 +311,7 @@ Database Alimenti - Analisi Completa
                                     class="d-inline"
                                     onsubmit="return confirm('Vuoi eliminare questo alimento?');"
                                 >
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button
                                         type="submit"
                                         class="btn btn-sm btn-outline-danger"
@@ -318,10 +322,11 @@ Database Alimenti - Analisi Completa
                                 </form>
                             </div>
                         </td>
+                        {% endif %}
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="15" class="text-center py-4">
+                        <td colspan="{{ 15 if current_user.is_admin else 14 }}" class="text-center py-4">
                             Nessun alimento trovato con i filtri correnti.
                         </td>
                     </tr>

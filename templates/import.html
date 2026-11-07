@@ -19,6 +19,8 @@ Importa CSV
     class="card shadow-sm p-4 mb-4"
 >
 
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
     <div class="mb-3">
         <label for="file" class="form-label">
             File CSV

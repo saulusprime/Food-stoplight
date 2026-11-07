@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}
+Accedi
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>🔐 Accedi</h1>
+    <p>Effettua l'accesso per gestire il database degli alimenti.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <form
+            method="post"
+            action="{{ url_for('login', next=request.args.get('next')) }}"
+            class="card shadow-sm p-4"
+        >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="mb-3">
+                <label for="username" class="form-label">Nome utente</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="username"
+                    name="username"
+                    value="{{ username }}"
+                    autocomplete="username"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    required
+                    autofocus
+                >
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="form-label">Password</label>
+                <input
+                    type="password"
+                    class="form-control"
+                    id="password"
+                    name="password"
+                    autocomplete="current-password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                Accedi
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

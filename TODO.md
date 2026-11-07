@@ -4,11 +4,12 @@ Idee, funzionalità e implementazioni future per l'applicazione.
 
 ## 🔐 Sicurezza e configurazione
 
-- [ ] Spostare la `secret_key` di Flask in una variabile d'ambiente (`FLASK_SECRET_KEY`) con file `.env` e `python-dotenv`
-- [ ] Aggiungere autenticazione utente (login) per proteggere le operazioni di scrittura (nuovo/modifica/elimina/import)
-- [ ] Ruoli utente: amministratore (CRUD completo) e visitatore (sola consultazione)
-- [ ] Protezione CSRF sui form (Flask-WTF)
-- [ ] Configurazione separata sviluppo/produzione (debug off, host/porta configurabili)
+- [x] Spostare la `secret_key` di Flask in una variabile d'ambiente (`FLASK_SECRET_KEY`) con file `.env` e `python-dotenv`
+- [x] Aggiungere autenticazione utente (login) per proteggere le operazioni di scrittura (nuovo/modifica/elimina/import)
+- [x] Ruoli utente: amministratore (CRUD completo) e visitatore (sola consultazione)
+- [x] Protezione CSRF sui form (Flask-WTF)
+- [x] Configurazione separata sviluppo/produzione (debug off, host/porta configurabili)
+- [ ] Limitare i tentativi di login falliti (es. Flask-Limiter) contro gli attacchi a forza bruta
 
 ## 🔍 Ricerca e consultazione
 

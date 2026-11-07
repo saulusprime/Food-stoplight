@@ -1,10 +1,13 @@
-import os
 import re
 import csv
 import io
+import secrets
 import sqlite3
 from datetime import datetime
+from functools import wraps
+from urllib.parse import urlsplit
 
+import click
 from flask import (
     Flask,
     render_template,
@@ -14,12 +17,32 @@ from flask import (
     flash,
     abort
 )
+from flask_login import (
+    AnonymousUserMixin,
+    LoginManager,
+    UserMixin,
+    current_user,
+    login_user,
+    logout_user
+)
+from flask_wtf.csrf import CSRFError, CSRFProtect
+from werkzeug.security import check_password_hash, generate_password_hash
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "alimenti.db")
+from config import carica_config
 
 app = Flask(__name__)
-app.secret_key = "cambia-questa-chiave-segreta"
+app.config.update(carica_config())
+
+DB_PATH = app.config["DATABASE_PATH"]
+UTENTI_DB_PATH = app.config["UTENTI_DB_PATH"]
+
+# Protezione CSRF su tutti i form POST (i template usano csrf_token())
+csrf = CSRFProtect(app)
+
+login_manager = LoginManager(app)
+login_manager.login_view = "login"
+login_manager.login_message = "Accedi per continuare."
+login_manager.login_message_category = "warning"
 
 
 # ---------------------------------------------------------------
@@ -32,10 +55,22 @@ def get_db():
     return conn
 
 
+def get_db_utenti():
+    """
+    Gli utenti stanno in un database separato (utenti.db, escluso da git):
+    alimenti.db è versionato e non deve contenere credenziali.
+    """
+    conn = sqlite3.connect(UTENTI_DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
 def init_db():
     """
-    Crea la tabella se non esiste e aggiunge eventuali colonne mancanti.
+    Crea le tabelle se non esistono e aggiunge eventuali colonne mancanti.
     """
+    init_db_utenti()
+
     conn = get_db()
 
     conn.execute("""
@@ -89,6 +124,24 @@ def init_db():
             conn.execute(
                 f"ALTER TABLE alimenti ADD COLUMN {column_name} {column_type}"
             )
+
+    conn.commit()
+    conn.close()
+
+
+def init_db_utenti():
+    conn = get_db_utenti()
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS utenti (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+            password_hash TEXT NOT NULL,
+            ruolo TEXT NOT NULL DEFAULT 'visitatore'
+                CHECK (ruolo IN ('admin', 'visitatore')),
+            creato_il TEXT
+        )
+    """)
 
     conn.commit()
     conn.close()
@@ -623,6 +676,151 @@ def get_form_options():
 
 
 # ---------------------------------------------------------------
+# AUTENTICAZIONE E RUOLI
+# ---------------------------------------------------------------
+
+RUOLI = ("admin", "visitatore")
+USERNAME_RE = re.compile(r"^[A-Za-z0-9_.-]{3,32}$")
+PASSWORD_MIN = 8
+
+# Hash fittizio: al login si verifica sempre una password, anche se l'utente
+# non esiste, così i tempi di risposta non rivelano gli username registrati.
+HASH_FITTIZIO = generate_password_hash(secrets.token_hex(16))
+
+
+class Utente(UserMixin):
+    def __init__(self, row):
+        self.id = row["id"]
+        self.username = row["username"]
+        self.ruolo = row["ruolo"]
+
+    @property
+    def is_admin(self):
+        return self.ruolo == "admin"
+
+
+class Anonimo(AnonymousUserMixin):
+    username = None
+    ruolo = None
+    is_admin = False
+
+
+login_manager.anonymous_user = Anonimo
+
+
+@login_manager.user_loader
+def carica_utente(user_id):
+    conn = get_db_utenti()
+    row = conn.execute(
+        "SELECT id, username, ruolo FROM utenti WHERE id = ?",
+        (user_id,)
+    ).fetchone()
+    conn.close()
+
+    return Utente(row) if row else None
+
+
+def solo_admin(view):
+    """
+    Riserva una route agli amministratori:
+    anonimo -> pagina di login, visitatore -> 403.
+    """
+    @wraps(view)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return login_manager.unauthorized()
+
+        if not current_user.is_admin:
+            abort(403)
+
+        return view(*args, **kwargs)
+
+    return wrapper
+
+
+@app.before_request
+def controlla_accesso():
+    """
+    Con ACCESSO_PUBBLICO=false serve il login anche per consultare.
+    """
+    if app.config["ACCESSO_PUBBLICO"] or current_user.is_authenticated:
+        return None
+
+    if request.endpoint in ("login", "static"):
+        return None
+
+    return login_manager.unauthorized()
+
+
+def url_sicuro(target):
+    """
+    Accetta solo percorsi interni all'applicazione (evita open redirect).
+    """
+    target = (target or "").strip()
+
+    if not target.startswith("/") or target.startswith("//") or "\\" in target:
+        return None
+
+    parts = urlsplit(target)
+
+    if parts.scheme or parts.netloc:
+        return None
+
+    return target
+
+
+def pagina_precedente():
+    """
+    Percorso della pagina di provenienza, solo se è sullo stesso host.
+    """
+    parts = urlsplit(request.referrer or "")
+
+    if parts.netloc != request.host:
+        return None
+
+    return url_sicuro(parts.path + (f"?{parts.query}" if parts.query else ""))
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+
+    if request.method == "POST":
+        username = (request.form.get("username") or "").strip()
+        password = request.form.get("password") or ""
+
+        conn = get_db_utenti()
+        row = conn.execute(
+            "SELECT * FROM utenti WHERE username = ?",
+            (username,)
+        ).fetchone()
+        conn.close()
+
+        password_ok = check_password_hash(
+            row["password_hash"] if row else HASH_FITTIZIO,
+            password
+        )
+
+        if row and password_ok:
+            login_user(Utente(row))
+            flash(f"Accesso effettuato come {row['username']}.", "success")
+            return redirect(url_sicuro(request.args.get("next")) or url_for("index"))
+
+        flash("Nome utente o password non validi.", "danger")
+        return render_template("login.html", username=username), 401
+
+    return render_template("login.html", username="")
+
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    logout_user()
+    flash("Disconnessione effettuata.", "info")
+    return redirect(url_for("index"))
+
+
+# ---------------------------------------------------------------
 # ROUTE PRINCIPALI
 # ---------------------------------------------------------------
 
@@ -689,6 +887,7 @@ def index():
 
 
 @app.route("/nuovo", methods=["GET", "POST"])
+@solo_admin
 def nuovo():
     if request.method == "POST":
         (
@@ -796,6 +995,7 @@ def nuovo():
 
 
 @app.route("/modifica/<int:alimento_id>", methods=["GET", "POST"])
+@solo_admin
 def modifica(alimento_id):
     item = get_alimento(alimento_id)
 
@@ -909,6 +1109,7 @@ def modifica(alimento_id):
 
 
 @app.route("/elimina/<int:alimento_id>", methods=["POST"])
+@solo_admin
 def elimina(alimento_id):
     item = get_alimento(alimento_id)
 
@@ -935,6 +1136,7 @@ def elimina(alimento_id):
 # ---------------------------------------------------------------
 
 @app.route("/importa", methods=["GET", "POST"])
+@solo_admin
 def importa():
     if request.method == "POST":
         file = request.files.get("file")
@@ -1106,18 +1308,192 @@ def importa():
 
 
 # ---------------------------------------------------------------
+# GESTIONE UTENTI (riga di comando)
+#   flask --app app crea-utente <username> [--ruolo admin|visitatore]
+#   flask --app app imposta-password <username>
+#   flask --app app elenco-utenti
+#   flask --app app elimina-utente <username>
+# ---------------------------------------------------------------
+
+def valida_username(ctx, param, username):
+    if not USERNAME_RE.match(username):
+        raise click.BadParameter(
+            "usa 3-32 caratteri tra lettere, numeri, punto, trattino e underscore."
+        )
+
+    return username
+
+
+def valida_password(ctx, param, password):
+    if len(password) < PASSWORD_MIN:
+        raise click.BadParameter(f"servono almeno {PASSWORD_MIN} caratteri.")
+
+    return password
+
+
+@app.cli.command("crea-utente")
+@click.argument("username", callback=valida_username)
+@click.option(
+    "--ruolo",
+    type=click.Choice(RUOLI),
+    default="admin",
+    show_default=True,
+    help="admin: gestione completa; visitatore: sola consultazione."
+)
+@click.password_option(
+    "--password",
+    prompt="Password",
+    confirmation_prompt="Ripeti la password",
+    callback=valida_password
+)
+def crea_utente_cmd(username, ruolo, password):
+    """Crea un nuovo utente."""
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    conn = get_db_utenti()
+
+    try:
+        conn.execute(
+            """
+            INSERT INTO utenti (username, password_hash, ruolo, creato_il)
+            VALUES (?, ?, ?, ?)
+            """,
+            (username, generate_password_hash(password), ruolo, now)
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        raise click.ClickException(f"L'utente '{username}' esiste già.") from None
+    finally:
+        conn.close()
+
+    click.echo(f"Utente '{username}' creato con ruolo {ruolo}.")
+
+
+@app.cli.command("imposta-password")
+@click.argument("username")
+@click.password_option(
+    "--password",
+    prompt="Nuova password",
+    confirmation_prompt="Ripeti la password",
+    callback=valida_password
+)
+def imposta_password_cmd(username, password):
+    """Cambia la password di un utente."""
+    conn = get_db_utenti()
+    cur = conn.execute(
+        "UPDATE utenti SET password_hash = ? WHERE username = ?",
+        (generate_password_hash(password), username)
+    )
+    conn.commit()
+    conn.close()
+
+    if cur.rowcount == 0:
+        raise click.ClickException(f"Utente '{username}' non trovato.")
+
+    click.echo(f"Password di '{username}' aggiornata.")
+
+
+@app.cli.command("elenco-utenti")
+def elenco_utenti_cmd():
+    """Elenca gli utenti registrati."""
+    conn = get_db_utenti()
+    rows = conn.execute(
+        "SELECT username, ruolo, creato_il FROM utenti ORDER BY username"
+    ).fetchall()
+    conn.close()
+
+    if not rows:
+        click.echo(
+            "Nessun utente registrato. "
+            "Creane uno con: flask --app app crea-utente <username>"
+        )
+        return
+
+    for row in rows:
+        click.echo(f"{row['username']:<32} {row['ruolo']:<11} {row['creato_il'] or ''}")
+
+
+@app.cli.command("elimina-utente")
+@click.argument("username")
+@click.confirmation_option(prompt="Confermi l'eliminazione dell'utente?")
+def elimina_utente_cmd(username):
+    """Elimina un utente."""
+    conn = get_db_utenti()
+    cur = conn.execute("DELETE FROM utenti WHERE username = ?", (username,))
+    conn.commit()
+    conn.close()
+
+    if cur.rowcount == 0:
+        raise click.ClickException(f"Utente '{username}' non trovato.")
+
+    click.echo(f"Utente '{username}' eliminato.")
+
+
+# ---------------------------------------------------------------
 # ERROR HANDLER
 # ---------------------------------------------------------------
+
+@app.errorhandler(403)
+def forbidden(error):
+    return "<h1>403</h1><p>Operazione riservata agli amministratori.</p>", 403
+
 
 @app.errorhandler(404)
 def not_found(error):
     return "<h1>404</h1><p>Risorsa non trovata.</p>", 404
 
 
+@app.errorhandler(413)
+def file_troppo_grande(error):
+    flash(
+        f"File troppo grande: il limite è {app.config['MAX_UPLOAD_MB']} MB.",
+        "danger"
+    )
+    return redirect(url_for("importa"))
+
+
+@app.errorhandler(CSRFError)
+def csrf_non_valido(error):
+    flash("Sessione scaduta o richiesta non valida: riprova.", "danger")
+    return redirect(pagina_precedente() or url_for("index"))
+
+
+# ---------------------------------------------------------------
+# INTESTAZIONI DI SICUREZZA
+# ---------------------------------------------------------------
+
+@app.after_request
+def intestazioni_sicurezza(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "same-origin")
+    return response
+
+
 # ---------------------------------------------------------------
 # AVVIO
 # ---------------------------------------------------------------
 
+# Crea/aggiorna le tabelle anche quando l'app è avviata con "flask run"
+# o da un server WSGI, non solo con "python app.py".
+init_db()
+
+
 if __name__ == "__main__":
-    init_db()
-    app.run(debug=True)
+    conn = get_db_utenti()
+    numero_admin = conn.execute(
+        "SELECT COUNT(*) FROM utenti WHERE ruolo = 'admin'"
+    ).fetchone()[0]
+    conn.close()
+
+    if not numero_admin:
+        print(
+            " * Nessun amministratore: creane uno con "
+            "'flask --app app crea-utente <username>'"
+        )
+
+    app.run(
+        host=app.config["HOST"],
+        port=app.config["PORT"],
+        debug=app.config["DEBUG"]
+    )

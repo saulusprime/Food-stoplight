@@ -19,3 +19,9 @@ venv/
 *.db-journal
 *.db-wal
 *.db-shm
+
+# Configurazione locale e segreti
+.env
+
+# Database degli utenti (contiene gli hash delle password)
+utenti.db
