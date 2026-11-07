@@ -408,9 +408,22 @@ Database Alimenti - Analisi Completa
 {% endif %}
 
 
+<div class="barra-export">
+    <h2 class="grafico-titolo mb-0" id="titolo-tabella">
+        Tabella <span class="text-muted fw-normal">· {{ visualizzati }} alimenti</span>
+    </h2>
+
+    <div class="d-flex flex-wrap align-items-center gap-2" role="group" aria-labelledby="etichetta-export">
+        <span class="small text-muted" id="etichetta-export">Esporta{% if filtri_attivi %} con i filtri{% endif %}:</span>
+        <a href="{{ url_for('esporta', formato='csv', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>CSV</a>
+        <a href="{{ url_for('esporta', formato='xlsx', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>Excel</a>
+        <a href="{{ url_for('esporta', formato='pdf', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>PDF</a>
+    </div>
+</div>
+
 <div class="card table-card">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0" aria-labelledby="titolo-tabella">
             <thead>
                 <tr>
                     {{ th_sortable('alimento', 'Alimento') }}

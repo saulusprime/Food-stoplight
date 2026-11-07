@@ -19,6 +19,10 @@
         ← Torna alla tabella
     </a>
 
+    <a href="{{ url_for('scheda_pdf', alimento_id=item.id) }}" class="btn btn-outline-primary btn-sm" download>
+        📄 Esporta PDF
+    </a>
+
     {% if current_user.is_admin %}
         <a href="{{ url_for('modifica', alimento_id=item.id) }}" class="btn btn-outline-primary btn-sm">
             ✏️ Modifica

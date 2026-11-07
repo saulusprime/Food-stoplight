@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}
+Backup e ripristino
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>💾 Backup e ripristino</h1>
+    <p>
+        Il database contiene {{ totale_alimenti }} alimenti.
+        Gli utenti e le password (utenti.db) non fanno parte dei backup.
+    </p>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-6">
+        <section class="card grafico-card h-100" aria-labelledby="titolo-copia">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-copia">Copia del database</h2>
+                <p class="grafico-sottotitolo">
+                    Un file SQLite completo, ripristinabile da questa pagina.
+                </p>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('backup_scarica') }}" class="btn btn-primary">
+                        ⬇️ Scarica il database
+                    </a>
+
+                    <form method="post" action="{{ url_for('backup_crea') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline-primary">
+                            Salva un backup sul server
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-6">
+        <section class="card grafico-card h-100" aria-labelledby="titolo-ripristino">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-ripristino">Ripristina da file</h2>
+                <p class="grafico-sottotitolo">
+                    Sostituisce tutti gli alimenti con quelli del file. Il database attuale
+                    viene prima salvato tra i backup sul server.
+                </p>
+
+                <form method="post" action="{{ url_for('backup_ripristina') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label for="file-ripristino" class="form-label">File del database (.db)</label>
+                        <input
+                            type="file"
+                            class="form-control"
+                            id="file-ripristino"
+                            name="file"
+                            accept=".db,.sqlite,.sqlite3,application/vnd.sqlite3,application/x-sqlite3"
+                            aria-describedby="ripristino-aiuto"
+                            required
+                        >
+                        <p id="ripristino-aiuto" class="form-text mb-0">
+                            Un backup scaricato da questa pagina, fino a {{ max_mb }} MB.
+                        </p>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="conferma-ripristino" name="conferma" value="1" required>
+                        <label class="form-check-label" for="conferma-ripristino">
+                            Sostituisci i {{ totale_alimenti }} alimenti attuali
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger">
+                        Ripristina
+                    </button>
+                </form>
+            </div>
+        </section>
+    </div>
+</div>
+
+<section class="card table-card" aria-labelledby="titolo-elenco-backup">
+    <div class="card-body pb-2">
+        <h2 class="grafico-titolo" id="titolo-elenco-backup">Backup sul server</h2>
+        <p class="grafico-sottotitolo mb-0">
+            Un backup viene salvato in automatico prima di ogni import e di ogni ripristino.
+            Si conservano gli ultimi {{ conservati }}.
+        </p>
+    </div>
+
+    {% if backups %}
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Data</th>
+                        <th scope="col">Motivo</th>
+                        <th scope="col" class="text-end">Alimenti</th>
+                        <th scope="col" class="text-end">Dimensione</th>
+                        <th scope="col" class="text-end">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in backups %}
+                        <tr>
+                            <td>
+                                {{ b.data.strftime('%d/%m/%Y %H:%M:%S') }}
+                                <small class="text-muted d-block">{{ b.nome }}</small>
+                            </td>
+                            <td>{{ b.motivo }}</td>
+                            <td class="text-end">
+                                {% if b.alimenti is none %}
+                                    <span class="text-muted">non leggibile</span>
+                                {% else %}
+                                    {{ b.alimenti }}
+                                {% endif %}
+                            </td>
+                            <td class="text-end text-nowrap">{{ ((b.dimensione / 1024)|round(0, 'ceil'))|int }} KB</td>
+                            <td class="text-end">
+                                <div class="d-inline-flex flex-wrap justify-content-end gap-1">
+                                    <a
+                                        href="{{ url_for('backup_scarica_salvato', nome=b.nome) }}"
+                                        class="btn btn-sm btn-outline-primary"
+                                        aria-label="Scarica il backup del {{ b.data.strftime('%d/%m/%Y %H:%M:%S') }}"
+                                    >
+                                        Scarica
+                                    </a>
+
+                                    {% if b.alimenti is not none %}
+                                        <form
+                                            method="post"
+                                            action="{{ url_for('backup_ripristina_salvato', nome=b.nome) }}"
+                                            data-conferma="Ripristinare il backup del {{ b.data.strftime('%d/%m/%Y %H:%M:%S') }} ({{ b.alimenti }} alimenti)? I {{ totale_alimenti }} alimenti attuali verranno sostituiti."
+                                        >
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button
+                                                type="submit"
+                                                class="btn btn-sm btn-outline-danger"
+                                                aria-label="Ripristina il backup del {{ b.data.strftime('%d/%m/%Y %H:%M:%S') }}"
+                                            >
+                                                Ripristina
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="card-body pt-0">
+            <p class="mb-0 text-muted">Nessun backup salvato finora.</p>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

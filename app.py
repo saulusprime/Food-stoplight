@@ -1,8 +1,11 @@
-import re
-import csv
 import io
+import json
+import os
+import re
 import secrets
 import sqlite3
+import time
+import unicodedata
 from datetime import datetime
 from functools import wraps
 from urllib.parse import urlsplit
@@ -15,7 +18,9 @@ from flask import (
     redirect,
     url_for,
     flash,
-    abort
+    abort,
+    send_file,
+    session
 )
 from flask_login import (
     AnonymousUserMixin,
@@ -29,6 +34,9 @@ from flask_wtf.csrf import CSRFError, CSRFProtect
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import analisi
+import backup
+import esportazione
+import importazione
 from config import carica_config
 
 app = Flask(__name__)
@@ -228,113 +236,6 @@ def to_float(value, default=0.0):
         return default
 
 
-def normalize_header(value):
-    """
-    Normalizza l'intestazione di una colonna CSV.
-    Esempio:
-    "Fruttosio (g/100g)" -> "fruttosio g 100g"
-    """
-    value = str(value or "").lower()
-    return re.sub(r"[^a-z0-9]+", " ", value).strip()
-
-
-def csv_value(row, mapping, key):
-    """
-    Estrae in modo sicuro un valore dal CSV usando il mapping delle colonne.
-    """
-    original_column = mapping.get(key)
-
-    if original_column is None:
-        return ""
-
-    return row.get(original_column) or ""
-
-
-def decode_csv_bytes(raw):
-    """
-    Prova a decodificare il file CSV con diversi encoding.
-    """
-    for encoding in ("utf-8-sig", "cp1252", "latin-1"):
-        try:
-            return raw.decode(encoding)
-        except UnicodeDecodeError:
-            continue
-
-    return raw.decode("latin-1", errors="replace")
-
-
-def guess_delimiter(sample):
-    """
-    Prova a riconoscere il separatore del CSV.
-    """
-    try:
-        dialect = csv.Sniffer().sniff(sample, delimiters=",;\t")
-        return dialect.delimiter
-    except csv.Error:
-        return ";" if sample.count(";") > sample.count(",") else ","
-
-
-def map_csv_fields(fieldnames):
-    """
-    Collega le intestazioni del CSV ai campi interni del database.
-    """
-    mapping = {}
-
-    for original in fieldnames or []:
-        norm = normalize_header(original)
-        orig_lower = str(original or "").lower()
-
-        if not norm:
-            continue
-
-        if "rapporto" in norm:
-            mapping.setdefault("rapporto", original)
-
-        elif "tef" in norm and ("%" in orig_lower or "percent" in norm):
-            mapping.setdefault("tef_percent", original)
-
-        elif "tef" in norm and "kcal" in norm:
-            mapping.setdefault("tef_kcal", original)
-
-        elif "tef" in norm:
-            mapping.setdefault("tef_percent", original)
-
-        elif ("kcal" in norm and "nette" in norm) or ("nette" in norm and "kcal" not in norm):
-            mapping.setdefault("kcal_nette", original)
-
-        elif norm == "kcal" or ("kcal" in norm and "tef" not in norm and "nette" not in norm):
-            mapping.setdefault("kcal", original)
-
-        elif "fruttosio" in norm:
-            mapping.setdefault("fruttosio", original)
-
-        elif "fibre" in norm or "fibra" in norm:
-            mapping.setdefault("fibre", original)
-
-        elif "categoria" in norm:
-            mapping.setdefault("categoria", original)
-
-        elif "diabete" in norm:
-            mapping.setdefault("rischio_diabete", original)
-
-        elif "colesterolo" in norm:
-            mapping.setdefault("rischio_colesterolo", original)
-
-        elif "malassorb" in norm:
-            mapping.setdefault("rischio_malassorbimento", original)
-
-        elif "metabolic" in norm or "metabolico" in norm:
-            mapping.setdefault("rischio_metabolico", original)
-
-        elif "tumorale" in norm or "tumoral" in norm:
-            mapping.setdefault("rischio_tumorale", original)
-
-        elif "alimento" in norm or "nome" in norm:
-            mapping.setdefault("alimento", original)
-
-    return mapping
-
-
 # ---------------------------------------------------------------
 # FORM / CRUD HELPERS
 # ---------------------------------------------------------------
@@ -439,6 +340,32 @@ SORT_EXPRESSIONS = {
     "rischio_tumorale": "LOWER(COALESCE(rischio_tumorale, ''))",
     "punteggio": "COALESCE(punteggio(" + ", ".join(analisi.CAMPI_RISCHIO) + "), -1)",
 }
+
+# Parametri di filtro della home (e degli export), con le etichette per i file esportati
+ETICHETTE_FILTRI = {
+    "categoria": "Categoria",
+    **{campo: f"Rischio {etichetta.lower()}" for campo, etichetta in analisi.RISCHI},
+}
+
+
+def leggi_filtri():
+    """
+    (filtri, sort, direction) dalla query string, già validati.
+    """
+    filtri = {
+        campo: request.args.get(campo, "").strip()
+        for campo in ETICHETTE_FILTRI
+    }
+
+    sort = request.args.get("sort", "alimento").strip()
+    if sort not in SORT_EXPRESSIONS:
+        sort = "alimento"
+
+    direction = request.args.get("dir", "asc").strip().lower()
+    if direction not in ("asc", "desc"):
+        direction = "asc"
+
+    return filtri, sort, direction
 
 
 def get_alimenti(
@@ -828,31 +755,16 @@ def logout():
 
 @app.route("/")
 def index():
-    filter_categoria = request.args.get("categoria", "").strip()
-    filter_diabete = request.args.get("rischio_diabete", "").strip()
-    filter_colesterolo = request.args.get("rischio_colesterolo", "").strip()
-    filter_malassorbimento = request.args.get("rischio_malassorbimento", "").strip()
-    filter_metabolico = request.args.get("rischio_metabolico", "").strip()
-    filter_tumorale = request.args.get("rischio_tumorale", "").strip()
+    filtri, sort, direction = leggi_filtri()
 
-    sort = request.args.get("sort", "alimento").strip()
-    if sort not in SORT_EXPRESSIONS:
-        sort = "alimento"
+    filter_categoria = filtri["categoria"]
+    filter_diabete = filtri["rischio_diabete"]
+    filter_colesterolo = filtri["rischio_colesterolo"]
+    filter_malassorbimento = filtri["rischio_malassorbimento"]
+    filter_metabolico = filtri["rischio_metabolico"]
+    filter_tumorale = filtri["rischio_tumorale"]
 
-    direction = request.args.get("dir", "asc").strip().lower()
-    if direction not in ("asc", "desc"):
-        direction = "asc"
-
-    alimenti = get_alimenti(
-        categoria=filter_categoria,
-        rischio_diabete=filter_diabete,
-        rischio_colesterolo=filter_colesterolo,
-        rischio_malassorbimento=filter_malassorbimento,
-        rischio_metabolico=filter_metabolico,
-        rischio_tumorale=filter_tumorale,
-        sort=sort,
-        direction=direction
-    )
+    alimenti = get_alimenti(**filtri, sort=sort, direction=direction)
 
     total_alimenti, con_dati_tef = get_stats()
 
@@ -865,10 +777,7 @@ def index():
         tumorale_options
     ) = get_filter_options()
 
-    filtri_attivi = any((
-        filter_categoria, filter_diabete, filter_colesterolo,
-        filter_malassorbimento, filter_metabolico, filter_tumorale
-    ))
+    filtri_attivi = any(filtri.values())
 
     # Le medaglie si calcolano sull'intero database, non sugli alimenti filtrati
     tutti = get_alimenti() if filtri_attivi else alimenti
@@ -893,6 +802,11 @@ def index():
             for medaglia in analisi.MEDAGLIE
         ],
         posti_medaglia=analisi.POSTI_MEDAGLIA,
+        parametri_export={
+            **{campo: valore for campo, valore in filtri.items() if valore},
+            "sort": sort,
+            "dir": direction,
+        },
         filter_categoria=filter_categoria,
         filter_diabete=filter_diabete,
         filter_colesterolo=filter_colesterolo,
@@ -1182,8 +1096,150 @@ def elimina(alimento_id):
 
 
 # ---------------------------------------------------------------
-# IMPORT CSV
+# EXPORT (CSV, Excel, PDF)
 # ---------------------------------------------------------------
+
+FORMATI_EXPORT = {
+    "csv": "text/csv; charset=utf-8",
+    "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "pdf": "application/pdf",
+}
+
+ETICHETTE_ORDINAMENTO = {**importazione.ETICHETTE, "punteggio": "Punteggio"}
+
+
+def invia_file(dati, nome, mimetype):
+    """
+    Risposta di download per un file generato in memoria.
+    """
+    risposta = send_file(
+        io.BytesIO(dati),
+        mimetype=mimetype,
+        as_attachment=True,
+        download_name=nome,
+        max_age=0,
+    )
+    risposta.headers["Cache-Control"] = "no-store"
+    return risposta
+
+
+def nome_file_sicuro(testo, alternativa):
+    """
+    "Pane integrale (100%)" -> "pane-integrale-100" per i nomi dei file scaricati.
+    """
+    ascii_ = unicodedata.normalize("NFKD", testo or "").encode("ascii", "ignore").decode()
+    nome = re.sub(r"[^a-z0-9]+", "-", ascii_.lower()).strip("-")[:60]
+    return nome or alternativa
+
+
+def info_export(filtri, sort, direction, totale):
+    return {
+        "filtri": [
+            (ETICHETTE_FILTRI[campo], valore)
+            for campo, valore in filtri.items()
+            if valore
+        ],
+        "ordinamento": (
+            f"{ETICHETTE_ORDINAMENTO.get(sort, sort)} "
+            f"({'decrescente' if direction == 'desc' else 'crescente'})"
+        ),
+        "data": datetime.now(),
+        "totale": totale,
+    }
+
+
+@app.route("/esporta/<formato>")
+def esporta(formato):
+    """
+    Tabella con gli stessi filtri e lo stesso ordinamento della home.
+    """
+    if formato not in FORMATI_EXPORT:
+        abort(404)
+
+    filtri, sort, direction = leggi_filtri()
+    alimenti = get_alimenti(**filtri, sort=sort, direction=direction)
+    info = info_export(filtri, sort, direction, len(alimenti))
+
+    if formato == "csv":
+        dati = esportazione.csv_bytes(alimenti)
+    elif formato == "xlsx":
+        dati = esportazione.xlsx_bytes(alimenti, info)
+    else:
+        dati = esportazione.pdf_tabella(alimenti, info)
+
+    suffisso = "_filtrati" if any(filtri.values()) else ""
+    nome = f"alimenti{suffisso}_{info['data']:%Y-%m-%d}.{formato}"
+    return invia_file(dati, nome, FORMATI_EXPORT[formato])
+
+
+@app.route("/alimento/<int:alimento_id>/pdf")
+def scheda_pdf(alimento_id):
+    item = get_alimento(alimento_id)
+
+    if not item:
+        abort(404)
+
+    medaglie = analisi.medaglie_per_alimento(get_alimenti()).get(alimento_id, [])
+    dati = esportazione.pdf_scheda(item, medaglie, analisi.POSTI_MEDAGLIA, datetime.now())
+    nome = f"scheda_{nome_file_sicuro(item['alimento'], str(alimento_id))}.pdf"
+    return invia_file(dati, nome, FORMATI_EXPORT["pdf"])
+
+
+# ---------------------------------------------------------------
+# IMPORT CSV / EXCEL con anteprima
+#   1. /importa            caricamento del file (letto e salvato in instance/import)
+#   2. /importa/anteprima  cosa succederà con ciascuna modalità
+#   3. /importa/conferma   backup automatico e scrittura
+# ---------------------------------------------------------------
+
+IMPORT_SCADENZA_SECONDI = 3600
+ANTEPRIMA_RIGHE = 25
+ANTEPRIMA_AVVISI = 50
+TOKEN_IMPORT_RE = re.compile(r"^[A-Za-z0-9_-]{20,64}$")
+
+
+def cartella_import():
+    os.makedirs(app.config["IMPORT_DIR"], exist_ok=True)
+    return app.config["IMPORT_DIR"]
+
+
+def percorso_import(token):
+    if not token or not TOKEN_IMPORT_RE.match(token):
+        return None
+
+    return os.path.join(cartella_import(), f"{token}.json")
+
+
+def pulisci_import_scaduti():
+    limite = time.time() - IMPORT_SCADENZA_SECONDI
+
+    for voce in os.scandir(cartella_import()):
+        try:
+            if voce.is_file() and voce.stat().st_mtime < limite:
+                os.remove(voce.path)
+        except OSError:
+            pass
+
+
+def carica_import():
+    """
+    File letto e in attesa di conferma per questa sessione, oppure None.
+    """
+    percorso = percorso_import(session.get("import_token"))
+
+    if not percorso or not os.path.isfile(percorso):
+        return None
+
+    with open(percorso, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def scarta_import():
+    percorso = percorso_import(session.pop("import_token", None))
+
+    if percorso and os.path.isfile(percorso):
+        os.remove(percorso)
+
 
 @app.route("/importa", methods=["GET", "POST"])
 @solo_admin
@@ -1192,169 +1248,264 @@ def importa():
         file = request.files.get("file")
 
         if not file or not file.filename:
-            flash("Seleziona un file CSV da importare.", "danger")
+            flash("Seleziona un file CSV o Excel da importare.", "danger")
             return redirect(url_for("importa"))
 
-        if not file.filename.lower().endswith(".csv"):
-            flash("Il file deve avere estensione .csv.", "danger")
-            return redirect(url_for("importa"))
-
-        svuota_tabella = request.form.get("svuota") == "1"
+        nome_file = os.path.basename(file.filename.replace("\\", "/"))
 
         try:
-            raw = file.read()
-            content = decode_csv_bytes(raw)
+            letto = importazione.leggi_file(nome_file, file.read())
+        except importazione.ErroreImport as exc:
+            flash(str(exc), "danger")
+            return redirect(url_for("importa"))
+        except Exception:
+            app.logger.exception("Lettura del file di import non riuscita")
+            flash("Il file non è leggibile: controlla che sia un CSV o un Excel valido.", "danger")
+            return redirect(url_for("importa"))
 
-            sample = content[:4096]
-            delimiter = guess_delimiter(sample)
+        scarta_import()
+        pulisci_import_scaduti()
 
-            reader = csv.DictReader(io.StringIO(content), delimiter=delimiter)
+        token = secrets.token_urlsafe(24)
 
-            if not reader.fieldnames:
-                flash("Il file CSV sembra vuoto o senza intestazioni.", "danger")
-                return redirect(url_for("importa"))
+        with open(percorso_import(token), "w", encoding="utf-8") as f:
+            json.dump(letto, f, ensure_ascii=False)
 
-            mapping = map_csv_fields(reader.fieldnames)
+        session["import_token"] = token
+        return redirect(url_for("importa_anteprima"))
 
-            if "alimento" not in mapping:
-                flash(
-                    "Colonna 'Alimento' non trovata. "
-                    "Controlla le intestazioni del CSV.",
-                    "danger"
-                )
-                return redirect(url_for("importa"))
+    return render_template(
+        "import.html",
+        in_attesa=carica_import(),
+        max_mb=app.config["MAX_UPLOAD_MB"],
+        max_righe=importazione.MAX_RIGHE,
+    )
 
-            imported = 0
-            skipped = 0
-            errors = []
 
-            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+@app.route("/importa/anteprima")
+@solo_admin
+def importa_anteprima():
+    letto = carica_import()
 
-            conn = get_db()
+    if letto is None:
+        flash("Nessun file in attesa di conferma: caricane uno.", "warning")
+        return redirect(url_for("importa"))
 
-            try:
-                if svuota_tabella:
-                    conn.execute("DELETE FROM alimenti")
+    modalita = request.args.get("modalita", importazione.MODALITA_PREDEFINITA)
 
-                for row_number, row in enumerate(reader, start=2):
-                    try:
-                        alimento_val = csv_value(row, mapping, "alimento").strip()
+    if modalita not in importazione.MODALITA:
+        modalita = importazione.MODALITA_PREDEFINITA
 
-                        if not alimento_val:
-                            skipped += 1
-                            errors.append(f"riga {row_number}: Alimento vuoto")
-                            continue
+    conn = get_db()
 
-                        categoria = csv_value(row, mapping, "categoria").strip()
+    try:
+        piani = {
+            chiave: importazione.pianifica(conn, letto, chiave)
+            for chiave in importazione.MODALITA
+        }
+        totale_db = conn.execute("SELECT COUNT(*) FROM alimenti").fetchone()[0]
+    finally:
+        conn.close()
 
-                        kcal = to_float(csv_value(row, mapping, "kcal"))
+    voci = piani[modalita]
 
-                        tef_percent_raw = csv_value(row, mapping, "tef_percent").strip()
-                        tef_kcal_raw = csv_value(row, mapping, "tef_kcal").strip()
-                        kcal_nette_raw = csv_value(row, mapping, "kcal_nette").strip()
+    return render_template(
+        "import_anteprima.html",
+        letto=letto,
+        modalita=modalita,
+        modalita_disponibili=importazione.MODALITA,
+        riepiloghi={chiave: importazione.riepilogo(piano) for chiave, piano in piani.items()},
+        voci=[v for v in voci if v["azione"] != "invariato"][:ANTEPRIMA_RIGHE],
+        voci_con_avvisi=[v for v in voci if v["avvisi"]][:ANTEPRIMA_AVVISI],
+        totale_db=totale_db,
+        campi=importazione.CAMPI,
+        etichette=importazione.ETICHETTE,
+        anteprima_righe=ANTEPRIMA_RIGHE,
+        anteprima_avvisi=ANTEPRIMA_AVVISI,
+    )
 
-                        tef_percent = to_float(tef_percent_raw) if tef_percent_raw else 0.0
-                        tef_kcal = to_float(tef_kcal_raw) if tef_kcal_raw else 0.0
 
-                        if tef_kcal_raw == "" and tef_percent:
-                            tef_kcal = round(kcal * tef_percent / 100, 2) if kcal else 0.0
+@app.route("/importa/conferma", methods=["POST"])
+@solo_admin
+def importa_conferma():
+    letto = carica_import()
 
-                        if tef_percent_raw == "" and tef_kcal and kcal:
-                            tef_percent = round(tef_kcal / kcal * 100, 2)
+    if letto is None:
+        flash("Nessun file in attesa di conferma: caricane uno.", "warning")
+        return redirect(url_for("importa"))
 
-                        kcal_nette = to_float(kcal_nette_raw) if kcal_nette_raw else round(kcal - tef_kcal, 2)
+    modalita = request.form.get("modalita", "")
 
-                        fruttosio = to_float(csv_value(row, mapping, "fruttosio"))
-                        fibre = to_float(csv_value(row, mapping, "fibre"))
+    if modalita not in importazione.MODALITA:
+        abort(400)
 
-                        rapporto_raw = csv_value(row, mapping, "rapporto").strip()
-                        if rapporto_raw == "":
-                            rapporto = round(fruttosio / fibre, 3) if fibre else 0.0
-                        else:
-                            rapporto = to_float(rapporto_raw)
+    if modalita == "sostituisci" and request.form.get("conferma_sostituisci") != "1":
+        flash("Per sostituire l'intera tabella spunta la casella di conferma.", "danger")
+        return redirect(url_for("importa_anteprima", modalita=modalita))
 
-                        rischio_diabete = csv_value(row, mapping, "rischio_diabete").strip()
-                        rischio_colesterolo = csv_value(row, mapping, "rischio_colesterolo").strip()
-                        rischio_malassorbimento = csv_value(row, mapping, "rischio_malassorbimento").strip()
-                        rischio_metabolico = csv_value(row, mapping, "rischio_metabolico").strip()
-                        rischio_tumorale = csv_value(row, mapping, "rischio_tumorale").strip()
+    conn = get_db()
 
-                        conn.execute(
-                            """
-                            INSERT INTO alimenti (
-                                alimento,
-                                categoria,
-                                kcal,
-                                tef_kcal,
-                                tef_percent,
-                                kcal_nette,
-                                fruttosio,
-                                fibre,
-                                rapporto,
-                                rischio_diabete,
-                                rischio_colesterolo,
-                                rischio_malassorbimento,
-                                rischio_metabolico,
-                                rischio_tumorale,
-                                aggiornato_il
-                            )
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                            """,
-                            (
-                                alimento_val,
-                                categoria,
-                                kcal,
-                                tef_kcal,
-                                tef_percent,
-                                kcal_nette,
-                                fruttosio,
-                                fibre,
-                                rapporto,
-                                rischio_diabete,
-                                rischio_colesterolo,
-                                rischio_malassorbimento,
-                                rischio_metabolico,
-                                rischio_tumorale,
-                                now
-                            )
-                        )
+    try:
+        voci = importazione.pianifica(conn, letto, modalita)
+        sommario = importazione.riepilogo(voci)
 
-                        imported += 1
+        if modalita == "sostituisci" and sommario["nuovo"] == 0:
+            flash("Il file non contiene righe valide: la tabella non è stata svuotata.", "danger")
+            return redirect(url_for("importa_anteprima", modalita=modalita))
 
-                    except Exception as exc:
-                        skipped += 1
-                        errors.append(f"riga {row_number}: {exc}")
+        if sommario["scritture"] == 0:
+            scarta_import()
+            flash("Nessuna modifica da applicare: il database contiene già questi dati.", "info")
+            return redirect(url_for("index"))
 
-                conn.commit()
+        nome_backup = backup.crea(DB_PATH, app.config["BACKUP_DIR"], "import")
+        adesso = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        eliminati = importazione.applica(conn, voci, modalita, adesso)
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        app.logger.exception("Import non riuscito")
+        flash("Errore durante l'importazione: nessuna modifica è stata salvata.", "danger")
+        return redirect(url_for("importa_anteprima", modalita=modalita))
+    finally:
+        conn.close()
 
-                if imported > 0:
-                    flash(
-                        f"Import completato: {imported} alimenti importati.",
-                        "success"
-                    )
-                else:
-                    flash("Nessun alimento importato.", "warning")
+    scarta_import()
 
-                if skipped > 0:
-                    preview_errors = "; ".join(errors[:5])
-                    flash(
-                        f"{skipped} righe saltate. Eventuali problemi: {preview_errors}",
-                        "warning"
-                    )
+    parti = []
 
-            except Exception as exc:
-                conn.rollback()
-                flash(f"Errore durante l'importazione: {exc}", "danger")
+    if eliminati:
+        parti.append(f"{eliminati} eliminati")
 
-            finally:
-                conn.close()
+    parti.append(f"{sommario['nuovo']} aggiunti")
 
-        except Exception as exc:
-            flash(f"Errore nella lettura del file: {exc}", "danger")
+    if sommario["aggiornato"]:
+        parti.append(f"{sommario['aggiornato']} aggiornati")
 
-        return redirect(url_for("index"))
+    if sommario["saltato"]:
+        parti.append(f"{sommario['saltato']} righe saltate")
 
-    return render_template("import.html")
+    flash(
+        f"Import completato: {', '.join(parti)}. "
+        f"Il database precedente è nel backup {nome_backup}.",
+        "success"
+    )
+    return redirect(url_for("index"))
+
+
+@app.route("/importa/annulla", methods=["POST"])
+@solo_admin
+def importa_annulla():
+    scarta_import()
+    flash("Import annullato: il database non è stato modificato.", "info")
+    return redirect(url_for("importa"))
+
+
+# ---------------------------------------------------------------
+# BACKUP E RIPRISTINO
+# ---------------------------------------------------------------
+
+MIMETYPE_SQLITE = "application/vnd.sqlite3"
+
+
+@app.route("/backup")
+@solo_admin
+def backup_pagina():
+    return render_template(
+        "backup.html",
+        backups=backup.elenco(app.config["BACKUP_DIR"]),
+        totale_alimenti=get_stats()[0],
+        conservati=backup.BACKUP_CONSERVATI,
+        max_mb=app.config["MAX_UPLOAD_MB"],
+    )
+
+
+@app.route("/backup/scarica")
+@solo_admin
+def backup_scarica():
+    dati = backup.istantanea(DB_PATH)
+    return invia_file(dati, f"alimenti_{datetime.now():%Y%m%d-%H%M%S}.db", MIMETYPE_SQLITE)
+
+
+@app.route("/backup/scarica/<nome>")
+@solo_admin
+def backup_scarica_salvato(nome):
+    percorso = backup.percorso(app.config["BACKUP_DIR"], nome)
+
+    if not percorso:
+        abort(404)
+
+    with open(percorso, "rb") as f:
+        return invia_file(f.read(), nome, MIMETYPE_SQLITE)
+
+
+@app.route("/backup/crea", methods=["POST"])
+@solo_admin
+def backup_crea():
+    nome = backup.crea(DB_PATH, app.config["BACKUP_DIR"], "manuale")
+    flash(f"Backup salvato: {nome}.", "success")
+    return redirect(url_for("backup_pagina"))
+
+
+def esegui_ripristino(file_db, etichetta):
+    try:
+        alimenti = backup.verifica(file_db)
+    except backup.ErroreBackup as exc:
+        flash(f"Ripristino non eseguito: {exc}", "danger")
+        return
+
+    cartella = app.config["BACKUP_DIR"]
+
+    # La potatura dei vecchi backup si fa dopo: il file da ripristinare
+    # potrebbe essere proprio il più vecchio della cartella
+    nome_backup = backup.crea(DB_PATH, cartella, "ripristino", pota_vecchi=False)
+    backup.ripristina(file_db, DB_PATH)
+    backup.pota(cartella)
+
+    # Un backup di una versione precedente può non avere tutte le colonne
+    init_db()
+
+    flash(
+        f"Database ripristinato da {etichetta}: {alimenti} alimenti. "
+        f"Il database precedente è nel backup {nome_backup}.",
+        "success"
+    )
+
+
+@app.route("/backup/ripristina", methods=["POST"])
+@solo_admin
+def backup_ripristina():
+    file = request.files.get("file")
+
+    if not file or not file.filename:
+        flash("Seleziona il file del database da ripristinare.", "danger")
+        return redirect(url_for("backup_pagina"))
+
+    if request.form.get("conferma") != "1":
+        flash("Per ripristinare spunta la casella di conferma.", "danger")
+        return redirect(url_for("backup_pagina"))
+
+    temporaneo = os.path.join(cartella_import(), f"ripristino-{secrets.token_hex(8)}.db")
+    file.save(temporaneo)
+
+    try:
+        esegui_ripristino(temporaneo, os.path.basename(file.filename.replace("\\", "/")))
+    finally:
+        os.remove(temporaneo)
+
+    return redirect(url_for("backup_pagina"))
+
+
+@app.route("/backup/ripristina/<nome>", methods=["POST"])
+@solo_admin
+def backup_ripristina_salvato(nome):
+    percorso = backup.percorso(app.config["BACKUP_DIR"], nome)
+
+    if not percorso:
+        abort(404)
+
+    esegui_ripristino(percorso, nome)
+    return redirect(url_for("backup_pagina"))
 
 
 # ---------------------------------------------------------------
@@ -1499,7 +1650,8 @@ def file_troppo_grande(error):
         f"File troppo grande: il limite è {app.config['MAX_UPLOAD_MB']} MB.",
         "danger"
     )
-    return redirect(url_for("importa"))
+    pagina = "backup_pagina" if request.path.startswith("/backup") else "importa"
+    return redirect(url_for(pagina))
 
 
 @app.errorhandler(CSRFError)

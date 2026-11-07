@@ -19,12 +19,15 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
   - **Kcal Nette** (Kcal − TEF)
   - Fruttosio, Fibre e **Rapporto Fruttosio/Fibre**
 - **CRUD completo**: inserimento, modifica ed eliminazione degli alimenti tramite form web, con calcolo automatico dei campi derivati (TEF, Kcal nette, rapporto F/F).
-- **Accesso con ruoli**: la consultazione può essere pubblica, mentre le operazioni di scrittura (nuovo, modifica, elimina, import) sono riservate agli amministratori. Form protetti da CSRF.
-- **Import CSV intelligente** dall'interfaccia web:
-  - riconoscimento automatico dell'encoding (UTF-8, CP1252, Latin-1)
-  - riconoscimento automatico del separatore (`,` `;` tab)
-  - mappatura flessibile delle intestazioni di colonna
-  - opzione di svuotamento tabella prima dell'import
+- **Accesso con ruoli**: la consultazione può essere pubblica, mentre le operazioni di scrittura (nuovo, modifica, elimina, import, backup) sono riservate agli amministratori. Form protetti da CSRF.
+- **Import CSV ed Excel (.xlsx) con anteprima** dall'interfaccia web:
+  - riconoscimento automatico di encoding (UTF-8, CP1252, Latin-1) e separatore (`,` `;` tab) dei CSV
+  - mappatura flessibile delle intestazioni di colonna; numeri con virgola o punto, livelli anche con emoji
+  - anteprima prima di scrivere: righe nuove, aggiornate (con le celle che cambiano), invariate e saltate, avvisi riga per riga
+  - tre modalità: **aggiorna o aggiungi** (upsert per ID oppure per nome e categoria), aggiungi tutte come nuove, sostituisci l'intera tabella
+  - backup automatico del database prima di ogni import
+- **Export** della tabella filtrata e ordinata in **CSV**, **Excel** (livelli colorati, foglio con filtri e legenda) e **PDF**; **PDF della scheda alimento** con punteggio, valori e radar.
+- **Backup e ripristino** del database dall'interfaccia: download, backup sul server, ripristino da file o da un backup salvato (con verifica del file e copia di sicurezza del database attuale).
 - **Riepilogo grafico** in home page, aggiornato in base ai filtri: alimenti per categoria, distribuzione dei livelli per ciascun rischio, punteggio medio e classifiche "top alimenti". Ogni grafico ha la sua vista tabellare.
 - **Punteggio complessivo 0–100** per alimento, ordinabile in tabella: 100 = tutti i rischi trascurabili, 0 = tutti alti.
 - **Medaglie** 🛡️ più protettivi · 🍃 miglior rapporto fruttosio/fibre · 🪶 meno calorici, assegnate ai primi 10 di ciascuna classifica.
@@ -35,20 +38,26 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 
 ```
 Food-stoplight/
-├── app.py              # Applicazione Flask principale (route, CRUD, import CSV, login, comandi utenti)
+├── app.py              # Applicazione Flask principale (route, CRUD, import/export, backup, login, comandi utenti)
 ├── analisi.py          # Livelli di rischio, punteggio, medaglie e dati per i grafici
+├── importazione.py     # Lettura di CSV/Excel, riconoscimento colonne, piano dell'import (anteprima)
+├── esportazione.py     # Export CSV, Excel e PDF (tabella e scheda alimento)
+├── backup.py           # Backup, verifica e ripristino del database alimenti
 ├── config.py           # Configurazione da variabili d'ambiente / .env (sviluppo e produzione)
 ├── .env.example        # Modello del file .env
 ├── update.py           # CLI per aggiornamento massivo del DB da CSV ed export dei dati mancanti
 ├── autogen.py          # Generatore del dataset: dati reali USDA FoodData Central + alimenti integrativi
 ├── alimenti.db         # Database SQLite precaricato (~1000 alimenti)
 ├── utenti.db           # Utenti e password (creato al primo avvio, escluso da git)
+├── instance/           # Backup del database e file in attesa di import (creata all'uso, esclusa da git)
 ├── templates/          # Template Jinja2
 │   ├── base.html       # Layout comune (navbar, tema chiaro/scuro, flash message)
 │   ├── index.html      # Riepilogo grafico e tabella alimenti con filtri e ordinamento
 │   ├── scheda.html     # Scheda del singolo alimento con radar dei rischi
 │   ├── form.html       # Form nuovo/modifica alimento
-│   ├── import.html     # Pagina di import CSV
+│   ├── import.html     # Caricamento del file da importare (CSV o Excel)
+│   ├── import_anteprima.html  # Anteprima dell'import e scelta della modalità
+│   ├── backup.html     # Backup e ripristino del database
 │   └── login.html      # Pagina di accesso
 ├── static/
 │   ├── css/app.css     # Stili dell'app, colori dei livelli, modalità scura
@@ -102,7 +111,8 @@ La configurazione si legge dalle variabili d'ambiente oppure dal file `.env` nel
 | `ACCESSO_PUBBLICO` | `true` | `false`: serve il login anche solo per consultare la tabella |
 | `SESSION_COOKIE_SECURE` | attivo in produzione | Cookie di sessione inviati solo su HTTPS |
 | `DATABASE_PATH` / `UTENTI_DB_PATH` | `alimenti.db` / `utenti.db` | Percorsi dei database (relativi alla cartella del progetto) |
-| `MAX_UPLOAD_MB` | `10` | Dimensione massima dei CSV importati |
+| `BACKUP_DIR` | `instance/backup` | Cartella dei backup del database alimenti (si conservano gli ultimi 20) |
+| `MAX_UPLOAD_MB` | `10` | Dimensione massima dei file importati e dei backup da ripristinare |
 
 ## 👤 Utenti e ruoli
 
@@ -120,6 +130,14 @@ flask --app app imposta-password mario
 flask --app app elenco-utenti
 flask --app app elimina-utente lucia
 ```
+
+## 📥 Import, export e backup
+
+- **Modificare i dati in Excel**: esporta la tabella in Excel o CSV, modifica il file e reimportalo con la modalità *Aggiorna o aggiungi*. Le righe si abbinano per **ID** (colonna presente nei file esportati), altrimenti per **nome e categoria**; se il file non ha la colonna Categoria, per nome soltanto quando non è ambiguo. Vengono scritti solo i valori non vuoti del file e le righe identiche al database restano invariate.
+- **Campi calcolati**: il rapporto fruttosio/fibre viene sempre ricalcolato; TEF (Kcal) e TEF (%) si completano a vicenda e le Kcal nette si ricalcolano quando cambiano Kcal o TEF. Le colonne Punteggio e Aggiornato il dei file esportati vengono ignorate.
+- **Livelli di rischio** accettati: Trascurabile, Basso, Medio, Alto, anche preceduti da emoji («🔴 Alto»); i valori non riconosciuti vengono segnalati nell'anteprima e non importati.
+- **Backup**: prima di ogni import e di ogni ripristino viene salvata una copia del database in `BACKUP_DIR`. Il ripristino accetta solo database SQLite integri con la tabella `alimenti` (senza trigger né viste) e aggiunge le colonne mancanti a quelli delle versioni precedenti. `utenti.db` non fa mai parte dei backup.
+- **PDF**: usano i font standard del formato, quindi le emoji e i caratteri fuori dall'alfabeto latino occidentale non compaiono.
 
 ## 🚢 Produzione
 
@@ -177,6 +195,7 @@ python autogen.py
 | Sicurezza | Flask-Login (sessioni e ruoli), Flask-WTF (CSRF), python-dotenv |
 | Database | SQLite 3 |
 | Frontend | Jinja2, Bootstrap Italia 2.18.3 |
+| Import / Export | openpyxl (Excel), fpdf2 (PDF) |
 | Dati | USDA FoodData Central API |
 
 ## 👨‍💻 Sviluppatore

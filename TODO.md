@@ -43,12 +43,12 @@ Idee, funzionalità e implementazioni future per l'applicazione.
 
 ## 📥 Import / Export
 
-- [ ] **Export CSV/Excel** della tabella filtrata dall'interfaccia web
-- [ ] Export PDF della scheda alimento o della tabella
-- [ ] Import da file Excel (.xlsx) oltre che CSV
-- [ ] Anteprima dell'import con conferma prima della scrittura (mostrare le prime righe mappate)
-- [ ] Aggiornamento (upsert) da interfaccia web invece del solo inserimento — logica già presente in `update.py`
-- [ ] Backup/restore del database dall'interfaccia
+- [x] **Export CSV/Excel** della tabella filtrata dall'interfaccia web
+- [x] Export PDF della scheda alimento o della tabella
+- [x] Import da file Excel (.xlsx) oltre che CSV
+- [x] Anteprima dell'import con conferma prima della scrittura (mostrare le prime righe mappate)
+- [x] Aggiornamento (upsert) da interfaccia web invece del solo inserimento — logica già presente in `update.py`
+- [x] Backup/restore del database dall'interfaccia
 
 ## 🌐 Integrazione dati
 

@@ -136,3 +136,20 @@
         }
     });
 })();
+
+// ---------------------------------------------------------------
+// Conferma prima di inviare i form con data-conferma="messaggio"
+// (es. ripristino di un backup dall'elenco)
+// ---------------------------------------------------------------
+(function () {
+    "use strict";
+
+    document.addEventListener("submit", function (evento) {
+        var form = evento.target;
+        var messaggio = form.getAttribute && form.getAttribute("data-conferma");
+
+        if (messaggio && !window.confirm(messaggio)) {
+            evento.preventDefault();
+        }
+    });
+})();

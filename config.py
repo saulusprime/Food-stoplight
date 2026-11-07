@@ -138,7 +138,13 @@ def carica_config():
         "DATABASE_PATH": env_percorso("DATABASE_PATH", "alimenti.db"),
         "UTENTI_DB_PATH": env_percorso("UTENTI_DB_PATH", "utenti.db"),
 
-        # Limite di dimensione delle richieste (upload CSV)
+        # Backup automatici e manuali del database alimenti
+        "BACKUP_DIR": env_percorso("BACKUP_DIR", os.path.join("instance", "backup")),
+
+        # File caricati in attesa di conferma dell'import (eliminati dopo un'ora)
+        "IMPORT_DIR": os.path.join(BASE_DIR, "instance", "import"),
+
+        # Limite di dimensione delle richieste (file da importare, backup da ripristinare)
         "MAX_UPLOAD_MB": max_upload_mb,
         "MAX_CONTENT_LENGTH": max_upload_mb * 1024 * 1024,
 
