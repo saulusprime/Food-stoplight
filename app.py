@@ -598,6 +598,30 @@ def get_filter_options():
     )
 
 
+def get_form_options():
+    """
+    Suggerimenti per i campi testuali del form nuovo/modifica
+    (categorie e livelli di rischio), indicizzati per nome del campo.
+    """
+    (
+        category_options,
+        diabete_options,
+        colesterolo_options,
+        malassorbimento_options,
+        metabolic_options,
+        tumorale_options
+    ) = get_filter_options()
+
+    return {
+        "categoria": category_options,
+        "rischio_diabete": diabete_options,
+        "rischio_colesterolo": colesterolo_options,
+        "rischio_malassorbimento": malassorbimento_options,
+        "rischio_metabolico": metabolic_options,
+        "rischio_tumorale": tumorale_options,
+    }
+
+
 # ---------------------------------------------------------------
 # ROUTE PRINCIPALI
 # ---------------------------------------------------------------
@@ -709,7 +733,8 @@ def nuovo():
                 titolo="Nuovo alimento",
                 sottotitolo="Inserisci un nuovo alimento nel database.",
                 action=url_for("nuovo"),
-                item=item
+                item=item,
+                opzioni=get_form_options()
             )
 
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -765,7 +790,8 @@ def nuovo():
         titolo="Nuovo alimento",
         sottotitolo="Inserisci un nuovo alimento nel database.",
         action=url_for("nuovo"),
-        item=None
+        item=None,
+        opzioni=get_form_options()
     )
 
 
@@ -819,7 +845,8 @@ def modifica(alimento_id):
                 titolo="Modifica alimento",
                 sottotitolo="Aggiorna i dati dell'alimento.",
                 action=url_for("modifica", alimento_id=alimento_id),
-                item=item
+                item=item,
+                opzioni=get_form_options()
             )
 
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -876,7 +903,8 @@ def modifica(alimento_id):
         titolo="Modifica alimento",
         sottotitolo="Aggiorna i dati dell'alimento.",
         action=url_for("modifica", alimento_id=alimento_id),
-        item=item
+        item=item,
+        opzioni=get_form_options()
     )
 
 

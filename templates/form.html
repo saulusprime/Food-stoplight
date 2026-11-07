@@ -1,49 +1,127 @@
-<div class="col-md-4">
-    <label class="form-label">Rischio Diabete</label>
-    <input
-        type="text"
-        class="form-control"
-        name="rischio_diabete"
-        value="{{ item.rischio_diabete if item and item.rischio_diabete is not none else '' }}"
-    >
+{% extends "base.html" %}
+
+{% block title %}
+{{ titolo|default('Alimento') }}
+{% endblock %}
+
+{% block content %}
+
+{% set opzioni = opzioni|default({}) %}
+
+{#
+    Campo di testo generico.
+    - tipo='numero': accetta anche virgola decimale, "Inf", "ND" (vedi to_float in app.py)
+    - suggerimenti: lista di {value, label} mostrata come datalist
+#}
+{% macro campo(name, label, col='col-md-3', tipo='testo', obbligatorio=false, aiuto='', suggerimenti=none) %}
+    {% set valore = item[name] if item and item[name] is not none else '' %}
+
+    <div class="{{ col }}">
+        <label for="{{ name }}" class="form-label">
+            {{ label }}{% if obbligatorio %} <span class="text-danger" aria-hidden="true">*</span>{% endif %}
+        </label>
+
+        <input
+            type="text"
+            class="form-control"
+            id="{{ name }}"
+            name="{{ name }}"
+            value="{{ valore }}"
+            {% if tipo == 'numero' %}inputmode="decimal"{% endif %}
+            {% if suggerimenti %}list="{{ name }}-opzioni"{% endif %}
+            {% if tipo == 'numero' or suggerimenti %}autocomplete="off"{% endif %}
+            {% if aiuto %}aria-describedby="{{ name }}-aiuto"{% endif %}
+            {% if obbligatorio %}required{% endif %}
+        >
+
+        {% if suggerimenti %}
+            <datalist id="{{ name }}-opzioni">
+                {% for opt in suggerimenti %}
+                    <option value="{{ opt.value }}">{{ opt.label }}</option>
+                {% endfor %}
+            </datalist>
+        {% endif %}
+
+        {% if aiuto %}
+            <small id="{{ name }}-aiuto" class="form-text text-muted">
+                {{ aiuto }}
+            </small>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+
+<div class="page-header">
+    <h1>{{ titolo|default('Alimento') }}</h1>
+    {% if sottotitolo %}
+        <p>{{ sottotitolo }}</p>
+    {% endif %}
 </div>
 
-<div class="col-md-4">
-    <label class="form-label">Rischio Colesterolo</label>
-    <input
-        type="text"
-        class="form-control"
-        name="rischio_colesterolo"
-        value="{{ item.rischio_colesterolo if item and item.rischio_colesterolo is not none else '' }}"
-    >
-</div>
+<form
+    method="post"
+    action="{{ action }}"
+    class="card shadow-sm p-4 mb-4"
+>
 
-<div class="col-md-4">
-    <label class="form-label">Rischio Malassorbimento</label>
-    <input
-        type="text"
-        class="form-control"
-        name="rischio_malassorbimento"
-        value="{{ item.rischio_malassorbimento if item and item.rischio_malassorbimento is not none else '' }}"
-    >
-</div>
+    <h2 class="h5 mb-3">Dati generali</h2>
 
-<div class="col-md-4">
-    <label class="form-label">Rischio Metabolico</label>
-    <input
-        type="text"
-        class="form-control"
-        name="rischio_metabolico"
-        value="{{ item.rischio_metabolico if item and item.rischio_metabolico is not none else '' }}"
-    >
-</div>
+    <div class="row g-3 mb-4">
+        {{ campo('alimento', 'Alimento', col='col-md-8', obbligatorio=true) }}
+        {{ campo('categoria', 'Categoria', col='col-md-4', suggerimenti=opzioni.categoria) }}
+    </div>
 
-<div class="col-md-4">
-    <label class="form-label">Rischio Tumorale</label>
-    <input
-        type="text"
-        class="form-control"
-        name="rischio_tumorale"
-        value="{{ item.rischio_tumorale if item and item.rischio_tumorale is not none else '' }}"
-    >
-</div>
+    <h2 class="h5 mb-3">Energia</h2>
+
+    <div class="row g-3 mb-4">
+        {{ campo('kcal', 'Kcal (per 100 g)', tipo='numero') }}
+        {{ campo('tef_percent', 'TEF (%)', tipo='numero',
+                 aiuto='Vuoto: calcolato da TEF (Kcal) e Kcal.') }}
+        {{ campo('tef_kcal', 'TEF (Kcal)', tipo='numero',
+                 aiuto='Vuoto: calcolato da Kcal e TEF (%).') }}
+        {{ campo('kcal_nette', 'Kcal nette', tipo='numero',
+                 aiuto='Vuoto: Kcal − TEF (Kcal).') }}
+    </div>
+
+    <h2 class="h5 mb-3">Fruttosio e fibre</h2>
+
+    <div class="row g-3 mb-4">
+        {{ campo('fruttosio', 'Fruttosio (g/100 g)', col='col-md-4', tipo='numero') }}
+        {{ campo('fibre', 'Fibre (g/100 g)', col='col-md-4', tipo='numero') }}
+        {{ campo('rapporto', 'Rapporto F/Fibre', col='col-md-4', tipo='numero',
+                 aiuto='Vuoto: Fruttosio ÷ Fibre.') }}
+    </div>
+
+    <h2 class="h5 mb-3">Profilo di rischio</h2>
+
+    <div class="row g-3 mb-4">
+        {{ campo('rischio_diabete', 'Rischio Diabete', col='col-md-4',
+                 suggerimenti=opzioni.rischio_diabete) }}
+        {{ campo('rischio_colesterolo', 'Rischio Colesterolo', col='col-md-4',
+                 suggerimenti=opzioni.rischio_colesterolo) }}
+        {{ campo('rischio_malassorbimento', 'Rischio Malassorbimento', col='col-md-4',
+                 suggerimenti=opzioni.rischio_malassorbimento) }}
+        {{ campo('rischio_metabolico', 'Rischio Metabolico', col='col-md-4',
+                 suggerimenti=opzioni.rischio_metabolico) }}
+        {{ campo('rischio_tumorale', 'Rischio Tumorale', col='col-md-4',
+                 suggerimenti=opzioni.rischio_tumorale) }}
+    </div>
+
+    <p class="text-muted small mb-3">
+        <span class="text-danger">*</span> campo obbligatorio.
+        I valori numerici accettano anche la virgola decimale (es. 5,9).
+    </p>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+            Salva
+        </button>
+
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            Annulla
+        </a>
+    </div>
+
+</form>
+
+{% endblock %}
