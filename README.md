@@ -1,6 +1,6 @@
 # 🥗 Food-stoplight
 
-**Food-stoplight** è una web app per consultare e gestire un database nutrizionale di oltre 1000 alimenti, con un sistema "a semaforo" (🟢 Basso / 🟡 Medio / 🔴 Alto) che classifica ogni alimento in base a cinque profili di rischio per la salute.
+**Food-stoplight** è una web app per consultare e gestire un database nutrizionale di oltre 1000 alimenti, con un sistema "a semaforo" a quattro livelli (🟢 Trascurabile / 🟡 Basso / 🟠 Medio / 🔴 Alto) che classifica ogni alimento in base a cinque profili di rischio per la salute.
 
 Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su **Bootstrap Italia**.
 
@@ -12,7 +12,7 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
   - 🫀 Rischio Colesterolo
   - 🌾 Rischio Malassorbimento (fruttosio/FODMAP)
   - ⚖️ Rischio Metabolico
-  - 🛡️ Rischio Tumorale (Protettivo / Neutro / Aumentato)
+  - 🛡️ Rischio Tumorale
 - **Dati energetici avanzati** per ogni alimento:
   - Kcal totali
   - **TEF** (Effetto Termico del Cibo), in Kcal e in percentuale
@@ -25,13 +25,18 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
   - riconoscimento automatico del separatore (`,` `;` tab)
   - mappatura flessibile delle intestazioni di colonna
   - opzione di svuotamento tabella prima dell'import
-- **Statistiche** in home page: totale alimenti, alimenti con dati TEF, risultati filtrati.
+- **Riepilogo grafico** in home page, aggiornato in base ai filtri: alimenti per categoria, distribuzione dei livelli per ciascun rischio, punteggio medio e classifiche "top alimenti". Ogni grafico ha la sua vista tabellare.
+- **Punteggio complessivo 0–100** per alimento, ordinabile in tabella: 100 = tutti i rischi trascurabili, 0 = tutti alti.
+- **Medaglie** 🛡️ più protettivi · 🍃 miglior rapporto fruttosio/fibre · 🪶 meno calorici, assegnate ai primi 10 di ciascuna classifica.
+- **Scheda alimento** con punteggio, valori nutrizionali e grafico radar del profilo di rischio.
+- **Modalità scura**: segue il sistema operativo oppure si attiva con il pulsante 🌙 nella barra in alto.
 
 ## 📂 Struttura del progetto
 
 ```
 Food-stoplight/
 ├── app.py              # Applicazione Flask principale (route, CRUD, import CSV, login, comandi utenti)
+├── analisi.py          # Livelli di rischio, punteggio, medaglie e dati per i grafici
 ├── config.py           # Configurazione da variabili d'ambiente / .env (sviluppo e produzione)
 ├── .env.example        # Modello del file .env
 ├── update.py           # CLI per aggiornamento massivo del DB da CSV ed export dei dati mancanti
@@ -39,12 +44,15 @@ Food-stoplight/
 ├── alimenti.db         # Database SQLite precaricato (~1000 alimenti)
 ├── utenti.db           # Utenti e password (creato al primo avvio, escluso da git)
 ├── templates/          # Template Jinja2
-│   ├── base.html       # Layout comune (navbar, stili, flash message)
-│   ├── index.html      # Tabella alimenti con filtri e ordinamento
+│   ├── base.html       # Layout comune (navbar, tema chiaro/scuro, flash message)
+│   ├── index.html      # Riepilogo grafico e tabella alimenti con filtri e ordinamento
+│   ├── scheda.html     # Scheda del singolo alimento con radar dei rischi
 │   ├── form.html       # Form nuovo/modifica alimento
 │   ├── import.html     # Pagina di import CSV
 │   └── login.html      # Pagina di accesso
 ├── static/
+│   ├── css/app.css     # Stili dell'app, colori dei livelli, modalità scura
+│   ├── js/app.js       # Pulsante del tema e tooltip dei grafici
 │   └── bootstrap-italia/   # Bootstrap Italia 2.18.3 (CSS, JS, font, icone)
 └── docs/               # Dataset di esempio (CSV/XLSX) e prototipi HTML
 ```
@@ -154,8 +162,10 @@ python autogen.py
 
 - **TEF (Thermic Effect of Food)**: stimato pesando i macronutrienti con i coefficienti standard — proteine ~25%, carboidrati ~7,5–10%, grassi ~2,5–5% dell'energia.
 - **Kcal Nette** = Kcal totali − TEF (Kcal).
-- **Rapporto Fruttosio/Fibre**: indicatore utile per la valutazione del malassorbimento del fruttosio; le fibre ne favoriscono la tolleranza.
-- **Indicatori di rischio**: assegnati tramite punteggi basati su soglie di zuccheri, grassi saturi, colesterolo, fibre e fruttosio, con riferimento alle indicazioni OMS/WCRF per il rischio tumorale.
+- **Rapporto Fruttosio/Fibre** = fruttosio ÷ fibre (0 se le fibre sono 0): indicatore utile per la valutazione del malassorbimento del fruttosio; più è basso, meglio è, perché le fibre ne favoriscono la tolleranza.
+- **Indicatori di rischio**: assegnati tramite punteggi basati su soglie di zuccheri, grassi saturi, colesterolo, fibre e fruttosio, con riferimento alle indicazioni OMS/WCRF per il rischio tumorale. Valori accettati: Trascurabile, Basso, Medio, Alto (sono riconosciuti anche Protettivo e Neutro come Trascurabile, Elevato e Aumentato come Alto).
+- **Punteggio complessivo** = 100 × (1 − media dei punti ÷ 3), con Trascurabile = 0, Basso = 1, Medio = 2, Alto = 3 punti, calcolato sui rischi disponibili. Il colore del punteggio corrisponde al livello medio: oltre 83 Trascurabile, 51–83 Basso, 17–50 Medio, fino a 16 Alto.
+- **Medaglie**: primi 10 dell'intero database per punteggio (a parità, più fibre), per rapporto fruttosio/fibre (solo alimenti con almeno 1 g di fruttosio) e per Kcal (esclusi i valori a 0, che indicano dati mancanti).
 
 > ⚠️ **Disclaimer**: i dati e le classificazioni hanno finalità informative e di studio. Non sostituiscono il parere di un medico o di un nutrizionista.
 

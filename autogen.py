@@ -106,7 +106,7 @@ for food in all_foods:
         
     tef_kcal = kcal * tef_pct
     kcal_net = kcal - tef_kcal
-    ff_ratio = round(fiber / fructose, 2) if fructose > 0 else "N/A"
+    ff_ratio = round(fructose / fiber, 3) if fiber > 0 else "N/A"  # Rapporto F/Fibre = fruttosio / fibre
     
     r_diab, r_cole, r_mala, r_meta, r_tumo = calculate_risks(kcal, protein, carbs, fat, sat_fat, fiber, fructose, sugars, cholesterol)
     categoria = guess_category(desc)
@@ -144,7 +144,7 @@ for cat, foods in base_foods.items():
         tef_pct = ((p_cal / tmc) * 25 + (c_cal / tmc) * 10 + (f_cal / tmc) * 5) / 100 if tmc > 0 else 0.1
         tef_kcal = kcal * tef_pct
         kcal_net = kcal - tef_kcal
-        ff_ratio = round(fiber / fructose, 2) if fructose > 0 else "N/A"
+        ff_ratio = round(fructose / fiber, 3) if fiber > 0 else "N/A"  # Rapporto F/Fibre = fruttosio / fibre
         
         r_diab, r_cole, r_mala, r_meta, r_tumo = calculate_risks(kcal, protein, carbs, fat, sat_fat, fiber, fructose, sugars, cholesterol)
         rows.append([name, cat, round(kcal, 1), round(tef_kcal, 1), round(tef_pct*100, 1), round(kcal_net, 1), round(fructose, 1), round(fiber, 1), ff_ratio, r_diab, r_cole, r_mala, r_meta, r_tumo])

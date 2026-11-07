@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ item.alimento }}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>{{ item.alimento }}</h1>
+    <p>
+        {{ item.categoria or 'Senza categoria' }}
+        {% if item.aggiornato_il %} · aggiornato il {{ item.aggiornato_il }}{% endif %}
+    </p>
+</div>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
+        ← Torna alla tabella
+    </a>
+
+    {% if current_user.is_admin %}
+        <a href="{{ url_for('modifica', alimento_id=item.id) }}" class="btn btn-outline-primary btn-sm">
+            ✏️ Modifica
+        </a>
+    {% endif %}
+</div>
+
+<div class="row g-3">
+
+    <div class="col-lg-5 d-flex flex-column gap-3">
+
+        <section class="card grafico-card" aria-labelledby="titolo-punteggio">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-punteggio">Punteggio complessivo</h2>
+                <p class="grafico-sottotitolo">
+                    Sintesi dei cinque rischi: 100 = tutti trascurabili, 0 = tutti alti.
+                </p>
+
+                {% if item.punteggio is not none %}
+                    <div class="punteggio-hero">
+                        <span class="punteggio-hero-valore">{{ item.punteggio }}</span>
+                        <span class="punteggio-hero-scala">/100</span>
+                    </div>
+
+                    <div
+                        class="metro stato-{{ livello.stato }}"
+                        role="meter"
+                        aria-label="Punteggio complessivo"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        aria-valuenow="{{ item.punteggio }}"
+                    >
+                        <div class="metro-riempimento" style="--v: {{ item.punteggio }}"></div>
+                    </div>
+
+                    <p class="mb-0 mt-2">
+                        <span class="badge-risk stato-{{ livello.stato }}">Livello medio: {{ livello.etichetta }}</span>
+                    </p>
+                {% else %}
+                    <p class="classifica-vuota">Nessun livello di rischio disponibile.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        {% if medaglie %}
+            <section class="card grafico-card" aria-labelledby="titolo-medaglie">
+                <div class="card-body">
+                    <h2 class="grafico-titolo" id="titolo-medaglie">Medaglie</h2>
+                    <p class="grafico-sottotitolo">
+                        Tra i primi {{ posti_medaglia }} dell'intero database.
+                    </p>
+
+                    <ul class="elenco-medaglie">
+                        {% for m in medaglie %}
+                            <li>
+                                <span aria-hidden="true">{{ m.icona }}</span>
+                                <span>
+                                    <strong>{{ m.titolo }}</strong><br>
+                                    <small class="text-muted">{{ m.descrizione }}</small>
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+        {% endif %}
+
+        <section class="card grafico-card" aria-labelledby="titolo-valori">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-valori">Valori per 100 g</h2>
+
+                <table class="table table-sm dati-nutrizionali mb-0 mt-2">
+                    <tbody>
+                        <tr><th scope="row">Kcal</th><td>{{ item.kcal|numero }}</td></tr>
+                        <tr><th scope="row">TEF (Kcal)</th><td>{{ item.tef_kcal|numero }}</td></tr>
+                        <tr><th scope="row">TEF (%)</th><td>{{ item.tef_percent|numero }}</td></tr>
+                        <tr><th scope="row">Kcal nette</th><td>{{ item.kcal_nette|numero }}</td></tr>
+                        <tr><th scope="row">Fruttosio (g)</th><td>{{ item.fruttosio|numero(2) }}</td></tr>
+                        <tr><th scope="row">Fibre (g)</th><td>{{ item.fibre|numero(2) }}</td></tr>
+                        <tr><th scope="row">Rapporto fruttosio/fibre</th><td>{{ item.rapporto|numero(2) }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="col-lg-7">
+        <section class="card grafico-card h-100" aria-labelledby="titolo-radar">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-radar">Profilo di rischio</h2>
+                <p class="grafico-sottotitolo">
+                    Più l'area è ampia, più i rischi sono alti.
+                    Anelli dal centro: Trascurabile, Basso, Medio, Alto.
+                </p>
+
+                <svg
+                    class="radar"
+                    viewBox="-20 0 400 285"
+                    role="group"
+                    aria-labelledby="titolo-radar"
+                    aria-describedby="radar-descrizione"
+                >
+                    <desc id="radar-descrizione">
+                        {% for etichetta, valore in rischi %}{{ etichetta }}: {{ valore or 'non classificato' }}{% if not loop.last %}; {% endif %}{% endfor %}
+                    </desc>
+
+                    {% for anello in radar.anelli %}
+                        <polygon class="anello{% if loop.last %} anello-esterno{% endif %}" points="{{ anello.punti }}"></polygon>
+                    {% endfor %}
+
+                    {% for asse in radar.assi %}
+                        <line
+                            class="asse"
+                            x1="{{ radar.centro[0] }}" y1="{{ radar.centro[1] }}"
+                            x2="{{ asse.fine[0] }}" y2="{{ asse.fine[1] }}"
+                        ></line>
+                    {% endfor %}
+
+                    <polygon class="area" points="{{ radar.poligono }}"></polygon>
+
+                    {% for anello in radar.anelli %}
+                        <text
+                            class="etichetta-anello"
+                            x="{{ anello.etichetta_xy[0] }}"
+                            y="{{ anello.etichetta_xy[1] }}"
+                            aria-hidden="true"
+                        >{{ anello.etichetta }}</text>
+                    {% endfor %}
+
+                    {% for v in radar.vertici %}
+                        <g class="stato-{{ v.stato }}">
+                            <circle class="vertice" cx="{{ v.x }}" cy="{{ v.y }}" r="5"></circle>
+                            <circle
+                                class="bersaglio"
+                                cx="{{ v.x }}" cy="{{ v.y }}" r="13"
+                                tabindex="0"
+                                role="img"
+                                aria-label="{{ v.etichetta }}: {{ v.valore }}"
+                                data-tooltip="{{ v.etichetta }}"
+                                data-tooltip-stato="{{ v.stato }}"
+                                data-tooltip-valore="{{ v.valore }}"
+                            ></circle>
+                        </g>
+                    {% endfor %}
+
+                    {% for asse in radar.assi %}
+                        <text
+                            class="etichetta-asse"
+                            x="{{ asse.etichetta_xy[0] }}"
+                            y="{{ asse.etichetta_xy[1] }}"
+                            text-anchor="{{ asse.ancora }}"
+                            aria-hidden="true"
+                        >{{ asse.etichetta }}</text>
+                    {% endfor %}
+                </svg>
+
+                <table class="table table-sm mt-3 mb-0">
+                    <caption class="visually-hidden">Livelli di rischio</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Rischio</th>
+                            <th scope="col" class="text-end">Livello</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for etichetta, valore in rischi %}
+                            <tr>
+                                <th scope="row" class="fw-normal">{{ etichetta }}</th>
+                                <td class="text-end">
+                                    {% if valore %}
+                                        <span class="badge-risk stato-{{ stato_rischio(valore) }}">{{ valore }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Non classificato</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+</div>
+
+{% endblock %}

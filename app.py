@@ -28,10 +28,38 @@ from flask_login import (
 from flask_wtf.csrf import CSRFError, CSRFProtect
 from werkzeug.security import check_password_hash, generate_password_hash
 
+import analisi
 from config import carica_config
 
 app = Flask(__name__)
 app.config.update(carica_config())
+
+# Funzioni di analisi disponibili nei template
+app.jinja_env.globals.update(
+    stato_rischio=analisi.stato,
+    livello_punteggio=analisi.livello_punteggio,
+    LIVELLI_RISCHIO=analisi.LIVELLI,
+)
+
+
+@app.template_filter("percentuale")
+def filtro_percentuale(valore, decimali=1):
+    """
+    59.43 -> "59,4%" (virgola decimale italiana).
+    """
+    return f"{valore:.{decimali}f}".replace(".", ",") + "%"
+
+
+@app.template_filter("numero")
+def filtro_numero(valore, decimali=None):
+    """
+    Numero con virgola decimale; senza decimali indicati usa la forma compatta (%g).
+    """
+    if valore is None:
+        return "–"
+
+    testo = f"{valore:g}" if decimali is None else f"{valore:.{decimali}f}"
+    return testo.replace(".", ",")
 
 DB_PATH = app.config["DATABASE_PATH"]
 UTENTI_DB_PATH = app.config["UTENTI_DB_PATH"]
@@ -52,7 +80,17 @@ login_manager.login_message_category = "warning"
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    # punteggio(r1..r5): punteggio sintetico 0-100, usabile in SELECT e ORDER BY
+    conn.create_function(
+        "punteggio", len(analisi.CAMPI_RISCHIO), analisi.calcola_punteggio, deterministic=True
+    )
     return conn
+
+
+# Colonne lette da ogni query sugli alimenti, punteggio calcolato compreso
+SELECT_ALIMENTI = (
+    "SELECT *, punteggio(" + ", ".join(analisi.CAMPI_RISCHIO) + ") AS punteggio FROM alimenti"
+)
 
 
 def get_db_utenti():
@@ -369,11 +407,7 @@ def get_alimento(alimento_id):
     """
     conn = get_db()
     row = conn.execute(
-        """
-        SELECT *
-        FROM alimenti
-        WHERE id = ?
-        """,
+        f"{SELECT_ALIMENTI} WHERE id = ?",
         (alimento_id,)
     ).fetchone()
     conn.close()
@@ -403,6 +437,7 @@ SORT_EXPRESSIONS = {
     "rischio_malassorbimento": "LOWER(COALESCE(rischio_malassorbimento, ''))",
     "rischio_metabolico": "LOWER(COALESCE(rischio_metabolico, ''))",
     "rischio_tumorale": "LOWER(COALESCE(rischio_tumorale, ''))",
+    "punteggio": "COALESCE(punteggio(" + ", ".join(analisi.CAMPI_RISCHIO) + "), -1)",
 }
 
 
@@ -449,7 +484,7 @@ def get_alimenti(
         clauses.append("LOWER(COALESCE(rischio_tumorale, '')) = LOWER(?)")
         params.append(rischio_tumorale)
 
-    sql = "SELECT * FROM alimenti"
+    sql = SELECT_ALIMENTI
 
     if clauses:
         sql += " WHERE " + " AND ".join(clauses)
@@ -596,50 +631,17 @@ def get_filter_options():
         for c in categories
     ]
 
-    diabete_options = make_options(
-        [
-            ("Basso", "🟢 Basso"),
-            ("Medio", "🟡 Medio"),
-            ("Alto", "🔴 Alto"),
-        ],
-        diabete_values
-    )
+    # Scala a 4 livelli (analisi.LIVELLI), più eventuali altri valori presenti nel DB
+    livelli_standard = [
+        (liv["etichetta"], f"{liv['emoji']} {liv['etichetta']}")
+        for liv in analisi.LIVELLI
+    ]
 
-    colesterolo_options = make_options(
-        [
-            ("Basso", "🟢 Basso"),
-            ("Medio", "🟡 Medio"),
-            ("Alto", "🔴 Alto"),
-        ],
-        colesterolo_values
-    )
-
-    malassorbimento_options = make_options(
-        [
-            ("Basso", "🟢 Basso"),
-            ("Medio", "🟡 Medio"),
-            ("Alto", "🔴 Alto"),
-        ],
-        malassorbimento_values
-    )
-
-    metabolic_options = make_options(
-        [
-            ("Basso", "🟢 Basso"),
-            ("Medio", "🟡 Medio"),
-            ("Alto", "🔴 Alto"),
-        ],
-        metabolic_values
-    )
-
-    tumorale_options = make_options(
-        [
-            ("Protettivo", "🛡️ Protettivo"),
-            ("Neutro", "⚪ Neutro"),
-            ("Aumentato", "⚠️ Aumentato"),
-        ],
-        tumorale_values
-    )
+    diabete_options = make_options(livelli_standard, diabete_values)
+    colesterolo_options = make_options(livelli_standard, colesterolo_values)
+    malassorbimento_options = make_options(livelli_standard, malassorbimento_values)
+    metabolic_options = make_options(livelli_standard, metabolic_values)
+    tumorale_options = make_options(livelli_standard, tumorale_values)
 
     return (
         category_options,
@@ -863,9 +865,34 @@ def index():
         tumorale_options
     ) = get_filter_options()
 
+    filtri_attivi = any((
+        filter_categoria, filter_diabete, filter_colesterolo,
+        filter_malassorbimento, filter_metabolico, filter_tumorale
+    ))
+
+    # Le medaglie si calcolano sull'intero database, non sugli alimenti filtrati
+    tutti = get_alimenti() if filtri_attivi else alimenti
+    medaglie = analisi.medaglie_per_alimento(tutti)
+
+    for a in alimenti:
+        a["medaglie"] = medaglie.get(a["id"], [])
+
+    # Grafici e classifiche seguono invece i filtri
+    distribuzione_rischi = analisi.distribuzione_rischi(alimenti)
+
     return render_template(
         "index.html",
         alimenti=alimenti,
+        filtri_attivi=filtri_attivi,
+        grafico_categorie=analisi.distribuzione_categorie(alimenti),
+        grafico_rischi=distribuzione_rischi,
+        legenda_rischi=analisi.legenda_rischi(distribuzione_rischi),
+        punteggio_medio=analisi.punteggio_medio(alimenti),
+        classifiche=[
+            (medaglia, analisi.classifica(alimenti, medaglia, 5))
+            for medaglia in analisi.MEDAGLIE
+        ],
+        posti_medaglia=analisi.POSTI_MEDAGLIA,
         filter_categoria=filter_categoria,
         filter_diabete=filter_diabete,
         filter_colesterolo=filter_colesterolo,
@@ -883,6 +910,29 @@ def index():
         malassorbimento_options=malassorbimento_options,
         metabolic_options=metabolic_options,
         tumorale_options=tumorale_options
+    )
+
+
+@app.route("/alimento/<int:alimento_id>")
+def scheda(alimento_id):
+    item = get_alimento(alimento_id)
+
+    if not item:
+        abort(404)
+
+    medaglie = analisi.medaglie_per_alimento(get_alimenti()).get(alimento_id, [])
+
+    return render_template(
+        "scheda.html",
+        item=item,
+        rischi=[
+            (etichetta, item.get(campo))
+            for campo, etichetta in analisi.RISCHI
+        ],
+        radar=analisi.radar(item),
+        medaglie=medaglie,
+        posti_medaglia=analisi.POSTI_MEDAGLIA,
+        livello=analisi.livello_punteggio(item.get("punteggio")),
     )
 
 

@@ -1,0 +1,824 @@
+/* =================================================================
+   Food-stoplight — stili dell'applicazione
+   Caricato dopo Bootstrap Italia. Tutti i colori passano da variabili:
+   la modalità scura ridefinisce solo le variabili.
+   ================================================================= */
+
+/* ---------------------------------------------------------------
+   Variabili — modalità chiara
+   --------------------------------------------------------------- */
+:root {
+    color-scheme: light;
+
+    --pagina: #f4f7f4;
+    --superficie: #ffffff;
+    --superficie-2: #f3f5f3;
+    --testo: #1a1a1a;
+    --testo-secondario: #52514e;
+    --testo-tenue: #6b6a65;
+    --bordo: rgba(11, 11, 11, 0.10);
+    --griglia: #e1e0d9;
+    --asse: #c3c2b7;
+    --link: #0066cc;
+
+    --intestazione-tabella-bg: #e8f5e9;
+    --intestazione-tabella-testo: #14532d;
+    --intestazione-tabella-bordo: #c8e6c9;
+
+    /* Serie 1 (barre per categoria, radar) */
+    --accento: #2a78d6;
+
+    /* Livelli di rischio — scala di stato validata (CVD e visione normale)
+       contro #ffffff e #1a1a19; identica nelle due modalità */
+    --stato-good: #0ca30c;      /* Trascurabile */
+    --stato-warning: #f9be1a;   /* Basso */
+    --stato-serious: #ec835a;   /* Medio */
+    --stato-critical: #d03b3b;  /* Alto */
+    --stato-nd: #898781;        /* Non classificato */
+
+    --tooltip-bg: #1a1a19;
+    --tooltip-testo: #f0efec;
+    --tooltip-secondario: #c3c2b7;
+
+    --freccia-select: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23262626' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* ---------------------------------------------------------------
+   Variabili — modalità scura
+   Segue il sistema operativo, salvo scelta esplicita (data-theme)
+   --------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+        color-scheme: dark;
+
+        --pagina: #0d0d0d;
+        --superficie: #1a1a19;
+        --superficie-2: #242422;
+        --testo: #f0efec;
+        --testo-secondario: #c3c2b7;
+        --testo-tenue: #a3a29b;
+        --bordo: rgba(255, 255, 255, 0.10);
+        --griglia: #2c2c2a;
+        --asse: #383835;
+        --link: #6da7ec;
+
+        --intestazione-tabella-bg: #1c2b1f;
+        --intestazione-tabella-testo: #b7e3c0;
+        --intestazione-tabella-bordo: #2d4a33;
+
+        --accento: #3987e5;
+
+        --tooltip-bg: #f0efec;
+        --tooltip-testo: #0b0b0b;
+        --tooltip-secondario: #52514e;
+
+        --freccia-select: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23c3c2b7' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    }
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --pagina: #0d0d0d;
+    --superficie: #1a1a19;
+    --superficie-2: #242422;
+    --testo: #f0efec;
+    --testo-secondario: #c3c2b7;
+    --testo-tenue: #a3a29b;
+    --bordo: rgba(255, 255, 255, 0.10);
+    --griglia: #2c2c2a;
+    --asse: #383835;
+    --link: #6da7ec;
+
+    --intestazione-tabella-bg: #1c2b1f;
+    --intestazione-tabella-testo: #b7e3c0;
+    --intestazione-tabella-bordo: #2d4a33;
+
+    --accento: #3987e5;
+
+    --tooltip-bg: #f0efec;
+    --tooltip-testo: #0b0b0b;
+    --tooltip-secondario: #52514e;
+
+    --freccia-select: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23c3c2b7' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* ---------------------------------------------------------------
+   Base e componenti Bootstrap Italia ricollegati alle variabili
+   --------------------------------------------------------------- */
+:root {
+    --bs-body-bg: var(--pagina);
+    --bs-body-color: var(--testo);
+    --bs-border-color: var(--griglia);
+    --bs-link-color: var(--link);
+    --bs-link-hover-color: var(--link);
+}
+
+body {
+    background: var(--pagina);
+    color: var(--testo);
+}
+
+a {
+    color: var(--link);
+}
+
+.card {
+    --bs-card-bg: var(--superficie);
+    --bs-card-color: var(--testo);
+    --bs-card-border-color: var(--bordo);
+    --bs-card-cap-bg: var(--superficie-2);
+    background-color: var(--superficie);
+    color: var(--testo);
+}
+
+.card-header {
+    background-color: var(--superficie-2);
+    color: var(--testo);
+}
+
+.table {
+    --bs-table-color: var(--testo);
+    --bs-table-bg: transparent;
+    --bs-table-border-color: var(--griglia);
+    --bs-table-hover-color: var(--testo);
+    --bs-table-hover-bg: var(--superficie-2);
+    --bs-table-striped-color: var(--testo);
+    --bs-table-striped-bg: var(--superficie-2);
+    color: var(--testo);
+}
+
+.form-control,
+.form-control:focus,
+.form-select,
+select {
+    background-color: var(--superficie);
+    color: var(--testo);
+    border-color: var(--asse);
+}
+
+.form-select {
+    background-image: var(--freccia-select);
+}
+
+.form-control::placeholder {
+    color: var(--testo-tenue);
+}
+
+label,
+.form-label {
+    color: var(--testo);
+}
+
+/* Bootstrap Italia aggiunge 48px sotto ogni card con ::after */
+.card.grafico-card::after,
+.card.table-card::after {
+    display: none;
+}
+
+.text-muted {
+    color: var(--testo-tenue) !important;
+}
+
+.alert {
+    background-color: var(--superficie);
+    color: var(--testo);
+}
+
+pre {
+    color: var(--testo);
+}
+
+.form-label {
+    font-weight: 600;
+}
+
+:root[data-theme="dark"] .btn-close {
+    filter: invert(1);
+}
+
+:root[data-theme="dark"] .btn-outline-primary {
+    --bs-btn-color: #86b6ef;
+    --bs-btn-border-color: #86b6ef;
+    --bs-btn-hover-color: #0b0b0b;
+    --bs-btn-hover-bg: #86b6ef;
+    --bs-btn-hover-border-color: #86b6ef;
+}
+
+:root[data-theme="dark"] .btn-outline-secondary {
+    --bs-btn-color: var(--testo-secondario);
+    --bs-btn-border-color: var(--testo-secondario);
+    --bs-btn-hover-color: var(--testo);
+    --bs-btn-hover-border-color: var(--testo);
+}
+
+:root[data-theme="dark"] .btn-outline-danger {
+    --bs-btn-color: #e66767;
+    --bs-btn-border-color: #e66767;
+    --bs-btn-hover-color: #0b0b0b;
+    --bs-btn-hover-bg: #e66767;
+    --bs-btn-hover-border-color: #e66767;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .btn-close {
+        filter: invert(1);
+    }
+
+    :root:where(:not([data-theme="light"])) .btn-outline-primary {
+        --bs-btn-color: #86b6ef;
+        --bs-btn-border-color: #86b6ef;
+        --bs-btn-hover-color: #0b0b0b;
+        --bs-btn-hover-bg: #86b6ef;
+        --bs-btn-hover-border-color: #86b6ef;
+    }
+
+    :root:where(:not([data-theme="light"])) .btn-outline-secondary {
+        --bs-btn-color: var(--testo-secondario);
+        --bs-btn-border-color: var(--testo-secondario);
+        --bs-btn-hover-color: var(--testo);
+        --bs-btn-hover-border-color: var(--testo);
+    }
+
+    :root:where(:not([data-theme="light"])) .btn-outline-danger {
+        --bs-btn-color: #e66767;
+        --bs-btn-border-color: #e66767;
+        --bs-btn-hover-color: #0b0b0b;
+        --bs-btn-hover-bg: #e66767;
+        --bs-btn-hover-border-color: #e66767;
+    }
+}
+
+/* ---------------------------------------------------------------
+   Layout dell'applicazione
+   --------------------------------------------------------------- */
+.navbar-brand {
+    font-weight: 800;
+}
+
+.tema-toggle {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #14532d, #16a34a);
+    color: white;
+    border-radius: 1.25rem;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 12px 28px rgba(20, 83, 45, 0.18);
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 0.35rem;
+}
+
+.page-header p {
+    margin: 0;
+    opacity: 0.92;
+}
+
+.table-card,
+.grafico-card {
+    border: 0;
+    border-radius: 1rem;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.table-card {
+    overflow: hidden;
+}
+
+.table thead th {
+    background: var(--intestazione-tabella-bg);
+    color: var(--intestazione-tabella-testo);
+    font-weight: 700;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--intestazione-tabella-bordo);
+}
+
+.sort-link {
+    color: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.sort-link:hover,
+.sort-active {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.sort-idle {
+    opacity: 0.35;
+    font-size: 0.85rem;
+}
+
+.actions-cell {
+    white-space: nowrap;
+}
+
+.nome-alimento {
+    font-weight: 600;
+    color: var(--testo);
+    text-decoration: none;
+}
+
+.nome-alimento:hover,
+.nome-alimento:focus-visible {
+    color: var(--link);
+    text-decoration: underline;
+}
+
+.medaglie {
+    margin-left: 0.25rem;
+    white-space: nowrap;
+    cursor: default;
+}
+
+/* ---------------------------------------------------------------
+   Livelli di rischio: classe .stato-* -> colore del livello
+   --------------------------------------------------------------- */
+.stato-good { --stato-colore: var(--stato-good); --stato-testo: #ffffff; }
+.stato-warning { --stato-colore: var(--stato-warning); --stato-testo: #0b0b0b; }
+.stato-serious { --stato-colore: var(--stato-serious); --stato-testo: #ffffff; }
+.stato-critical { --stato-colore: var(--stato-critical); --stato-testo: #ffffff; }
+.stato-nd { --stato-colore: var(--stato-nd); --stato-testo: #ffffff; }
+
+/* Badge: pallino colorato + etichetta (il colore non è mai l'unico segnale) */
+.badge-risk {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    padding: 0.2em 0.65em 0.2em 0.5em;
+    border-radius: 999px;
+    border: 1px solid var(--bordo);
+    background: var(--superficie-2);
+    color: var(--testo);
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge-risk::before,
+.punteggio::before,
+.legenda-voce::before {
+    content: "";
+    flex: none;
+    width: 0.62em;
+    height: 0.62em;
+    border-radius: 50%;
+    background: var(--stato-colore, var(--stato-nd));
+}
+
+.punteggio {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------
+   Riquadri numerici (stat tile)
+   --------------------------------------------------------------- */
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--testo-tenue);
+    margin: 0;
+}
+
+.stat-valore {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 0.15rem 0 0.3rem;
+    color: var(--testo);
+}
+
+.stat-scala {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--testo-tenue);
+    margin-left: 0.1rem;
+}
+
+.stat-nota {
+    font-size: 0.82rem;
+    color: var(--testo-secondario);
+    margin: 0;
+}
+
+/* ---------------------------------------------------------------
+   Grafici
+   --------------------------------------------------------------- */
+.grafico-card .card-body {
+    padding: 1.25rem 1.25rem 1rem;
+}
+
+.grafico-titolo {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--testo);
+}
+
+.grafico-sottotitolo,
+.card .card-body .grafico-sottotitolo {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--testo-tenue);
+    margin: 0.15rem 0 1rem;
+}
+
+.card .card-body .stat-label,
+.card .card-body .stat-nota {
+    line-height: 1.4;
+}
+
+/* Barre orizzontali ordinate (una serie: nessuna legenda) */
+.barre {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 2px;
+}
+
+/* .card .card-body a di Bootstrap Italia forza inline-block: serve più specificità */
+.card .card-body a.barra-riga,
+.barra-riga {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, 34%) 1fr;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 3px 4px;
+    border-radius: 6px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.barra-riga:hover,
+.barra-riga:focus-visible {
+    background: var(--superficie-2);
+    color: inherit;
+}
+
+.barra-etichetta {
+    font-size: 0.85rem;
+    line-height: 1.2;
+    color: var(--testo-secondario);
+}
+
+.barra-traccia {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    border-left: 1px solid var(--asse);
+    padding: 2px 0;
+}
+
+.barra {
+    flex: none;
+    height: 12px;
+    min-width: 2px;
+    /* --v = lunghezza 0-100 rispetto alla barra più lunga; 3rem riservati al valore */
+    width: calc((100% - 3rem) * var(--v) / 100);
+    background: var(--accento);
+    border-radius: 0 4px 4px 0;
+}
+
+.barra-riga:hover .barra,
+.barra-riga:focus-visible .barra {
+    filter: brightness(1.12);
+}
+
+.barra-valore {
+    font-size: 0.8rem;
+    color: var(--testo);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Legenda */
+.legenda {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+    margin: 0 0 0.85rem;
+    padding: 0;
+}
+
+.legenda-voce {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: 0.82rem;
+    color: var(--testo-secondario);
+}
+
+/* Le barre hanno chiave rettangolare, non a pallino */
+.legenda-voce::before {
+    width: 0.9em;
+    height: 0.65em;
+    border-radius: 2px;
+}
+
+/* Barre impilate al 100% */
+.impilate {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.impilata-riga {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, 30%) 1fr;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.impilata-etichetta {
+    font-size: 0.85rem;
+    color: var(--testo-secondario);
+}
+
+.impilata {
+    display: flex;
+    gap: 2px;           /* spazio della superficie tra i segmenti */
+    height: 22px;
+}
+
+.segmento {
+    flex: var(--n) 1 0%;
+    min-width: 3px;
+    display: flex;
+    align-items: center;
+    padding-left: 6px;
+    background: var(--stato-colore);
+    color: var(--stato-testo);
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    cursor: default;
+}
+
+.segmento:last-child {
+    border-radius: 0 4px 4px 0;
+}
+
+.segmento:hover,
+.segmento:focus-visible {
+    outline: 2px solid var(--testo);
+    outline-offset: 1px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Vista tabella (alternativa accessibile a ogni grafico) */
+.vista-tabella {
+    margin-top: 0.9rem;
+    font-size: 0.85rem;
+}
+
+.vista-tabella summary {
+    color: var(--link);
+    cursor: pointer;
+    width: fit-content;
+}
+
+.vista-tabella table {
+    margin: 0.5rem 0 0;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Classifiche "top alimenti" */
+.classifica {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: posizione;
+}
+
+.classifica li {
+    display: grid;
+    grid-template-columns: 1.4rem 1fr auto;
+    gap: 0.5rem;
+    align-items: baseline;
+    padding: 0.35rem 0;
+    border-top: 1px solid var(--griglia);
+    font-size: 0.9rem;
+    counter-increment: posizione;
+}
+
+.classifica li:first-child {
+    border-top: 0;
+}
+
+.classifica li::before {
+    content: counter(posizione);
+    color: var(--testo-tenue);
+    font-variant-numeric: tabular-nums;
+}
+
+.classifica-valore {
+    color: var(--testo-secondario);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.classifica-vuota {
+    color: var(--testo-tenue);
+    font-size: 0.9rem;
+}
+
+/* Tooltip */
+.grafico-tooltip {
+    position: fixed;
+    z-index: 2000;
+    max-width: 260px;
+    padding: 0.45rem 0.65rem;
+    border-radius: 6px;
+    background: var(--tooltip-bg);
+    color: var(--tooltip-testo);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    font-size: 0.8rem;
+    line-height: 1.35;
+    pointer-events: none;
+}
+
+.grafico-tooltip strong {
+    display: block;
+    font-size: 0.9rem;
+}
+
+.grafico-tooltip .tooltip-etichetta {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--tooltip-secondario);
+}
+
+/* Chiave a trattino del colore della serie */
+.grafico-tooltip .tooltip-etichetta::before {
+    content: "";
+    width: 12px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--stato-colore, var(--accento));
+}
+
+/* ---------------------------------------------------------------
+   Scheda alimento
+   --------------------------------------------------------------- */
+.punteggio-hero {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    margin: 0.25rem 0 0.5rem;
+}
+
+.punteggio-hero-valore {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.punteggio-hero-scala {
+    font-size: 1.1rem;
+    color: var(--testo-tenue);
+}
+
+.metro {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--griglia);
+    overflow: hidden;
+    margin: 0.5rem 0 0.35rem;
+}
+
+.metro-riempimento {
+    height: 100%;
+    width: calc(var(--v) * 1%);
+    background: var(--stato-colore);
+    border-radius: 999px;
+}
+
+.dati-nutrizionali th {
+    font-weight: 400;
+    color: var(--testo-secondario);
+}
+
+.dati-nutrizionali td {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.elenco-medaglie {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+}
+
+.elenco-medaglie li {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+}
+
+/* Radar del profilo di rischio */
+.radar {
+    display: block;
+    width: 100%;
+    max-width: 440px;
+    height: auto;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+.radar .anello,
+.radar .asse {
+    fill: none;
+    stroke: var(--griglia);
+    stroke-width: 1;
+}
+
+.radar .anello-esterno {
+    stroke: var(--asse);
+}
+
+.radar .area {
+    fill: var(--accento);
+    fill-opacity: 0.12;
+    stroke: var(--accento);
+    stroke-width: 2;
+    stroke-linejoin: round;
+}
+
+.radar .vertice {
+    fill: var(--stato-colore);
+    stroke: var(--superficie);
+    stroke-width: 2;
+}
+
+.radar .bersaglio {
+    fill: transparent;
+    cursor: default;
+}
+
+.radar .bersaglio:focus {
+    outline: none;
+}
+
+.radar .bersaglio:focus-visible {
+    stroke: var(--testo);
+    stroke-width: 2;
+}
+
+.radar .etichetta-asse {
+    fill: var(--testo);
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.radar .etichetta-anello {
+    fill: var(--testo-tenue);
+    font-size: 9.5px;
+    paint-order: stroke;
+    stroke: var(--superficie);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+}
+
+/* Il radar si rimpicciolisce con lo schermo: testi più grandi in unità SVG */
+@media (max-width: 576px) {
+    .radar .etichetta-asse {
+        font-size: 16px;
+    }
+
+    .radar .etichetta-anello {
+        font-size: 12.5px;
+    }
+}
+
+/* Schermi stretti: etichette sopra le barre */
+@media (max-width: 420px) {
+    .barra-riga,
+    .impilata-riga {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+    }
+
+    .barra-traccia {
+        border-left: 0;
+    }
+}

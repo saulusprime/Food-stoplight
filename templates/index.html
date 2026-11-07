@@ -39,27 +39,15 @@ Database Alimenti - Analisi Completa
 
 
 {% macro risk_badge(value) %}
-    {% set v = (value or '')|trim|lower %}
-
-    {% if v in ['basso', 'protettivo'] %}
-        <span class="badge-risk risk-basso">{{ value }}</span>
-
-    {% elif v == 'medio' %}
-        <span class="badge-risk risk-medio">{{ value }}</span>
-
-    {% elif v == 'neutro' %}
-        <span class="badge-risk risk-neutro">{{ value }}</span>
-
-    {% elif v in ['alto', 'elevato', 'aumentato'] %}
-        <span class="badge-risk risk-alto">{{ value }}</span>
-
-    {% elif value %}
-        <span class="badge-risk risk-generico">{{ value }}</span>
-
+    {% if value %}
+        <span class="badge-risk stato-{{ stato_rischio(value) }}">{{ value }}</span>
     {% else %}
         -
     {% endif %}
 {% endmacro %}
+
+
+<h1 class="visually-hidden">Database alimenti</h1>
 
 
 <form method="get" action="{{ url_for('index') }}" class="row g-2 mb-3">
@@ -206,6 +194,220 @@ Database Alimenti - Analisi Completa
 </form>
 
 
+{# ----------------------------------------------------------------
+   Riepilogo, grafici e classifiche: seguono i filtri qui sopra
+   ---------------------------------------------------------------- #}
+
+<div class="row g-3 mb-3">
+    <div class="col-6">
+        <div class="card grafico-card h-100">
+            <div class="card-body py-3">
+                <p class="stat-label">Alimenti visualizzati</p>
+                <p class="stat-valore">{{ visualizzati }}</p>
+                <p class="stat-nota">
+                    su {{ total_alimenti }} nel database{% if filtri_attivi %} · filtri attivi{% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6">
+        <div class="card grafico-card h-100">
+            <div class="card-body py-3">
+                <p class="stat-label">Punteggio medio</p>
+                {% if punteggio_medio is not none %}
+                    {% set liv_medio = livello_punteggio(punteggio_medio) %}
+                    <p class="stat-valore">
+                        {{ punteggio_medio }}<span class="stat-scala">/100</span>
+                    </p>
+                    <p class="stat-nota">
+                        <span class="badge-risk stato-{{ liv_medio.stato }}">{{ liv_medio.etichetta }}</span>
+                    </p>
+                {% else %}
+                    <p class="stat-valore">–</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if alimenti %}
+<div class="row g-3 mb-3 align-items-start">
+
+    <div class="col-lg-5">
+        <section class="card grafico-card" aria-labelledby="titolo-categorie">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-categorie">Alimenti per categoria</h2>
+                <p class="grafico-sottotitolo">
+                    Numero di alimenti per categoria. Seleziona una barra per filtrare la tabella.
+                </p>
+
+                <ul class="barre">
+                    {% for c in grafico_categorie %}
+                        <li>
+                            <a
+                                class="barra-riga"
+                                href="{{ url_for(
+                                    'index',
+                                    categoria=c.categoria,
+                                    rischio_diabete=filter_diabete,
+                                    rischio_colesterolo=filter_colesterolo,
+                                    rischio_malassorbimento=filter_malassorbimento,
+                                    rischio_metabolico=filter_metabolico,
+                                    rischio_tumorale=filter_tumorale,
+                                    sort=sort,
+                                    dir=dir
+                                ) }}"
+                                data-tooltip="{{ c.categoria }}"
+                                data-tooltip-valore="{{ c.n }} alimenti · {{ c.quota|percentuale }}"
+                                aria-label="{{ c.categoria }}: {{ c.n }} alimenti, {{ c.quota|percentuale }}. Filtra per questa categoria"
+                            >
+                                <span class="barra-etichetta">{{ c.categoria }}</span>
+                                <span class="barra-traccia">
+                                    <span class="barra" style="--v: {{ '%.2f'|format(c.larghezza) }}"></span>
+                                    <span class="barra-valore">{{ c.n }}</span>
+                                </span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <details class="vista-tabella">
+                    <summary>Mostra i dati in tabella</summary>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th scope="col">Categoria</th>
+                                <th scope="col" class="text-end">Alimenti</th>
+                                <th scope="col" class="text-end">Quota</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in grafico_categorie %}
+                                <tr>
+                                    <td>{{ c.categoria }}</td>
+                                    <td class="text-end">{{ c.n }}</td>
+                                    <td class="text-end">{{ c.quota|percentuale }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </details>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-7">
+        <section class="card grafico-card" aria-labelledby="titolo-rischi">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-rischi">Livelli di rischio</h2>
+                <p class="grafico-sottotitolo">
+                    Quota di alimenti per livello, per ciascuno dei cinque rischi.
+                </p>
+
+                <ul class="legenda" aria-label="Legenda dei livelli">
+                    {% for liv in legenda_rischi %}
+                        <li class="legenda-voce stato-{{ liv.stato }}">{{ liv.etichetta }}</li>
+                    {% endfor %}
+                </ul>
+
+                <div class="impilate">
+                    {% for r in grafico_rischi %}
+                        <div class="impilata-riga">
+                            <span class="impilata-etichetta">{{ r.etichetta }}</span>
+
+                            <div class="impilata">
+                                {% for s in r.segmenti %}
+                                    <span
+                                        class="segmento stato-{{ s.stato }}"
+                                        style="--n: {{ s.n }}"
+                                        tabindex="0"
+                                        role="img"
+                                        aria-label="{{ r.etichetta }}, {{ s.etichetta }}: {{ s.n }} alimenti, {{ s.quota|percentuale }}"
+                                        data-tooltip="{{ r.etichetta }} · {{ s.etichetta }}"
+                                        data-tooltip-stato="{{ s.stato }}"
+                                        data-tooltip-valore="{{ s.n }} alimenti · {{ s.quota|percentuale }}"
+                                    >{% if s.quota >= 18 %}{{ s.quota|percentuale(0) }}{% endif %}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <details class="vista-tabella">
+                    <summary>Mostra i dati in tabella</summary>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Rischio</th>
+                                    {% for liv in legenda_rischi %}
+                                        <th scope="col" class="text-end">{{ liv.etichetta }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in grafico_rischi %}
+                                    {% set per_livello = {} %}
+                                    {% for s in r.segmenti %}
+                                        {% set _ = per_livello.update({s.chiave: s}) %}
+                                    {% endfor %}
+                                    <tr>
+                                        <th scope="row">{{ r.etichetta }}</th>
+                                        {% for liv in legenda_rischi %}
+                                            {% set s = per_livello.get(liv.chiave) %}
+                                            <td class="text-end">
+                                                {% if s %}{{ s.n }} ({{ s.quota|percentuale }}){% else %}0{% endif %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+            </div>
+        </section>
+    </div>
+
+</div>
+
+<div class="row g-3 mb-2">
+    {% for medaglia, voci in classifiche %}
+        <div class="col-md-4">
+            <section class="card grafico-card h-100" aria-labelledby="classifica-{{ medaglia.chiave }}">
+                <div class="card-body">
+                    <h2 class="grafico-titolo" id="classifica-{{ medaglia.chiave }}">
+                        <span aria-hidden="true">{{ medaglia.icona }}</span> {{ medaglia.titolo }}
+                    </h2>
+                    <p class="grafico-sottotitolo">{{ medaglia.descrizione }}</p>
+
+                    {% if voci %}
+                        <ol class="classifica">
+                            {% for a, valore in voci %}
+                                <li>
+                                    <a class="nome-alimento" href="{{ url_for('scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
+                                    <span class="classifica-valore">{{ valore }}</span>
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    {% else %}
+                        <p class="classifica-vuota">Nessun alimento con i filtri correnti.</p>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+    {% endfor %}
+</div>
+
+<p class="text-muted small mb-3">
+    Nella tabella, le icone
+    {% for medaglia, _ in classifiche %}<span aria-hidden="true">{{ medaglia.icona }}</span> {% endfor %}
+    accanto al nome segnalano gli alimenti tra i primi {{ posti_medaglia }} dell'intero database in ciascuna classifica.
+</p>
+{% endif %}
+
+
 <div class="card table-card">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
@@ -213,6 +415,7 @@ Database Alimenti - Analisi Completa
                 <tr>
                     {{ th_sortable('alimento', 'Alimento') }}
                     {{ th_sortable('categoria', 'Categoria') }}
+                    {{ th_sortable('punteggio', 'Punteggio', 'text-end') }}
 
                     {{ th_sortable('kcal', 'Kcal', 'text-end') }}
                     {{ th_sortable('tef_kcal', 'TEF (Kcal)', 'text-end') }}
@@ -238,12 +441,30 @@ Database Alimenti - Analisi Completa
             <tbody>
                 {% for a in alimenti %}
                     <tr>
-                        <td class="fw-semibold">
-                            {{ a.alimento }}
+                        <td>
+                            <a class="nome-alimento" href="{{ url_for('scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
+                            {%- if a.medaglie %}
+                                {% set titoli = a.medaglie|map(attribute='titolo')|join(', ') %}
+                                <span
+                                    class="medaglie"
+                                    role="img"
+                                    aria-label="Tra i primi {{ posti_medaglia }}: {{ titoli }}"
+                                    title="Tra i primi {{ posti_medaglia }}: {{ titoli }}"
+                                >{% for m in a.medaglie %}{{ m.icona }}{% endfor %}</span>
+                            {%- endif %}
                         </td>
 
                         <td>
                             {{ a.categoria or '-' }}
+                        </td>
+
+                        <td class="text-end">
+                            {% if a.punteggio is not none %}
+                                {% set liv = livello_punteggio(a.punteggio) %}
+                                <span class="punteggio stato-{{ liv.stato }}" title="Livello medio: {{ liv.etichetta }}">{{ a.punteggio }}</span>
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
 
                         <td class="text-end">
@@ -326,7 +547,7 @@ Database Alimenti - Analisi Completa
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="{{ 15 if current_user.is_admin else 14 }}" class="text-center py-4">
+                        <td colspan="{{ 16 if current_user.is_admin else 15 }}" class="text-center py-4">
                             Nessun alimento trovato con i filtri correnti.
                         </td>
                     </tr>

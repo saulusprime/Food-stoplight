@@ -6,134 +6,18 @@
     <title>{% block title %}Database Alimenti{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-italia/css/bootstrap-italia.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-italia/css/fonts.css') }}">
-    <style>
-        body {
-            background: #f4f7f4;
-        }
-
-        .navbar-brand {
-            font-weight: 800;
-        }
-
-        .page-header {
-            background: linear-gradient(135deg, #14532d, #16a34a);
-            color: white;
-            border-radius: 1.25rem;
-            padding: 1.75rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 12px 28px rgba(20, 83, 45, 0.18);
-        }
-
-        .page-header h1 {
-            font-size: 2rem;
-            font-weight: 900;
-            margin-bottom: 0.35rem;
-        }
-
-        .page-header p {
-            margin: 0;
-            opacity: 0.92;
-        }
-
-        .stat-card {
-            border: 0;
-            border-radius: 1rem;
-            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
-        }
-
-        .stat-label {
-            color: #6b7280;
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 800;
-            line-height: 1;
-        }
-
-        .table-card {
-            border: 0;
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        .table thead th {
-            background: #e8f5e9;
-            color: #14532d;
-            font-weight: 700;
-            white-space: nowrap;
-            border-bottom: 2px solid #c8e6c9;
-        }
-
-        .sort-link {
-            color: inherit;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
-
-        .sort-link:hover {
-            color: #166534;
-        }
-
-        .sort-active {
-            color: #166534;
-        }
-
-        .sort-idle {
-            opacity: 0.35;
-            font-size: 0.85rem;
-        }
-
-        .badge-risk {
-            display: inline-block;
-            min-width: 72px;
-            text-align: center;
-            padding: 0.45em 0.7em;
-            border-radius: 0.65rem;
-            font-weight: 700;
-            font-size: 0.85rem;
-        }
-
-        .risk-basso,
-        .risk-protettivo {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .risk-medio {
-            background: #fef9c3;
-            color: #854d0e;
-        }
-
-        .risk-neutro {
-            background: #e5e7eb;
-            color: #374151;
-        }
-
-        .risk-alto,
-        .risk-aumentato {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .risk-generico {
-            background: #e5e7eb;
-            color: #374151;
-        }
-
-        .form-label {
-            font-weight: 600;
-        }
-
-        .actions-cell {
-            white-space: nowrap;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <script>
+        /* Applica subito il tema scelto, prima del disegno della pagina */
+        (function () {
+            try {
+                var tema = localStorage.getItem("tema");
+                if (tema === "light" || tema === "dark") {
+                    document.documentElement.setAttribute("data-theme", tema);
+                }
+            } catch (errore) {}
+        })();
+    </script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4">
@@ -177,6 +61,17 @@
                             Accedi
                         </a>
                     {% endif %}
+
+                    <button
+                        type="button"
+                        id="tema-toggle"
+                        class="nav-link btn btn-link border-0 tema-toggle"
+                        aria-label="Passa alla modalità scura"
+                        title="Passa alla modalità scura"
+                        aria-pressed="false"
+                    >
+                        <span class="tema-icona" aria-hidden="true">🌙</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -187,7 +82,7 @@
                 {% for category, message in messages %}
                     <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
                         {{ message }}
-                        <button type="button" class="btn-close"data-bs-dismiss="alert" aria-label="Chiudi"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Chiudi"></button>
                     </div>
                 {% endfor %}
             {% endif %}
@@ -195,6 +90,7 @@
         {% block content %}{% endblock %}
     </div>
     <script src="{{ url_for('static', filename='bootstrap-italia/js/bootstrap-italia.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

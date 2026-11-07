@@ -23,11 +23,11 @@ Idee, funzionalità e implementazioni future per l'applicazione.
 
 ## 📊 Visualizzazione dati
 
-- [ ] Grafici riassuntivi in home page (distribuzione per categoria, per livello di rischio)
-- [ ] Grafico radar del profilo di rischio nella scheda alimento
-- [ ] Punteggio complessivo sintetico per alimento (indice 0–100 combinando i 5 rischi)
-- [ ] Badge/medaglie "top alimenti" (più protettivi, migliore rapporto F/F, meno calorici)
-- [ ] Modalità scura (dark mode)
+- [x] Grafici riassuntivi in home page (distribuzione per categoria, per livello di rischio)
+- [x] Grafico radar del profilo di rischio nella scheda alimento
+- [x] Punteggio complessivo sintetico per alimento (indice 0–100 combinando i 5 rischi)
+- [x] Badge/medaglie "top alimenti" (più protettivi, migliore rapporto F/F, meno calorici)
+- [x] Modalità scura (dark mode)
 
 ## 🍽️ Funzionalità nutrizionali
 
