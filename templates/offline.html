@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Sei offline') }} – {{ _('Database Alimenti') }}{% endblock %}
+
+{% block content %}
+<section class="pagina-offline" data-cache-pagine="{{ cache_pagine }}">
+    <h1>{{ _('Sei offline') }}</h1>
+    <p class="lead">
+        {% trans %}Questa pagina richiede la connessione. Senza rete puoi consultare la tabella, la guida e le schede degli alimenti che hai già aperto.{% endtrans %}
+    </p>
+
+    <p class="d-flex flex-wrap gap-2">
+        <a class="btn btn-primary" href="{{ url_for('index') }}">{{ _('Tabella degli alimenti') }}</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('guida') }}">{{ _('Guida') }}</a>
+    </p>
+
+    <h2 class="h4 mt-4">{{ _('Schede salvate su questo dispositivo') }}</h2>
+    <ul class="schede-salvate" id="schede-salvate" hidden></ul>
+    <p class="text-muted" id="schede-salvate-vuoto">
+        {% trans %}Nessuna scheda salvata: le schede che apri con la connessione restano disponibili anche offline.{% endtrans %}
+    </p>
+</section>
+{% endblock %}

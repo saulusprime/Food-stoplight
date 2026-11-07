@@ -1,0 +1,2184 @@
+# English translations for Food-stoplight.
+# Copyright (C) 2026 Paolo Pierno
+# This file is distributed under the same license as the Food-stoplight
+# project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Food-stoplight 1\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-11-07 19:25+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#, python-format
+msgid "%(campo)s: livello «%(testo)s» non riconosciuto, ignorato"
+msgstr "%(campo)s: level “%(testo)s” not recognized, ignored"
+
+#, python-format
+msgid "%(campo)s: livello «%(testo)s» non riconosciuto."
+msgstr "%(campo)s: level “%(testo)s” not recognized."
+
+#, python-format
+msgid "%(campo)s: valore negativo (%(testo)s), ignorato"
+msgstr "%(campo)s: negative value (%(testo)s), ignored"
+
+#, python-format
+msgid "%(campo)s: «%(testo)s» non è un numero valido, ignorato"
+msgstr "%(campo)s: “%(testo)s” is not a valid number, ignored"
+
+#, python-format
+msgid "%(campo)s: «%(testo)s» non è un numero, ignorato"
+msgstr "%(campo)s: “%(testo)s” is not a number, ignored"
+
+#, python-format
+msgid ""
+"%(campo)s: «%(testo)s» non è valido, serve un numero maggiore o uguale a "
+"0."
+msgstr ""
+"%(campo)s: “%(testo)s” is not valid, enter a number greater than or equal"
+" to 0."
+
+#, python-format
+msgid ""
+"%(campo)s: «%(testo)s» non è valido, serve un numero tra %(minimo)s e "
+"%(massimo)s."
+msgstr ""
+"%(campo)s: “%(testo)s” is not valid, enter a number between %(minimo)s "
+"and %(massimo)s."
+
+#, python-format
+msgid "%(categoria)s: %(quanti)s, %(quota)s. Filtra per questa categoria"
+msgstr "%(categoria)s: %(quanti)s, %(quota)s. Filter by this category"
+
+#, python-format
+msgid ""
+"%(cg)s per 100 g · indice × %(carboidrati)s g di carboidrati disponibili "
+"÷ 100"
+msgstr ""
+"%(cg)s per 100 g · index × %(carboidrati)s g of available carbohydrates ÷"
+" 100"
+
+#, python-format
+msgid "%(grammi)s g in tutto"
+msgstr "%(grammi)s g in total"
+
+#, python-format
+msgid "%(livello)s (%(media)s su %(massimo)s)"
+msgstr "%(livello)s (%(media)s of %(massimo)s)"
+
+#, python-format
+msgid "%(n)d di massimo %(massimo)d. Cambia i grammi e premi «Aggiorna»."
+msgstr "%(n)d of %(massimo)d at most. Change the grams and press “Update”."
+
+#, python-format
+msgid "%(n)d già presenti, verrebbero duplicati"
+msgstr "%(n)d already present, would be duplicated"
+
+#, python-format
+msgid "%(n)d nuovi"
+msgstr "%(n)d new"
+
+#, python-format
+msgid "%(n)d saltati"
+msgstr "%(n)d skipped"
+
+#, python-format
+msgid "%(num)d aggiornato"
+msgid_plural "%(num)d aggiornati"
+msgstr[0] "%(num)d updated"
+msgstr[1] "%(num)d updated"
+
+#, python-format
+msgid "%(num)d aggiunto"
+msgid_plural "%(num)d aggiunti"
+msgstr[0] "%(num)d added"
+msgstr[1] "%(num)d added"
+
+#, python-format
+msgid "%(num)d alimento"
+msgid_plural "%(num)d alimenti"
+msgstr[0] "%(num)d food"
+msgstr[1] "%(num)d foods"
+
+#, python-format
+msgid "%(num)d alimento nel pasto"
+msgid_plural "%(num)d alimenti nel pasto"
+msgstr[0] "%(num)d food in the meal"
+msgstr[1] "%(num)d foods in the meal"
+
+#, python-format
+msgid "%(num)d eliminato"
+msgid_plural "%(num)d eliminati"
+msgstr[0] "%(num)d deleted"
+msgstr[1] "%(num)d deleted"
+
+#, python-format
+msgid "%(num)d riga con avvisi"
+msgid_plural "%(num)d righe con avvisi"
+msgstr[0] "%(num)d row with warnings"
+msgstr[1] "%(num)d rows with warnings"
+
+#, python-format
+msgid "%(num)d riga di dati."
+msgid_plural "%(num)d righe di dati."
+msgstr[0] "%(num)d data row."
+msgstr[1] "%(num)d data rows."
+
+#, python-format
+msgid "%(num)d riga saltata"
+msgid_plural "%(num)d righe saltate"
+msgstr[0] "%(num)d row skipped"
+msgstr[1] "%(num)d rows skipped"
+
+#, python-format
+msgid "%(num)d senza dato"
+msgid_plural "%(num)d senza dato"
+msgstr[0] "%(num)d without data"
+msgstr[1] "%(num)d without data"
+
+#, python-format
+msgid "%(nuovi)d nuovi · %(aggiornati)d aggiornati · %(invariati)d invariati"
+msgstr "%(nuovi)d new · %(aggiornati)d updated · %(invariati)d unchanged"
+
+#, python-format
+msgid "%(quota)s delle Kcal"
+msgstr "%(quota)s of the Kcal"
+
+#, python-format
+msgid "(colonna %(n)d senza nome)"
+msgstr "(column %(n)d without a name)"
+
+#, python-format
+msgid "(le %(n)d invariate non sono mostrate)"
+msgstr "(the %(n)d unchanged ones are not shown)"
+
+msgid "(non più nel database)"
+msgstr "(no longer in the database)"
+
+#, python-format
+msgid "(prima: %(valore)s)"
+msgstr "(before: %(valore)s)"
+
+msgid "(ricalcolato)"
+msgstr "(recalculated)"
+
+#, python-format
+msgid "+%(num)d punto"
+msgid_plural "+%(num)d punti"
+msgstr[0] "+%(num)d point"
+msgstr[1] "+%(num)d points"
+
+msgid ""
+"9 g di proteine, 49 g di carboidrati e 3,2 g di grassi danno 36 + 196 + "
+"28,8 = 260,8 Kcal."
+msgstr ""
+"9 g of protein, 49 g of carbohydrates and 3.2 g of fat give 36 + 196 + "
+"28.8 = 260.8 Kcal."
+
+#, python-format
+msgid ""
+"<a href=\"%(url)s\">Accedi</a> per salvare i pasti nel tuo diario "
+"alimentare."
+msgstr "<a href=\"%(url)s\">Sign in</a> to save meals in your food diary."
+
+msgid "<strong>Alimento</strong> (anche «Nome»), Categoria"
+msgstr "<strong>Alimento</strong> (also “Nome”), Categoria"
+
+msgid "Accedi"
+msgstr "Sign in"
+
+msgid "Accedi per continuare."
+msgstr "Sign in to continue."
+
+#, python-format
+msgid "Accesso effettuato come %(nome)s."
+msgstr "Signed in as %(nome)s."
+
+msgid "Accesso negato"
+msgstr "Access denied"
+
+msgid "Aggiorna i dati dell'alimento."
+msgstr "Update the food's data."
+
+msgid "Aggiorna i grammi"
+msgstr "Update the grams"
+
+msgid "Aggiorna o aggiungi"
+msgstr "Update or add"
+
+msgid "Aggiornati"
+msgstr "Updated"
+
+msgid "Aggiornato"
+msgstr "Updated"
+
+msgid "Aggiungi"
+msgstr "Add"
+
+msgid "Aggiungi al diario"
+msgstr "Add to the diary"
+
+msgid "Aggiungi tutte come nuove"
+msgstr "Add all as new"
+
+msgid "Aggiungi un alimento"
+msgstr "Add a food"
+
+#, python-format
+msgid "Aggiunto al diario: %(nome)s, %(grammi)s g."
+msgstr "Added to the diary: %(nome)s, %(grammi)s g."
+
+#, python-format
+msgid "Aggiunto al pasto: %(nome)s, %(grammi)s g."
+msgstr "Added to the meal: %(nome)s, %(grammi)s g."
+
+msgid "Alimenti"
+msgstr "Foods"
+
+msgid "Alimenti del pasto"
+msgstr "Foods in the meal"
+
+msgid "Alimenti per categoria"
+msgstr "Foods by category"
+
+msgid "Alimenti trasformati"
+msgstr "Processed foods"
+
+msgid "Alimenti visualizzati"
+msgstr "Foods shown"
+
+msgid "Alimento"
+msgstr "Food"
+
+msgid "Alimento aggiornato correttamente."
+msgstr "Food updated."
+
+msgid "Alimento aggiunto correttamente."
+msgstr "Food added."
+
+#, python-format
+msgid "Alimento eliminato: %(nome)s."
+msgstr "Food deleted: %(nome)s."
+
+msgid "Alimento non trovato."
+msgstr "Food not found."
+
+msgid "Alimento vuoto"
+msgstr "Empty food name"
+
+msgid "Alternative con profilo migliore"
+msgstr "Alternatives with a better profile"
+
+msgid "Alto"
+msgstr "High"
+
+msgid "Altri Alimenti"
+msgstr "Other foods"
+
+msgid "Anelli dal centro: Trascurabile, Basso, Medio, Alto."
+msgstr "Rings from the center: Negligible, Low, Medium, High."
+
+msgid "Annulla"
+msgstr "Cancel"
+
+msgid "Annulla l'import"
+msgstr "Cancel the import"
+
+msgid "Anteprima dell'import"
+msgstr "Import preview"
+
+msgid "Anteprima import"
+msgstr "Import preview"
+
+msgid "Apri il menu"
+msgstr "Open the menu"
+
+msgid "Attenzione:"
+msgstr "Warning:"
+
+msgid "Avvisi"
+msgstr "Warnings"
+
+msgid "Azioni"
+msgstr "Actions"
+
+msgid "Backup"
+msgstr "Backup"
+
+msgid "Backup e ripristino"
+msgstr "Backup and restore"
+
+#, python-format
+msgid "Backup salvato: %(nome)s."
+msgstr "Backup saved: %(nome)s."
+
+msgid "Backup sul server"
+msgstr "Backups on the server"
+
+msgid "Basso"
+msgstr "Low"
+
+msgid "Bevande"
+msgstr "Beverages"
+
+#, python-format
+msgid "CSV non leggibile alla riga %(riga)d: %(errore)s."
+msgstr "CSV not readable at row %(riga)d: %(errore)s."
+
+msgid "Calcio"
+msgstr "Calcium"
+
+msgid "Calcolato al salvataggio: fruttosio ÷ fibre."
+msgstr "Calculated when saving: fructose ÷ fiber."
+
+msgid "Calcolatore della porzione"
+msgstr "Portion calculator"
+
+msgid "Campo"
+msgstr "Field"
+
+msgid "Carboidrati"
+msgstr "Carbohydrates"
+
+msgid ""
+"Carboidrati fermentabili che possono dare disturbi a chi soffre di colon "
+"irritabile. Ogni categoria ha un semaforo a tre livelli, come nelle "
+"tabelle della Monash University; il livello complessivo è il più alto tra"
+" le categorie classificate."
+msgstr ""
+"Fermentable carbohydrates that can cause symptoms in people with "
+"irritable bowel syndrome. Each category has a three-level traffic light, "
+"as in the Monash University tables; the overall level is the highest "
+"among the classified categories."
+
+msgid "Carica e mostra l'anteprima"
+msgstr "Upload and show the preview"
+
+msgid "Carica un altro file"
+msgstr "Upload another file"
+
+msgid ""
+"Carica un file CSV o Excel: prima di scrivere nel database vedrai "
+"un'anteprima delle righe e potrai scegliere se aggiornare, aggiungere o "
+"sostituire."
+msgstr ""
+"Upload a CSV or Excel file: before anything is written to the database "
+"you will see a preview of the rows and can choose whether to update, add "
+"or replace."
+
+msgid "Carico glicemico (porzione)"
+msgstr "Glycemic load (portion)"
+
+msgid "Carico glicemico della porzione"
+msgstr "Glycemic load of the portion"
+
+msgid "Carne"
+msgstr "Meat"
+
+msgid "Categoria"
+msgstr "Category"
+
+msgid "Celle vuote, «-», «N/A», «nd»: valore assente."
+msgstr "Empty cells, “-”, “N/A”, “nd”: no value."
+
+msgid "Cena"
+msgstr "Dinner"
+
+msgid "Cereali"
+msgstr "Grains"
+
+msgid "Chiudi la notifica"
+msgstr "Close the notification"
+
+#, python-format
+msgid "Ci sono %(n)d alimenti «%(testo)s»: scegline uno dall'elenco."
+msgstr "There are %(n)d foods named “%(testo)s”: choose one from the list."
+
+msgid "Colazione"
+msgstr "Breakfast"
+
+msgid "Colesterolo"
+msgstr "Cholesterol"
+
+msgid "Colonna"
+msgstr "Column"
+
+msgid "Colonna «Alimento» non trovata: controlla le intestazioni del file."
+msgstr "Column “Alimento” not found: check the file headers."
+
+msgid "Colonne del file"
+msgstr "Columns in the file"
+
+msgid "Colonne riconosciute"
+msgstr "Recognized columns"
+
+msgid ""
+"Come leggere i livelli di rischio, il punteggio, il TEF e gli altri "
+"indicatori della tabella e delle schede."
+msgstr ""
+"How to read the risk levels, the score, the TEF and the other indicators "
+"in the table and on the food pages."
+
+msgid "Come leggere la tabella"
+msgstr "How to read the table"
+
+msgid "Come si calcolano TEF e Kcal nette"
+msgstr "How TEF and net Kcal are calculated"
+
+msgid "Componi un pasto"
+msgstr "Build a meal"
+
+msgid "Conferma"
+msgstr "Confirm"
+
+#, python-format
+msgid "Conferma: %(nuovi)d nuovi, %(aggiornati)d aggiornati"
+msgstr "Confirm: %(nuovi)d new, %(aggiornati)d updated"
+
+#, python-format
+msgid "Conferma: aggiungi %(num)d alimento"
+msgid_plural "Conferma: aggiungi %(num)d alimenti"
+msgstr[0] "Confirm: add %(num)d food"
+msgstr[1] "Confirm: add %(num)d foods"
+
+msgid "Copia del database"
+msgstr "Database copy"
+
+msgid "Cosa hai mangiato"
+msgstr "What you ate"
+
+msgid "Cosa significano"
+msgstr "What they mean"
+
+msgid "Cosa succederà"
+msgstr "What will happen"
+
+msgid "Crescente"
+msgstr "Ascending"
+
+msgid "Data"
+msgstr "Date"
+
+msgid "Database Alimenti"
+msgstr "Food Database"
+
+msgid "Database Alimenti - Analisi Completa"
+msgstr "Food Database - Full Analysis"
+
+msgid "Database alimenti"
+msgstr "Food database"
+
+msgid ""
+"Database degli alimenti con semaforo dei rischi per la salute, valori "
+"nutrizionali e TEF."
+msgstr ""
+"Food database with a health-risk traffic light, nutritional values and "
+"TEF."
+
+#, python-format
+msgid ""
+"Database ripristinato da %(origine)s: %(num)d alimento. Il database "
+"precedente è nel backup %(backup)s."
+msgid_plural ""
+"Database ripristinato da %(origine)s: %(num)d alimenti. Il database "
+"precedente è nel backup %(backup)s."
+msgstr[0] ""
+"Database restored from %(origine)s: %(num)d food. The previous database "
+"is in the backup %(backup)s."
+msgstr[1] ""
+"Database restored from %(origine)s: %(num)d foods. The previous database "
+"is in the backup %(backup)s."
+
+msgid "Dati generali"
+msgstr "General data"
+
+msgid "Dato mancante o valore non riconosciuto: non entra nel punteggio."
+msgstr "Missing data or unrecognized value: not counted in the score."
+
+msgid "Decrescente"
+msgstr "Descending"
+
+msgid "Dettagli nella guida"
+msgstr "Details in the guide"
+
+msgid "Di nuovo online."
+msgstr "Back online."
+
+msgid "Diabete"
+msgstr "Diabetes"
+
+msgid "Diario"
+msgstr "Diary"
+
+msgid "Diario alimentare"
+msgstr "Food diary"
+
+msgid "Dimensione"
+msgstr "Size"
+
+msgid "Direzione"
+msgstr "Direction"
+
+msgid "Disconnessione effettuata."
+msgstr "Signed out."
+
+msgid "Dolci e Snack"
+msgstr "Sweets and snacks"
+
+msgid "EEE d/M"
+msgstr "EEE M/d"
+
+msgid "EEEE d MMMM y"
+msgstr "EEEE, MMMM d, y"
+
+msgid "Effettua l'accesso per gestire il database degli alimenti."
+msgstr "Sign in to manage the food database."
+
+msgid "Elimina"
+msgstr "Delete"
+
+#, python-format
+msgid "Elimina %(nome)s"
+msgstr "Delete %(nome)s"
+
+#, python-format
+msgid "Elimina %(nome)s dal diario"
+msgstr "Delete %(nome)s from the diary"
+
+msgid "Elimina alimento"
+msgstr "Delete food"
+
+msgid "Elimina dal diario"
+msgstr "Delete from the diary"
+
+#, python-format
+msgid "Elimina l'alimento attuale"
+msgid_plural "Elimina i %(num)d alimenti attuali"
+msgstr[0] "Delete the current food"
+msgstr[1] "Delete the %(num)d current foods"
+
+msgid "Elimina tutti gli alimenti attuali e inserisce quelli del file."
+msgstr "Deletes all current foods and inserts the ones in the file."
+
+#, python-format
+msgid "Eliminare «%(nome)s» (%(grammi)s g) dal diario di questo giorno?"
+msgstr "Delete “%(nome)s” (%(grammi)s g) from this day's diary?"
+
+#, python-format
+msgid "Eliminare «%(nome)s» dal database? Puoi recuperarlo solo da un backup."
+msgstr ""
+"Delete “%(nome)s” from the database? You can only recover it from a "
+"backup."
+
+msgid "Eliminati"
+msgstr "Deleted"
+
+msgid "Energia"
+msgstr "Energy"
+
+#, python-format
+msgid ""
+"Energia per 100 g. Se manca si stima dai macronutrienti: %(proteine)s "
+"Kcal per grammo di proteine, %(carboidrati)s di carboidrati e %(grassi)s "
+"di grassi."
+msgstr ""
+"Energy per 100 g. If missing, it is estimated from the macronutrients: "
+"%(proteine)s Kcal per gram of protein, %(carboidrati)s per gram of "
+"carbohydrates and %(grassi)s per gram of fat."
+
+msgid "Energia, TEF e Kcal nette"
+msgstr "Energy, TEF and net Kcal"
+
+msgid "Energia, fruttosio, fibre e macronutrienti della porzione"
+msgstr "Energy, fructose, fiber and macronutrients of the portion"
+
+msgid "Errore durante l'importazione: nessuna modifica è stata salvata."
+msgstr "Error during the import: no changes were saved."
+
+msgid "Errore:"
+msgstr "Error:"
+
+msgid "Esci"
+msgstr "Sign out"
+
+msgid "Esempio di CSV con separatore punto e virgola"
+msgstr "Example CSV with semicolon separator"
+
+msgid "Esempio: 100 g di pane"
+msgstr "Example: 100 g of bread"
+
+msgid ""
+"Esempio: tre rischi trascurabili e due bassi danno una media di 0,4 "
+"punti, cioè un punteggio di 87."
+msgstr ""
+"Example: three negligible risks and two low ones give an average of 0.4 "
+"points, that is a score of 87."
+
+msgid "Esito"
+msgstr "Outcome"
+
+msgid "Esporta PDF"
+msgstr "Export PDF"
+
+msgid "Esporta con i filtri:"
+msgstr "Export with the filters:"
+
+msgid "Esporta:"
+msgstr "Export:"
+
+msgid "FDC ID"
+msgstr "FDC ID"
+
+msgid "FDC ID (USDA)"
+msgstr "FDC ID (USDA)"
+
+msgid "FDC ID: serve un numero intero."
+msgstr "FDC ID: enter a whole number."
+
+#, python-format
+msgid "FDC ID: «%(testo)s» non valido, ignorato"
+msgstr "FDC ID: “%(testo)s” not valid, ignored"
+
+msgid "FODMAP"
+msgstr "FODMAP"
+
+msgid "FODMAP GOS"
+msgstr "FODMAP GOS"
+
+msgid "FODMAP complessivo"
+msgstr "Overall FODMAP"
+
+msgid "FODMAP fruttani"
+msgstr "FODMAP fructans"
+
+msgid "FODMAP fruttosio in eccesso"
+msgstr "FODMAP excess fructose"
+
+msgid "FODMAP lattosio"
+msgstr "FODMAP lactose"
+
+msgid "FODMAP per categoria"
+msgstr "FODMAP by category"
+
+msgid "FODMAP polioli"
+msgstr "FODMAP polyols"
+
+msgid "Fatto:"
+msgstr "Done:"
+
+msgid "Fattori di rischio marcati: da limitare."
+msgstr "Marked risk factors: to be limited."
+
+msgid "Ferro"
+msgstr "Iron"
+
+msgid "Fibre"
+msgstr "Fiber"
+
+msgid "Fibre (g)"
+msgstr "Fiber (g)"
+
+msgid "Fibre (g/100 g)"
+msgstr "Fiber (g/100 g)"
+
+msgid "File CSV o Excel (.xlsx)"
+msgstr "CSV or Excel file (.xlsx)"
+
+msgid "File del database (.db)"
+msgstr "Database file (.db)"
+
+#, python-format
+msgid "File troppo grande: il limite è %(mb)d MB."
+msgstr "File too large: the limit is %(mb)d MB."
+
+msgid "Filtra"
+msgstr "Filter"
+
+#, python-format
+msgid ""
+"Fino a %(mb)s MB e %(righe)s righe. Separatore e codifica dei CSV vengono"
+" riconosciuti da soli; dei file Excel si legge il primo foglio con la "
+"colonna «Alimento»."
+msgstr ""
+"Up to %(mb)s MB and %(righe)s rows. The separator and encoding of CSV "
+"files are detected automatically; for Excel files the first sheet with "
+"the “Alimento” column is read."
+
+msgid "Folati"
+msgstr "Folate"
+
+msgid "Fonte"
+msgstr "Source"
+
+msgid "Fonte dei dati nutrizionali"
+msgstr "Source of the nutritional data"
+
+msgid "Fonte dei nutrienti:"
+msgstr "Nutrient source:"
+
+msgid "Fonte nutrienti"
+msgstr "Nutrient source"
+
+msgid "Fonti e limiti"
+msgstr "Sources and limits"
+
+msgid "Food Stoplight – Database Alimenti"
+msgstr "Food Stoplight – Food Database"
+
+msgid "Formato non supportato: carica un file .csv oppure .xlsx."
+msgstr "Unsupported format: upload a .csv or .xlsx file."
+
+msgid "Frutta"
+msgstr "Fruit"
+
+msgid "Fruttani"
+msgstr "Fructans"
+
+msgid "Fruttosio"
+msgstr "Fructose"
+
+msgid "Fruttosio (g)"
+msgstr "Fructose (g)"
+
+msgid "Fruttosio (g/100 g)"
+msgstr "Fructose (g/100 g)"
+
+msgid ""
+"Fruttosio diviso fibre (0 se le fibre mancano). Più è basso, meglio è "
+"tollerato da chi ha malassorbimento del fruttosio."
+msgstr ""
+"Fructose divided by fiber (0 if fiber is missing). The lower it is, the "
+"better it is tolerated by people with fructose malabsorption."
+
+msgid "Fruttosio e fibre"
+msgstr "Fructose and fiber"
+
+msgid "Fruttosio in eccesso"
+msgstr "Excess fructose"
+
+msgid "Fruttosio, Fibre: il rapporto F/F viene sempre ricalcolato"
+msgstr "Fruttosio, Fibre: the F/F ratio is always recalculated"
+
+msgid "GOS (galatto-oligosaccaridi)"
+msgstr "GOS (galacto-oligosaccharides)"
+
+msgid "Giorno"
+msgstr "Day"
+
+#, python-format
+msgid "Già presente nel database (ID %(id)d): sarà duplicato"
+msgstr "Already in the database (ID %(id)d): it will be duplicated"
+
+msgid "Gli utenti e le password (utenti.db) non fanno parte dei backup."
+msgstr "Users and passwords (utenti.db) are not part of the backups."
+
+msgid "Grado di processazione (NOVA)"
+msgstr "Processing level (NOVA)"
+
+msgid "Grado di trasformazione (NOVA)"
+msgstr "Processing level (NOVA)"
+
+msgid "Grammi"
+msgstr "Grams"
+
+#, python-format
+msgid "Grammi di %(nome)s"
+msgstr "Grams of %(nome)s"
+
+#, python-format
+msgid "Grammi non validi: servono da %(minimo)d a %(massimo)d g."
+msgstr "Invalid grams: enter %(minimo)d to %(massimo)d g."
+
+msgid "Grassi"
+msgstr "Fat"
+
+msgid "Grassi e Oli"
+msgstr "Fats and oils"
+
+msgid "Grassi saturi"
+msgstr "Saturated fat"
+
+msgid "Grassi saturi oltre 5 g +2. Colesterolo: oltre 50 mg +1, oltre 100 mg +2."
+msgstr "Saturated fat over 5 g +2. Cholesterol: over 50 mg +1, over 100 mg +2."
+
+msgid ""
+"Grassi saturi: oltre 4 g +1, oltre 7 g +2. Zuccheri oltre 15 g +1. Soglie"
+" ispirate alle raccomandazioni di OMS e WCRF."
+msgstr ""
+"Saturated fat: over 4 g +1, over 7 g +2. Sugars over 15 g +1. Thresholds "
+"inspired by WHO and WCRF recommendations."
+
+msgid "Guida"
+msgstr "Guide"
+
+msgid "Guida ai dati"
+msgstr "Guide to the data"
+
+msgid "Guida completa: soglie, calcoli e fonti"
+msgstr "Full guide: thresholds, calculations and sources"
+
+msgid "I cinque rischi"
+msgstr "The five risks"
+
+msgid ""
+"I dati hanno scopo informativo e non sostituiscono il parere di un medico"
+" o di un dietista."
+msgstr ""
+"The data are for information only and do not replace the advice of a "
+"doctor or a dietitian."
+
+msgid ""
+"I macro e micronutrienti con fonte USDA vengono da FoodData Central, la "
+"banca dati del Dipartimento dell'Agricoltura degli Stati Uniti."
+msgstr ""
+"Macro and micronutrients with USDA as source come from FoodData Central, "
+"the database of the United States Department of Agriculture."
+
+msgid ""
+"I valori calcolati (TEF, Kcal nette, rapporto F/F) sono già inclusi; "
+"nelle righe aggiornate sono evidenziate le celle che cambiano."
+msgstr ""
+"Calculated values (TEF, net Kcal, F/F ratio) are already included; in "
+"updated rows the cells that change are highlighted."
+
+msgid "I valori indicati con «–» non sono disponibili."
+msgstr "Values shown as “–” are not available."
+
+msgid "I valori numerici accettano anche la virgola decimale (es. 5,9)."
+msgstr "Numbers also accept a decimal comma (e.g. 5,9)."
+
+msgid "I valori segnalati non vengono importati, il resto della riga sì."
+msgstr "The flagged values are not imported, the rest of the row is."
+
+msgid "I valori sono quelli dell'alimento al momento dell'inserimento."
+msgstr "Values are those of the food at the time it was added."
+
+msgid "ID"
+msgstr "ID"
+
+#, python-format
+msgid "ID %(id)d non presente nel database: cerco per nome"
+msgstr "ID %(id)d not in the database: looking up by name"
+
+#, python-format
+msgid "ID %(id)d: il nome cambia da «%(prima)s» a «%(dopo)s»"
+msgstr "ID %(id)d: the name changes from “%(prima)s” to “%(dopo)s”"
+
+#, python-format
+msgid "ID «%(testo)s» non valido: ignorato"
+msgstr "ID “%(testo)s” not valid: ignored"
+
+msgid "ID: per aggiornare proprio quella riga (presente nei file esportati)"
+msgstr "ID: to update exactly that row (present in exported files)"
+
+msgid ""
+"Il TEF reale varia da persona a persona: questi valori sono stime per "
+"confrontare gli alimenti tra loro."
+msgstr ""
+"The actual TEF varies from person to person: these values are estimates "
+"for comparing foods with each other."
+
+msgid "Il campo Alimento è obbligatorio."
+msgstr "The Food field is required."
+
+msgid "Il carico glicemico si calcola da indice e carboidrati."
+msgstr "The glycemic load is calculated from the index and the carbohydrates."
+
+#, python-format
+msgid "Il database contiene %(num)d alimento."
+msgid_plural "Il database contiene %(num)d alimenti."
+msgstr[0] "The database contains %(num)d food."
+msgstr[1] "The database contains %(num)d foods."
+
+msgid "Il database contiene trigger o viste: non è un backup di Food-stoplight."
+msgstr ""
+"The database contains triggers or views: it is not a Food-stoplight "
+"backup."
+
+msgid "Il database non si apre."
+msgstr "The database cannot be opened."
+
+msgid "Il database non è ancora stato modificato."
+msgstr "The database has not been changed yet."
+
+#, python-format
+msgid "Il database non è leggibile (%(errore)s)."
+msgstr "The database is not readable (%(errore)s)."
+
+msgid "Il database è danneggiato."
+msgstr "The database is damaged."
+
+msgid ""
+"Il diario conserva i valori dell'alimento al momento della registrazione:"
+" le modifiche successive al database non cambiano i giorni passati."
+msgstr ""
+"The diary keeps the food's values from the moment it was recorded: later "
+"changes to the database do not alter past days."
+
+#, python-format
+msgid "Il file <strong>%(nome)s</strong> è in attesa di conferma."
+msgstr "The file <strong>%(nome)s</strong> is waiting for confirmation."
+
+msgid "Il file Excel non contiene fogli."
+msgstr "The Excel file contains no sheets."
+
+msgid "Il file non contiene righe di dati sotto l'intestazione."
+msgstr "The file contains no data rows below the header."
+
+msgid "Il file non contiene righe valide: la tabella non è stata svuotata."
+msgstr "The file contains no valid rows: the table was not emptied."
+
+msgid "Il file non è leggibile: controlla che sia un CSV o un Excel valido."
+msgstr "The file is not readable: check that it is a valid CSV or Excel file."
+
+msgid "Il file non è un database SQLite."
+msgstr "The file is not an SQLite database."
+
+msgid ""
+"Il file non è un foglio Excel .xlsx valido (il vecchio formato .xls non è"
+" supportato: salvalo come .xlsx o .csv)."
+msgstr ""
+"The file is not a valid .xlsx Excel workbook (the old .xls format is not "
+"supported: save it as .xlsx or .csv)."
+
+#, python-format
+msgid "Il file supera le %(n)d righe: dividilo in più file."
+msgstr "The file exceeds %(n)d rows: split it into several files."
+
+msgid "Il file è vuoto."
+msgstr "The file is empty."
+
+msgid "Il livello medio indicato accanto al punteggio:"
+msgstr "The average level shown next to the score:"
+
+#, python-format
+msgid "Il pasto può contenere al massimo %(n)d alimenti."
+msgstr "A meal can contain at most %(n)d foods."
+
+msgid ""
+"Il pasto resta in questo browser finché non lo svuoti o lo salvi nel "
+"diario."
+msgstr "The meal stays in this browser until you empty it or save it in the diary."
+
+msgid "Il pasto resta in questo browser finché non lo svuoti."
+msgstr "The meal stays in this browser until you empty it."
+
+msgid "Il pasto è vuoto."
+msgstr "The meal is empty."
+
+msgid ""
+"Il pasto è vuoto: aggiungi gli alimenti qui sopra oppure con «Aggiungi al"
+" pasto» dalla scheda di un alimento."
+msgstr "The meal is empty: add foods above or with “Add to meal” on a food's page."
+
+msgid ""
+"Il profilo di rischio di un pasto o di una giornata pesa ogni alimento "
+"sulle Kcal che apporta: 10 g di burro contano più di 300 g di insalata. "
+"Se nessun alimento ha Kcal si pesa sui grammi. Per questo nel radar di un"
+" pasto un rischio può cadere tra due livelli (per esempio 1,4 su 3)."
+msgstr ""
+"The risk profile of a meal or a day weighs each food by the Kcal it "
+"provides: 10 g of butter count more than 300 g of salad. If no food has "
+"Kcal, grams are used instead. That is why in a meal's radar a risk can "
+"fall between two levels (for example 1.4 of 3)."
+
+msgid ""
+"Il punteggio riassume i cinque rischi in un numero da 0 a 100: 100 se "
+"sono tutti trascurabili, 0 se sono tutti alti. È la media dei punti dei "
+"rischi noti (da 0 a 3) riportata su 100: punteggio = 100 × (1 − media ÷ "
+"3)."
+msgstr ""
+"The score sums up the five risks in a number from 0 to 100: 100 if they "
+"are all negligible, 0 if they are all high. It is the average of the "
+"points of the known risks (0 to 3) scaled to 100: score = 100 × (1 − "
+"average ÷ 3)."
+
+msgid "Il vecchio formato .xls non è supportato: salva il file come .xlsx o .csv."
+msgstr "The old .xls format is not supported: save the file as .xlsx or .csv."
+
+msgid "Import annullato: il database non è stato modificato."
+msgstr "Import canceled: the database was not changed."
+
+#, python-format
+msgid ""
+"Import completato: %(parti)s. Il database precedente è nel backup "
+"%(backup)s."
+msgstr ""
+"Import completed: %(parti)s. The previous database is in the backup "
+"%(backup)s."
+
+msgid "Importa"
+msgstr "Import"
+
+msgid "Importa alimenti"
+msgstr "Import foods"
+
+msgid "In questa pagina"
+msgstr "On this page"
+
+msgid "Indice e carico glicemico"
+msgstr "Glycemic index and load"
+
+msgid "Indice glicemico"
+msgstr "Glycemic index"
+
+msgid "Indice glicemico (0–100)"
+msgstr "Glycemic index (0–100)"
+
+msgid "Indice glicemico, FODMAP e processazione"
+msgstr "Glycemic index, FODMAP and processing"
+
+msgid "Indice glicemico, processazione e FODMAP"
+msgstr "Glycemic index, processing and FODMAP"
+
+msgid ""
+"Indice glicemico: basso fino a 55, medio 56–69, alto da 70. Carico "
+"glicemico per porzione: basso fino a 10, medio 11–19, alto da 20."
+msgstr ""
+"Glycemic index: low up to 55, medium 56–69, high from 70. Glycemic load "
+"per portion: low up to 10, medium 11–19, high from 20."
+
+#, python-format
+msgid "Indice glicemico: «%(testo)s» fuori scala (0-100), ignorato"
+msgstr "Glycemic index: “%(testo)s” out of range (0-100), ignored"
+
+msgid "Indirizzo http:// o https://."
+msgstr "An http:// or https:// address."
+
+msgid "Informazione:"
+msgstr "Information:"
+
+msgid "Ingredienti culinari trasformati"
+msgstr "Processed culinary ingredients"
+
+msgid "Inserisci un nuovo alimento nel database."
+msgstr "Add a new food to the database."
+
+msgid "Invariati"
+msgstr "Unchanged"
+
+msgid "Invariato"
+msgstr "Unchanged"
+
+msgid "Kcal"
+msgstr "Kcal"
+
+msgid "Kcal (per 100 g)"
+msgstr "Kcal (per 100 g)"
+
+msgid "Kcal Nette"
+msgstr "Net Kcal"
+
+msgid "Kcal meno TEF."
+msgstr "Kcal minus TEF."
+
+msgid "Kcal meno TEF: l'energia che resta dopo la digestione."
+msgstr "Kcal minus TEF: the energy left after digestion."
+
+msgid "Kcal nette"
+msgstr "Net Kcal"
+
+msgid "Kcal nette per giorno; accanto, il TEF."
+msgstr "Net Kcal per day; next to it, the TEF."
+
+msgid "Kcal nette: 260,8 − 30 = 230,8."
+msgstr "Net Kcal: 260.8 − 30 = 230.8."
+
+msgid "Kcal − TEF"
+msgstr "Kcal − TEF"
+
+#, python-format
+msgid "Kcal, TEF (Kcal), TEF (%%), Kcal Nette"
+msgstr "Kcal, TEF (Kcal), TEF (%%), Kcal Nette"
+
+#, python-format
+msgid ""
+"L'energia che il corpo spende per digerire, assorbire e trasformare il "
+"cibo. Si stima come quota dell'energia di ciascun macronutriente: "
+"%(proteine)s per le proteine, %(carboidrati)s per i carboidrati, "
+"%(grassi)s per i grassi. TEF (%%) è la quota sulle Kcal totali; TEF "
+"(Kcal) lo stesso valore in calorie."
+msgstr ""
+"The energy the body spends to digest, absorb and process food. It is "
+"estimated as a share of the energy of each macronutrient: %(proteine)s "
+"for protein, %(carboidrati)s for carbohydrates, %(grassi)s for fat. TEF "
+"(%%) is the share of the total Kcal; TEF (Kcal) is the same value in "
+"calories."
+
+msgid ""
+"L'indice glicemico (IG) dice quanto in fretta i carboidrati di un "
+"alimento alzano la glicemia, rispetto al glucosio (100). Il carico "
+"glicemico (CG) tiene conto anche della quantità: CG = IG × carboidrati "
+"disponibili della porzione ÷ 100, dove i carboidrati disponibili sono i "
+"carboidrati meno le fibre."
+msgstr ""
+"The glycemic index (GI) tells how quickly a food's carbohydrates raise "
+"blood sugar, compared with glucose (100). The glycemic load (GL) also "
+"takes the amount into account: GL = GI × available carbohydrates of the "
+"portion ÷ 100, where available carbohydrates are carbohydrates minus "
+"fiber."
+
+msgid ""
+"L'ordine non conta e le colonne mancanti si possono omettere: serve solo "
+"«Alimento»."
+msgstr ""
+"The order does not matter and missing columns can be left out: only "
+"“Alimento” is required."
+
+msgid ""
+"La classificazione NOVA divide gli alimenti in quattro gruppi secondo "
+"quanto sono trasformati industrialmente."
+msgstr ""
+"The NOVA classification divides foods into four groups according to how "
+"much they are industrially processed."
+
+msgid ""
+"La scheda di ogni alimento indica la fonte dei valori; dove manca, i "
+"valori sono stime o dati dimostrativi da verificare."
+msgstr ""
+"Each food's page shows the source of its values; where it is missing, the"
+" values are estimates or sample data to be checked."
+
+msgid "La tabella «alimenti» non ha le colonne attese."
+msgstr "The “alimenti” table does not have the expected columns."
+
+msgid "Latticini e Uova"
+msgstr "Dairy and eggs"
+
+msgid "Lattosio"
+msgstr "Lactose"
+
+#, python-format
+msgid ""
+"Le icone accanto al nome segnalano gli alimenti tra i primi %(n)s "
+"dell'intero database in ciascuna classifica:"
+msgstr ""
+"The icons next to the name mark the foods in the top %(n)s of the whole "
+"database in each ranking:"
+
+msgid "Le intestazioni si scrivono in italiano, come nei file esportati."
+msgstr "Headers are written in Italian, as in the exported files."
+
+#, python-format
+msgid "Le prime %(n)d"
+msgstr "The first %(n)d"
+
+msgid ""
+"Le righe già presenti (stesso ID, oppure stesso nome e categoria) vengono"
+" aggiornate con i valori non vuoti del file; le altre vengono aggiunte."
+msgstr ""
+"Rows already present (same ID, or same name and category) are updated "
+"with the non-empty values of the file; the others are added."
+
+msgid ""
+"Le soglie dei rischi sono indicative e non sono ancora state riviste con "
+"riferimenti bibliografici puntuali."
+msgstr ""
+"The risk thresholds are indicative and have not yet been reviewed against"
+" specific bibliographic references."
+
+msgid "Legenda dei livelli"
+msgstr "Level legend"
+
+msgid "Legumi/Frutta Secca"
+msgstr "Legumes/Nuts"
+
+msgid "Livelli di rischio"
+msgstr "Risk levels"
+
+msgid "Livelli medi di rischio"
+msgstr "Average risk levels"
+
+msgid ""
+"Livelli: Trascurabile, Basso, Medio, Alto (si salvano in italiano, come "
+"nel resto del database)."
+msgstr ""
+"Levels: Trascurabile, Basso, Medio, Alto (negligible, low, medium, high: "
+"they are saved in Italian, like the rest of the database)."
+
+msgid ""
+"Livelli: Trascurabile, Basso, Medio, Alto, anche preceduti da emoji («🔴 "
+"Alto»). Protettivo e Neutro valgono Trascurabile, Elevato e Aumentato "
+"valgono Alto."
+msgstr ""
+"Levels: Trascurabile, Basso, Medio, Alto (negligible, low, medium, high),"
+" also preceded by an emoji (“🔴 Alto”). Protettivo and Neutro count as "
+"Trascurabile, Elevato and Aumentato count as Alto."
+
+msgid "Livello"
+msgstr "Level"
+
+msgid "Livello medio"
+msgstr "Average level"
+
+#, python-format
+msgid "Livello medio: %(livello)s"
+msgstr "Average level: %(livello)s"
+
+msgid "Macronutrienti"
+msgstr "Macronutrients"
+
+msgid "Magnesio"
+msgstr "Magnesium"
+
+msgid "Malassorb."
+msgstr "Malabs."
+
+msgid "Malassorbimento"
+msgstr "Malabsorption"
+
+msgid ""
+"Malassorbimento del fruttosio. Fruttosio oltre 3 g +1; oltre 5 g con meno"
+" di 2 g di fibre +2."
+msgstr ""
+"Fructose malabsorption. Fructose over 3 g +1; over 5 g with less than 2 g"
+" of fiber +2."
+
+msgid "Manuale"
+msgstr "Manual"
+
+msgid "Medaglie"
+msgstr "Medals"
+
+msgid ""
+"Media dei livelli pesata sui grammi di ciascun alimento: un alimento "
+"conta tanto quanto apporta."
+msgstr ""
+"Average of the levels weighted by the grams of each food: a food counts "
+"as much as it provides."
+
+msgid ""
+"Media dei livelli pesata sulle Kcal di ciascun alimento: un alimento "
+"conta tanto quanto apporta."
+msgstr ""
+"Average of the levels weighted by the Kcal of each food: a food counts as"
+" much as it provides."
+
+msgid "Medio"
+msgstr "Medium"
+
+msgid "Meno Kcal per 100 g (esclusi i valori a 0, che indicano dati mancanti)."
+msgstr ""
+"Fewest Kcal per 100 g (values of 0, which mean missing data, are "
+"excluded)."
+
+msgid "Meno calorici"
+msgstr "Lowest in calories"
+
+msgid "Metabolico"
+msgstr "Metabolic"
+
+msgid "Micronutrienti"
+msgstr "Micronutrients"
+
+msgid "Micronutrienti della porzione"
+msgstr "Micronutrients of the portion"
+
+msgid "Miglior rapporto fruttosio/fibre"
+msgstr "Best fructose/fiber ratio"
+
+msgid "Modalità"
+msgstr "Mode"
+
+msgid "Modifica"
+msgstr "Edit"
+
+#, python-format
+msgid "Modifica %(nome)s"
+msgstr "Edit %(nome)s"
+
+msgid "Modifica alimento"
+msgstr "Edit food"
+
+msgid "Mostra i dati in tabella"
+msgstr "Show the data as a table"
+
+msgid "Mostra tutte le colonne"
+msgstr "Show all columns"
+
+msgid "Motivo"
+msgstr "Reason"
+
+msgid "NOVA"
+msgstr "NOVA"
+
+msgid "NOVA: scegli un gruppo da 1 a 4."
+msgstr "NOVA: choose a group from 1 to 4."
+
+#, python-format
+msgid "NOVA: «%(testo)s» non è un gruppo da 1 a 4, ignorato"
+msgstr "NOVA: “%(testo)s” is not a group from 1 to 4, ignored"
+
+msgid "Nel database manca la tabella «alimenti»."
+msgstr "The database lacks the “alimenti” table."
+
+#, python-format
+msgid ""
+"Nella categoria %(categoria)s, dal punteggio più alto; a parità, con Kcal"
+" più vicine."
+msgstr ""
+"In the %(categoria)s category, highest score first; on a tie, closest "
+"Kcal."
+
+#, python-format
+msgid ""
+"Nella tabella, le icone %(icone)s accanto al nome segnalano gli alimenti "
+"tra i primi %(n)s dell'intero database in ciascuna classifica."
+msgstr ""
+"In the table, the icons %(icone)s next to the name mark the foods in the "
+"top %(n)s of the whole database in each ranking."
+
+msgid "Nessun alimento con i filtri correnti."
+msgstr "No foods with the current filters."
+
+msgid "Nessun alimento della categoria ha un punteggio più alto."
+msgstr "No food in the category has a higher score."
+
+msgid "Nessun alimento registrato per questo giorno."
+msgstr "No foods recorded for this day."
+
+msgid "Nessun alimento trovato con i filtri correnti."
+msgstr "No foods found with the current filters."
+
+#, python-format
+msgid "Nessun alimento «%(testo)s»: scegline uno dall'elenco."
+msgstr "No food named “%(testo)s”: choose one from the list."
+
+msgid "Nessun avviso: tutti i valori sono stati riconosciuti."
+msgstr "No warnings: all values were recognized."
+
+msgid "Nessun backup salvato finora."
+msgstr "No backups saved yet."
+
+msgid "Nessun fattore di rischio rilevante."
+msgstr "No relevant risk factor."
+
+msgid "Nessun file in attesa di conferma: caricane uno."
+msgstr "No file waiting for confirmation: upload one."
+
+msgid "Nessun livello di rischio disponibile."
+msgstr "No risk level available."
+
+msgid "Nessuna modifica da applicare con questa modalità."
+msgstr "No changes to apply with this mode."
+
+msgid "Nessuna modifica da applicare: il database contiene già questi dati."
+msgstr "No changes to apply: the database already contains these data."
+
+msgid ""
+"Nessuna scheda salvata: le schede che apri con la connessione restano "
+"disponibili anche offline."
+msgstr ""
+"No saved food pages: the pages you open while connected stay available "
+"offline too."
+
+msgid "Nessuna: il file coincide con i dati del database."
+msgstr "None: the file matches the data in the database."
+
+msgid "Nome utente"
+msgstr "Username"
+
+msgid "Nome utente o password non validi."
+msgstr "Invalid username or password."
+
+msgid "Non classificato"
+msgstr "Not classified"
+
+msgid "Non disponibile"
+msgstr "Not available"
+
+msgid "Non trasformati o minimamente trasformati"
+msgstr "Unprocessed or minimally processed"
+
+msgid "Note"
+msgstr "Notes"
+
+msgid "Note:"
+msgstr "Notes:"
+
+#, python-format
+msgid "Note: al massimo %(n)d caratteri."
+msgstr "Notes: at most %(n)d characters."
+
+#, python-format
+msgid "Numeri con virgola o punto decimale, anche con «%%» o l'unità («5,9 g»)."
+msgstr ""
+"Numbers with a decimal comma or point, also with “%%” or the unit (“5,9 "
+"g”)."
+
+msgid ""
+"Numero di alimenti per categoria. Seleziona una barra per filtrare la "
+"tabella."
+msgstr "Number of foods per category. Select a bar to filter the table."
+
+msgid "Nuovi"
+msgstr "New"
+
+msgid "Nuovo"
+msgstr "New"
+
+msgid "Nuovo alimento"
+msgstr "New food"
+
+msgid "Nutrienti del pasto"
+msgstr "Nutrients of the meal"
+
+msgid "Nutrienti della giornata"
+msgstr "Nutrients of the day"
+
+msgid "Oggi"
+msgstr "Today"
+
+msgid ""
+"Ogni alimento ha cinque rischi per la salute, ciascuno su una scala a "
+"quattro livelli, come un semaforo. Il livello è sempre scritto oltre che "
+"colorato."
+msgstr ""
+"Each food has five health risks, each on a four-level scale, like a "
+"traffic light. The level is always written as well as colored."
+
+msgid "Ogni riga diventa un nuovo alimento, anche se esiste già."
+msgstr "Each row becomes a new food, even if it already exists."
+
+msgid "Oltre 250 Kcal con più di 10 g di zuccheri +2. Grassi saturi oltre 5 g +1."
+msgstr "Over 250 Kcal with more than 10 g of sugars +2. Saturated fat over 5 g +1."
+
+msgid "Operazione riservata agli amministratori."
+msgstr "Only administrators can do this."
+
+msgid "Ordina"
+msgstr "Sort"
+
+msgid "Ordina per"
+msgstr "Sort by"
+
+msgid "Pagina non trovata"
+msgstr "Page not found"
+
+msgid "Passa alla modalità chiara"
+msgstr "Switch to light mode"
+
+msgid "Passa alla modalità scura"
+msgstr "Switch to dark mode"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "Pasti e diario"
+msgstr "Meals and diary"
+
+msgid "Pasto"
+msgstr "Meal"
+
+msgid "Pasto svuotato."
+msgstr "Meal emptied."
+
+msgid "Per 100 g. Lasciare vuoto se il dato non è disponibile."
+msgstr "Per 100 g. Leave empty if the value is not available."
+
+msgid ""
+"Per modificare i dati in Excel: <strong>esporta</strong> dalla tabella, "
+"modifica il file e reimportalo con «Aggiorna o aggiungi»."
+msgstr ""
+"To edit the data in Excel: <strong>export</strong> from the table, edit "
+"the file and import it again with “Update or add”."
+
+msgid "Per ripristinare spunta la casella di conferma."
+msgstr "To restore, tick the confirmation box."
+
+msgid "Per sostituire l'intera tabella spunta la casella di conferma."
+msgstr "To replace the whole table, tick the confirmation box."
+
+msgid "Pesa di più"
+msgstr "Weighs most"
+
+msgid "Pesce"
+msgstr "Fish"
+
+msgid "Più fattori, o un fattore marcato: con moderazione."
+msgstr "Several factors, or one marked factor: in moderation."
+
+msgid ""
+"Più l'area è ampia, più i rischi sono alti. Anelli dal centro: "
+"Trascurabile, Basso, Medio, Alto."
+msgstr ""
+"The wider the area, the higher the risks. Rings from the center: "
+"Negligible, Low, Medium, High."
+
+msgid "Più protettivi"
+msgstr "Most protective"
+
+msgid "Poi svuota il pasto"
+msgstr "Then empty the meal"
+
+msgid "Polioli (sorbitolo, mannitolo)"
+msgstr "Polyols (sorbitol, mannitol)"
+
+msgid "Porzione"
+msgstr "Portion"
+
+msgid "Porzioni rapide"
+msgstr "Quick portions"
+
+msgid "Potassio"
+msgstr "Potassium"
+
+msgid "Pranzo"
+msgstr "Lunch"
+
+msgid "Prima dei nutrienti USDA"
+msgstr "Before the USDA nutrients"
+
+msgid "Prima di scrivere viene salvato un backup automatico del database."
+msgstr "An automatic backup of the database is saved before writing."
+
+msgid "Prima di un import"
+msgstr "Before an import"
+
+msgid "Prima di un ripristino"
+msgstr "Before a restore"
+
+msgid "Prima di una migrazione dello schema"
+msgstr "Before a schema migration"
+
+#, python-format
+msgid "Prima: %(valore)s"
+msgstr "Before: %(valore)s"
+
+msgid "Processazione (NOVA)"
+msgstr "Processing (NOVA)"
+
+msgid "Profilo di rischio"
+msgstr "Risk profile"
+
+msgid "Profilo di rischio del pasto"
+msgstr "Risk profile of the meal"
+
+msgid "Profilo di rischio della giornata"
+msgstr "Risk profile of the day"
+
+msgid "Proteine"
+msgstr "Protein"
+
+msgid "Punteggio"
+msgstr "Score"
+
+msgid "Punteggio complessivo"
+msgstr "Overall score"
+
+msgid "Punteggio medio"
+msgstr "Average score"
+
+msgid "Punteggio più alto; a parità, più fibre."
+msgstr "Highest score; on a tie, more fiber."
+
+msgid "Punti"
+msgstr "Points"
+
+msgid "Punti (0–3)"
+msgstr "Points (0–3)"
+
+#, python-format
+msgid ""
+"Puoi anche comporre un pasto in <a href=\"%(url)s\">Pasto</a> e salvarlo "
+"qui in un colpo solo."
+msgstr ""
+"You can also build a meal in <a href=\"%(url)s\">Meal</a> and save it "
+"here in one go."
+
+msgid ""
+"Quando i livelli sono calcolati dai valori nutrizionali, ogni criterio "
+"superato aggiunge punti (valori per 100 g): 0 punti Trascurabile, 1 "
+"Basso, 2 Medio, 3 o più Alto. Per gli alimenti inseriti a mano o "
+"importati vale il livello indicato nella fonte."
+msgstr ""
+"When the levels are calculated from the nutritional values, each "
+"criterion met adds points (values per 100 g): 0 points Negligible, 1 Low,"
+" 2 Medium, 3 or more High. For foods entered by hand or imported, the "
+"level given by the source applies."
+
+msgid ""
+"Questa pagina richiede la connessione. Senza rete puoi consultare la "
+"tabella, la guida e le schede degli alimenti che hai già aperto."
+msgstr ""
+"This page needs a connection. Offline you can browse the table, the guide"
+" and the food pages you have already opened."
+
+msgid "Quota"
+msgstr "Share"
+
+msgid "Quota di alimenti per livello, per ciascuno dei cinque rischi."
+msgstr "Share of foods per level, for each of the five risks."
+
+msgid "Rapporto F/F"
+msgstr "F/F ratio"
+
+msgid "Rapporto F/Fibre"
+msgstr "Fructose/fiber ratio"
+
+msgid "Rapporto fruttosio/fibre"
+msgstr "Fructose/fiber ratio"
+
+msgid "Rapporto più basso tra gli alimenti con almeno 1 g di fruttosio."
+msgstr "Lowest ratio among foods with at least 1 g of fructose."
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "Ricalcola"
+msgstr "Recalculate"
+
+msgid "Riga"
+msgstr "Row"
+
+#, python-format
+msgid "Riga %(n)d"
+msgstr "Row %(n)d"
+
+msgid "Righe con modifiche"
+msgstr "Rows with changes"
+
+msgid "Ripetuti nel file"
+msgstr "Repeated in the file"
+
+msgid "Riprendi l'anteprima"
+msgstr "Resume the preview"
+
+msgid "Ripristina"
+msgstr "Restore"
+
+msgid "Ripristina da file"
+msgstr "Restore from a file"
+
+msgid "Ripristina il backup"
+msgstr "Restore the backup"
+
+#, python-format
+msgid "Ripristina il backup del %(data)s"
+msgstr "Restore the backup of %(data)s"
+
+#, python-format
+msgid ""
+"Ripristinare il backup del %(data)s (%(backup)d alimenti)? I %(attuali)d "
+"alimenti attuali verranno sostituiti; prima viene salvato un backup del "
+"database attuale."
+msgstr ""
+"Restore the backup of %(data)s (%(backup)d foods)? The %(attuali)d "
+"current foods will be replaced; a backup of the current database is saved"
+" first."
+
+#, python-format
+msgid "Ripristino non eseguito: %(motivo)s"
+msgstr "Restore not performed: %(motivo)s"
+
+msgid "Rischio"
+msgstr "Risk"
+
+msgid "Rischio Colesterolo"
+msgstr "Cholesterol risk"
+
+msgid "Rischio Diabete"
+msgstr "Diabetes risk"
+
+msgid "Rischio Diabete, Colesterolo, Malassorbimento, Metabolico, Tumorale"
+msgstr ""
+"Rischio Diabete, Colesterolo, Malassorbimento, Metabolico, Tumorale (the "
+"five risks)"
+
+msgid "Rischio Malassorbimento"
+msgstr "Malabsorption risk"
+
+msgid "Rischio Metabolico"
+msgstr "Metabolic risk"
+
+msgid "Rischio Tumorale"
+msgstr "Cancer risk"
+
+msgid "Rischio colesterolo"
+msgstr "Cholesterol risk"
+
+msgid "Rischio diabete"
+msgstr "Diabetes risk"
+
+msgid "Rischio malassorbimento"
+msgstr "Malabsorption risk"
+
+msgid "Rischio metabolico"
+msgstr "Metabolic risk"
+
+msgid "Rischio tumorale"
+msgstr "Cancer risk"
+
+msgid "Risorsa non trovata."
+msgstr "Resource not found."
+
+msgid "Saltati"
+msgstr "Skipped"
+
+msgid "Saltato"
+msgstr "Skipped"
+
+msgid "Salva"
+msgstr "Save"
+
+#, python-format
+msgid "Salva i grammi di %(nome)s"
+msgstr "Save the grams of %(nome)s"
+
+msgid "Salva nel diario"
+msgstr "Save to the diary"
+
+msgid "Salva un backup sul server"
+msgstr "Save a backup on the server"
+
+#, python-format
+msgid "Salvato nel diario %(num)d alimento."
+msgid_plural "Salvati nel diario %(num)d alimenti."
+msgstr[0] "Saved %(num)d food to the diary."
+msgstr[1] "Saved %(num)d foods to the diary."
+
+msgid "Scarica"
+msgstr "Download"
+
+#, python-format
+msgid "Scarica il backup del %(data)s"
+msgstr "Download the backup of %(data)s"
+
+msgid "Scarica il database"
+msgstr "Download the database"
+
+msgid "Scegli cosa fare con le righe del file."
+msgstr "Choose what to do with the rows of the file."
+
+msgid "Scegli il giorno"
+msgstr "Choose the day"
+
+msgid "Scegli il pasto: colazione, pranzo, cena o spuntino."
+msgstr "Choose the meal: breakfast, lunch, dinner or snack."
+
+msgid "Scegli un alimento dall'elenco."
+msgstr "Choose a food from the list."
+
+msgid "Schede salvate su questo dispositivo"
+msgstr "Food pages saved on this device"
+
+msgid "Scrivi per cercare"
+msgstr "Type to search"
+
+msgid "Scrivi per cercare, es. mela"
+msgstr "Type to search, e.g. apple"
+
+msgid "Sei offline"
+msgstr "You are offline"
+
+msgid "Sei offline: le pagine già aperte restano consultabili."
+msgstr "You are offline: pages you have already opened are still available."
+
+msgid "Seleziona il file del database da ripristinare."
+msgstr "Select the database file to restore."
+
+msgid "Seleziona un file CSV o Excel da importare."
+msgstr "Select a CSV or Excel file to import."
+
+msgid "Senza categoria"
+msgstr "No category"
+
+msgid ""
+"Senza la colonna Categoria gli alimenti esistenti si riconoscono solo dal"
+" nome."
+msgstr "Without the Categoria column, existing foods are recognized by name only."
+
+msgid "Servono i carboidrati"
+msgstr "Carbohydrates needed"
+
+msgid "Sessione scaduta o richiesta non valida: riprova."
+msgstr "Session expired or invalid request: try again."
+
+msgid "Significato"
+msgstr "Meaning"
+
+msgid "Sintesi dei cinque rischi: 100 = tutti trascurabili, 0 = tutti alti."
+msgstr "Summary of the five risks: 100 = all negligible, 0 = all high."
+
+msgid "Sodio"
+msgstr "Sodium"
+
+msgid "Solo le colonne principali"
+msgstr "Main columns only"
+
+msgid "Somma delle porzioni. Tra parentesi gli alimenti senza quel dato."
+msgstr "Sum of the portions. In brackets, the foods without that value."
+
+msgid ""
+"Somma più alimenti con le loro porzioni e guarda totali e profilo di "
+"rischio del pasto."
+msgstr ""
+"Add up several foods with their portions and see the meal's totals and "
+"risk profile."
+
+msgid ""
+"Sostituisce tutti gli alimenti con quelli del file. Il database attuale "
+"viene prima salvato tra i backup sul server."
+msgstr ""
+"Replaces all foods with those in the file. The current database is first "
+"saved among the backups on the server."
+
+#, python-format
+msgid "Sostituisci l'alimento attuale"
+msgid_plural "Sostituisci i %(num)d alimenti attuali"
+msgstr[0] "Replace the current food"
+msgstr[1] "Replace the %(num)d current foods"
+
+msgid "Sostituisci l'intera tabella"
+msgstr "Replace the whole table"
+
+msgid "Sostituisci la tabella"
+msgstr "Replace the table"
+
+msgid "Spuntino"
+msgstr "Snack"
+
+msgid "Svuota"
+msgstr "Empty"
+
+msgid "Svuota il pasto"
+msgstr "Empty the meal"
+
+msgid "TEF"
+msgstr "TEF"
+
+#, python-format
+msgid "TEF (%%)"
+msgstr "TEF (%%)"
+
+msgid "TEF (%)"
+msgstr "TEF (%)"
+
+msgid "TEF (Kcal)"
+msgstr "TEF (Kcal)"
+
+msgid "TEF (effetto termico degli alimenti)"
+msgstr "TEF (thermic effect of food)"
+
+#, python-format
+msgid ""
+"TEF: 25%% di 36 + 10%% di 196 + 5%% di 28,8 = 30 Kcal, cioè l'11,5%% "
+"delle Kcal."
+msgstr ""
+"TEF: 25%% of 36 + 10%% of 196 + 5%% of 28.8 = 30 Kcal, that is 11.5%% of "
+"the Kcal."
+
+msgid "Tabella"
+msgstr "Table"
+
+msgid "Tabella degli alimenti"
+msgstr "Food table"
+
+msgid "Togli"
+msgstr "Remove"
+
+#, python-format
+msgid "Togli %(nome)s dal pasto"
+msgstr "Remove %(nome)s from the meal"
+
+#, python-format
+msgid "Togliere %(num)d alimento dal pasto?"
+msgid_plural "Togliere tutti i %(num)d alimenti dal pasto?"
+msgstr[0] "Remove %(num)d food from the meal?"
+msgstr[1] "Remove all %(num)d foods from the meal?"
+
+msgid "Torna alla tabella"
+msgstr "Back to the table"
+
+#, python-format
+msgid "Tra i primi %(n)d dell'intero database."
+msgstr "In the top %(n)d of the whole database."
+
+#, python-format
+msgid "Tra i primi %(n)d: %(titoli)s"
+msgstr "In the top %(n)d: %(titoli)s"
+
+msgid "Trascurabile"
+msgstr "Negligible"
+
+msgid "Tumorale"
+msgstr "Cancer"
+
+msgid "Tutte le categorie"
+msgstr "All categories"
+
+msgid "Tutti"
+msgstr "All"
+
+msgid ""
+"Tutti i valori si riferiscono a 100 g di alimento, salvo dove è indicata "
+"una porzione."
+msgstr "All values refer to 100 g of food, unless a portion is stated."
+
+msgid "URL della fonte"
+msgstr "Source URL"
+
+msgid "URL della fonte: serve un indirizzo che inizia con http:// o https://."
+msgstr "Source URL: enter an address starting with http:// or https://."
+
+msgid "URL fonte"
+msgstr "Source URL"
+
+#, python-format
+msgid "URL fonte: «%(testo)s» non è un indirizzo http(s), ignorato"
+msgstr "Source URL: “%(testo)s” is not an http(s) address, ignored"
+
+#, python-format
+msgid "Ultimi %(n)d giorni"
+msgstr "Last %(n)d days"
+
+msgid "Ultra-trasformati"
+msgstr "Ultra-processed"
+
+#, python-format
+msgid "Un backup scaricato da questa pagina, fino a %(mb)d MB."
+msgstr "A backup downloaded from this page, up to %(mb)d MB."
+
+#, python-format
+msgid ""
+"Un backup viene salvato in automatico prima di ogni import e di ogni "
+"ripristino. Si conservano gli ultimi %(n)d."
+msgstr ""
+"A backup is saved automatically before every import and every restore. "
+"The last %(n)d are kept."
+
+msgid "Un fattore di rischio lieve."
+msgstr "One mild risk factor."
+
+msgid "Un file SQLite completo, ripristinabile da questa pagina."
+msgstr "A complete SQLite file, which can be restored from this page."
+
+msgid "Unito"
+msgstr "Merged"
+
+msgid "Vai"
+msgstr "Go"
+
+msgid "Vai al contenuto"
+msgstr "Skip to content"
+
+msgid "Vai al pasto"
+msgstr "Go to the meal"
+
+msgid "Valori accettati"
+msgstr "Accepted values"
+
+#, python-format
+msgid "Valori per %(grammi)s g"
+msgstr "Values per %(grammi)s g"
+
+msgid "Verdura"
+msgstr "Vegetables"
+
+msgid "Vitamina A"
+msgstr "Vitamin A"
+
+msgid "Vitamina B12"
+msgstr "Vitamin B12"
+
+msgid "Vitamina C"
+msgstr "Vitamin C"
+
+msgid "Vitamina D"
+msgstr "Vitamin D"
+
+msgid "Vitamina E"
+msgstr "Vitamin E"
+
+msgid "Vitamine e sali minerali"
+msgstr "Vitamins and minerals"
+
+msgid "Vitamine e sali minerali non disponibili per questo alimento."
+msgstr "Vitamins and minerals not available for this food."
+
+msgid "Voce eliminata dal diario."
+msgstr "Entry deleted from the diary."
+
+msgid "Vuoto: Kcal − TEF (Kcal)."
+msgstr "Empty: Kcal − TEF (Kcal)."
+
+#, python-format
+msgid "Vuoto: da Kcal e TEF (%%), oppure stimato dai macronutrienti."
+msgstr "Empty: from Kcal and TEF (%%), or estimated from the macronutrients."
+
+msgid "Vuoto: da TEF (Kcal) e Kcal, oppure stimato dai macronutrienti."
+msgstr "Empty: from TEF (Kcal) and Kcal, or estimated from the macronutrients."
+
+msgid "Vuoto: stimate dai macronutrienti."
+msgstr "Empty: estimated from the macronutrients."
+
+msgid "Zinco"
+msgstr "Zinc"
+
+msgid "Zuccheri"
+msgstr "Sugars"
+
+msgid "Zuccheri: oltre 10 g +1, oltre 15 g +2. Fibre: sotto 2 g +1, oltre 5 g −1."
+msgstr "Sugars: over 10 g +1, over 15 g +2. Fiber: under 2 g +1, over 5 g −1."
+
+msgid "admin"
+msgstr "admin"
+
+#, python-format
+msgid "aggiornato il %(data)s"
+msgstr "updated on %(data)s"
+
+msgid "campo obbligatorio."
+msgstr "required field."
+
+msgid "con moderazione"
+msgstr "in moderation"
+
+msgid "da 0 a 16"
+msgstr "from 0 to 16"
+
+msgid "da 11 a 19"
+msgstr "from 11 to 19"
+
+msgid "da 17 a 50"
+msgstr "from 17 to 50"
+
+msgid "da 20"
+msgstr "from 20"
+
+msgid "da 51 a 83"
+msgstr "from 51 to 83"
+
+msgid "da 56 a 69"
+msgstr "from 56 to 69"
+
+msgid "da 70"
+msgstr "from 70"
+
+msgid "da 84 a 100"
+msgstr "from 84 to 100"
+
+msgid "da limitare"
+msgstr "to be limited"
+
+msgid "dd/MM/y HH:mm:ss"
+msgstr "d MMM y, HH:mm:ss"
+
+msgid "di cui saturi"
+msgstr "of which saturated"
+
+msgid "di cui zuccheri"
+msgstr "of which sugars"
+
+msgid "effetto termico"
+msgstr "thermic effect"
+
+#, python-format
+msgid "elimina %(eliminati)d · inserisce %(inseriti)d"
+msgstr "deletes %(eliminati)d · inserts %(inseriti)d"
+
+msgid ""
+"energia spesa per digerire l'alimento, in Kcal e in percentuale delle "
+"Kcal."
+msgstr "energy spent to digest the food, in Kcal and as a percentage of the Kcal."
+
+msgid "filtri attivi"
+msgstr "filters on"
+
+msgid "fino a 10"
+msgstr "up to 10"
+
+msgid "fino a 55"
+msgstr "up to 55"
+
+#, python-format
+msgid "foglio: %(nome)s"
+msgstr "sheet: %(nome)s"
+
+msgid "fruttosio diviso fibre: più è basso, meglio è."
+msgstr "fructose divided by fiber: the lower, the better."
+
+msgid "grammi"
+msgstr "grams"
+
+msgid "ignorata"
+msgstr "ignored"
+
+#, python-format
+msgid "mostrate le prime %(n)d"
+msgstr "first %(n)d shown"
+
+msgid "nessun fattore rilevante"
+msgstr "no relevant factor"
+
+msgid "nessun rischio classificato"
+msgstr "no classified risk"
+
+msgid "non classificato"
+msgstr "not classified"
+
+msgid "non leggibile"
+msgstr "not readable"
+
+msgid "oggi"
+msgstr "today"
+
+msgid "punto e virgola"
+msgstr "semicolon"
+
+msgid "senza categoria"
+msgstr "no category"
+
+#, python-format
+msgid "separatore: %(nome)s"
+msgstr "separator: %(nome)s"
+
+msgid "sintesi dei cinque rischi: 100 = tutti trascurabili, 0 = tutti alti."
+msgstr "summary of the five risks: 100 = all negligible, 0 = all high."
+
+#, python-format
+msgid "su %(totale)d nel database"
+msgstr "of %(totale)d in the database"
+
+msgid "tabulazione"
+msgstr "tab"
+
+msgid "un fattore lieve"
+msgstr "one mild factor"
+
+msgid "virgola"
+msgstr "comma"
+
+msgid "visitatore"
+msgstr "visitor"
+
+msgid "vuoto"
+msgstr "empty"
+
+#, python-format
+msgid ""
+"«%(nome)s» corrisponde a %(n)d alimenti: aggiungi la colonna Categoria "
+"per distinguerli"
+msgstr ""
+"“%(nome)s” matches %(n)d foods: add the Categoria column to tell them "
+"apart"
+
+#, python-format
+msgid "«%(nome)s» è già alla riga %(riga)d del file: valori uniti a quella riga"
+msgstr ""
+"“%(nome)s” is already at row %(riga)d of the file: values merged into "
+"that row"
+
+#, python-format
+msgid "➕ Aggiungi al pasto (%(grammi)s g)"
+msgstr "➕ Add to meal (%(grammi)s g)"
+

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-Database Alimenti - Analisi Completa
+{{ _('Database Alimenti - Analisi Completa') }}
 {% endblock %}
 
 {% block content %}
@@ -11,7 +11,7 @@ Database Alimenti - Analisi Completa
     {% set current_dir = request.args.get('dir', 'asc') %}
     {% set new_dir = 'desc' if current_sort == field and current_dir == 'asc' else 'asc' %}
 
-    <th class="{{ class }}">
+    <th class="{{ class }}"{% if current_sort == field %} aria-sort="{{ 'ascending' if current_dir == 'asc' else 'descending' }}"{% endif %}>
         <a
             href="{{ url_for(
                 'index',
@@ -38,16 +38,42 @@ Database Alimenti - Analisi Completa
 {% endmacro %}
 
 
-{% macro risk_badge(value) %}
-    {% if value %}
-        <span class="badge-risk stato-{{ stato_rischio(value) }}">{{ value }}</span>
-    {% else %}
+{# tradotti: livelli già tradotti (dalla tabella, per non tradurre a ogni riga) #}
+{% macro risk_badge(value, tradotti={}) -%}
+    {%- if value -%}
+        <span class="badge-risk stato-{{ stato_rischio(value) }}">{{ tradotti.get(value) or value|traduci }}</span>
+    {%- else -%}
         -
-    {% endif %}
+    {%- endif -%}
+{%- endmacro %}
+
+
+{% macro filtro(nome, etichetta, opzioni, tutti) %}
+    <div class="col-6 col-md-2">
+        <label class="form-label" for="filtro-{{ nome }}">{{ etichetta }}</label>
+
+        <select
+            name="{{ nome }}"
+            id="filtro-{{ nome }}"
+            class="form-select"
+            onchange="this.form.submit()"
+        >
+            <option value="">{{ tutti }}</option>
+
+            {% for opt in opzioni|default([]) %}
+                <option
+                    value="{{ opt.value }}"
+                    {% if request.args.get(nome, '') == opt.value %}selected{% endif %}
+                >
+                    {{ opt.label }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
 {% endmacro %}
 
 
-<h1 class="visually-hidden">Database alimenti</h1>
+<h1 class="visually-hidden">{{ _('Database alimenti') }}</h1>
 
 
 <form method="get" action="{{ url_for('index') }}" class="row g-2 mb-3">
@@ -55,139 +81,20 @@ Database Alimenti - Analisi Completa
     <input type="hidden" name="sort" value="{{ request.args.get('sort', 'alimento') }}">
     <input type="hidden" name="dir" value="{{ request.args.get('dir', 'asc') }}">
 
-    <div class="col-6 col-md-2">
-        <label class="form-label">Categoria</label>
-
-        <select
-            name="categoria"
-            class="form-select"
-            onchange="this.form.submit()"
-        >
-            <option value="">Tutte le categorie</option>
-
-            {% for opt in category_options|default([]) %}
-                <option
-                    value="{{ opt.value }}"
-                    {% if request.args.get('categoria', '') == opt.value %}selected{% endif %}
-                >
-                    {{ opt.label }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <div class="col-6 col-md-2">
-        <label class="form-label">Diabete</label>
-
-        <select
-            name="rischio_diabete"
-            class="form-select"
-            onchange="this.form.submit()"
-        >
-            <option value="">Tutti</option>
-
-            {% for opt in diabete_options|default([]) %}
-                <option
-                    value="{{ opt.value }}"
-                    {% if request.args.get('rischio_diabete', '') == opt.value %}selected{% endif %}
-                >
-                    {{ opt.label }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <div class="col-6 col-md-2">
-        <label class="form-label">Colesterolo</label>
-
-        <select
-            name="rischio_colesterolo"
-            class="form-select"
-            onchange="this.form.submit()"
-        >
-            <option value="">Tutti</option>
-
-            {% for opt in colesterolo_options|default([]) %}
-                <option
-                    value="{{ opt.value }}"
-                    {% if request.args.get('rischio_colesterolo', '') == opt.value %}selected{% endif %}
-                >
-                    {{ opt.label }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <div class="col-6 col-md-2">
-        <label class="form-label">Malassorbimento</label>
-
-        <select
-            name="rischio_malassorbimento"
-            class="form-select"
-            onchange="this.form.submit()"
-        >
-            <option value="">Tutti</option>
-
-            {% for opt in malassorbimento_options|default([]) %}
-                <option
-                    value="{{ opt.value }}"
-                    {% if request.args.get('rischio_malassorbimento', '') == opt.value %}selected{% endif %}
-                >
-                    {{ opt.label }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <div class="col-6 col-md-2">
-        <label class="form-label">Metabolico</label>
-
-        <select
-            name="rischio_metabolico"
-            class="form-select"
-            onchange="this.form.submit()"
-        >
-            <option value="">Tutti</option>
-
-            {% for opt in metabolic_options|default([]) %}
-                <option
-                    value="{{ opt.value }}"
-                    {% if request.args.get('rischio_metabolico', '') == opt.value %}selected{% endif %}
-                >
-                    {{ opt.label }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <div class="col-6 col-md-2">
-        <label class="form-label">Tumorale</label>
-
-        <select
-            name="rischio_tumorale"
-            class="form-select"
-            onchange="this.form.submit()"
-        >
-            <option value="">Tutti</option>
-
-            {% for opt in tumorale_options|default([]) %}
-                <option
-                    value="{{ opt.value }}"
-                    {% if request.args.get('rischio_tumorale', '') == opt.value %}selected{% endif %}
-                >
-                    {{ opt.label }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
+    {{ filtro('categoria', _('Categoria'), category_options, _('Tutte le categorie')) }}
+    {{ filtro('rischio_diabete', _('Diabete'), diabete_options, _('Tutti')) }}
+    {{ filtro('rischio_colesterolo', _('Colesterolo'), colesterolo_options, _('Tutti')) }}
+    {{ filtro('rischio_malassorbimento', _('Malassorbimento'), malassorbimento_options, _('Tutti')) }}
+    {{ filtro('rischio_metabolico', _('Metabolico'), metabolic_options, _('Tutti')) }}
+    {{ filtro('rischio_tumorale', _('Tumorale'), tumorale_options, _('Tutti')) }}
 
     <div class="col-12 d-flex justify-content-end gap-2">
         <button type="submit" class="btn btn-outline-secondary">
-            Filtra
+            {{ _('Filtra') }}
         </button>
 
         <a href="{{ url_for('index') }}" class="btn btn-link">
-            Reset
+            {{ _('Reset') }}
         </a>
     </div>
 
@@ -202,10 +109,10 @@ Database Alimenti - Analisi Completa
     <div class="col-6">
         <div class="card grafico-card h-100">
             <div class="card-body py-3">
-                <p class="stat-label">Alimenti visualizzati</p>
+                <p class="stat-label">{{ _('Alimenti visualizzati') }}</p>
                 <p class="stat-valore">{{ visualizzati }}</p>
                 <p class="stat-nota">
-                    su {{ total_alimenti }} nel database{% if filtri_attivi %} · filtri attivi{% endif %}
+                    {{ _('su %(totale)d nel database', totale=total_alimenti) }}{% if filtri_attivi %} · {{ _('filtri attivi') }}{% endif %}
                 </p>
             </div>
         </div>
@@ -214,14 +121,14 @@ Database Alimenti - Analisi Completa
     <div class="col-6">
         <div class="card grafico-card h-100">
             <div class="card-body py-3">
-                <p class="stat-label">Punteggio medio</p>
+                <p class="stat-label">{{ _('Punteggio medio') }}</p>
                 {% if punteggio_medio is not none %}
                     {% set liv_medio = livello_punteggio(punteggio_medio) %}
                     <p class="stat-valore">
                         {{ punteggio_medio }}<span class="stat-scala">/100</span>
                     </p>
                     <p class="stat-nota">
-                        <span class="badge-risk stato-{{ liv_medio.stato }}">{{ liv_medio.etichetta }}</span>
+                        <span class="badge-risk stato-{{ liv_medio.stato }}">{{ liv_medio.etichetta|traduci }}</span>
                     </p>
                 {% else %}
                     <p class="stat-valore">–</p>
@@ -237,13 +144,15 @@ Database Alimenti - Analisi Completa
     <div class="col-lg-5">
         <section class="card grafico-card" aria-labelledby="titolo-categorie">
             <div class="card-body">
-                <h2 class="grafico-titolo" id="titolo-categorie">Alimenti per categoria</h2>
+                <h2 class="grafico-titolo" id="titolo-categorie">{{ _('Alimenti per categoria') }}</h2>
                 <p class="grafico-sottotitolo">
-                    Numero di alimenti per categoria. Seleziona una barra per filtrare la tabella.
+                    {{ _('Numero di alimenti per categoria. Seleziona una barra per filtrare la tabella.') }}
                 </p>
 
                 <ul class="barre">
                     {% for c in grafico_categorie %}
+                        {% set nome_categoria = c.categoria|traduci %}
+                        {% set quanti = ngettext('%(num)d alimento', '%(num)d alimenti', c.n) %}
                         <li>
                             <a
                                 class="barra-riga"
@@ -258,11 +167,11 @@ Database Alimenti - Analisi Completa
                                     sort=sort,
                                     dir=dir
                                 ) }}"
-                                data-tooltip="{{ c.categoria }}"
-                                data-tooltip-valore="{{ c.n }} alimenti · {{ c.quota|percentuale }}"
-                                aria-label="{{ c.categoria }}: {{ c.n }} alimenti, {{ c.quota|percentuale }}. Filtra per questa categoria"
+                                data-tooltip="{{ nome_categoria }}"
+                                data-tooltip-valore="{{ quanti }} · {{ c.quota|percentuale }}"
+                                aria-label="{{ _('%(categoria)s: %(quanti)s, %(quota)s. Filtra per questa categoria', categoria=nome_categoria, quanti=quanti, quota=c.quota|percentuale) }}"
                             >
-                                <span class="barra-etichetta">{{ c.categoria }}</span>
+                                <span class="barra-etichetta">{{ nome_categoria }}</span>
                                 <span class="barra-traccia">
                                     <span class="barra" style="--v: {{ '%.2f'|format(c.larghezza) }}"></span>
                                     <span class="barra-valore">{{ c.n }}</span>
@@ -273,19 +182,19 @@ Database Alimenti - Analisi Completa
                 </ul>
 
                 <details class="vista-tabella">
-                    <summary>Mostra i dati in tabella</summary>
+                    <summary>{{ _('Mostra i dati in tabella') }}</summary>
                     <table class="table table-sm">
                         <thead>
                             <tr>
-                                <th scope="col">Categoria</th>
-                                <th scope="col" class="text-end">Alimenti</th>
-                                <th scope="col" class="text-end">Quota</th>
+                                <th scope="col">{{ _('Categoria') }}</th>
+                                <th scope="col" class="text-end">{{ _('Alimenti') }}</th>
+                                <th scope="col" class="text-end">{{ _('Quota') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for c in grafico_categorie %}
                                 <tr>
-                                    <td>{{ c.categoria }}</td>
+                                    <td>{{ c.categoria|traduci }}</td>
                                     <td class="text-end">{{ c.n }}</td>
                                     <td class="text-end">{{ c.quota|percentuale }}</td>
                                 </tr>
@@ -300,33 +209,36 @@ Database Alimenti - Analisi Completa
     <div class="col-lg-7">
         <section class="card grafico-card" aria-labelledby="titolo-rischi">
             <div class="card-body">
-                <h2 class="grafico-titolo" id="titolo-rischi">Livelli di rischio</h2>
+                <h2 class="grafico-titolo" id="titolo-rischi">{{ _('Livelli di rischio') }}</h2>
                 <p class="grafico-sottotitolo">
-                    Quota di alimenti per livello, per ciascuno dei cinque rischi.
+                    {{ _('Quota di alimenti per livello, per ciascuno dei cinque rischi.') }}
                 </p>
 
-                <ul class="legenda" aria-label="Legenda dei livelli">
+                <ul class="legenda" aria-label="{{ _('Legenda dei livelli') }}">
                     {% for liv in legenda_rischi %}
-                        <li class="legenda-voce stato-{{ liv.stato }}">{{ liv.etichetta }}</li>
+                        <li class="legenda-voce stato-{{ liv.stato }}">{{ liv.etichetta|traduci }}</li>
                     {% endfor %}
                 </ul>
 
                 <div class="impilate">
                     {% for r in grafico_rischi %}
+                        {% set nome_rischio = r.etichetta|traduci %}
                         <div class="impilata-riga">
-                            <span class="impilata-etichetta">{{ r.etichetta }}</span>
+                            <span class="impilata-etichetta">{{ nome_rischio }}</span>
 
                             <div class="impilata">
                                 {% for s in r.segmenti %}
+                                    {% set nome_livello = s.etichetta|traduci %}
+                                    {% set quanti = ngettext('%(num)d alimento', '%(num)d alimenti', s.n) %}
                                     <span
                                         class="segmento stato-{{ s.stato }}"
                                         style="--n: {{ s.n }}"
                                         tabindex="0"
                                         role="img"
-                                        aria-label="{{ r.etichetta }}, {{ s.etichetta }}: {{ s.n }} alimenti, {{ s.quota|percentuale }}"
-                                        data-tooltip="{{ r.etichetta }} · {{ s.etichetta }}"
+                                        aria-label="{{ nome_rischio }}, {{ nome_livello }}: {{ quanti }}, {{ s.quota|percentuale }}"
+                                        data-tooltip="{{ nome_rischio }} · {{ nome_livello }}"
                                         data-tooltip-stato="{{ s.stato }}"
-                                        data-tooltip-valore="{{ s.n }} alimenti · {{ s.quota|percentuale }}"
+                                        data-tooltip-valore="{{ quanti }} · {{ s.quota|percentuale }}"
                                     >{% if s.quota >= 18 %}{{ s.quota|percentuale(0) }}{% endif %}</span>
                                 {% endfor %}
                             </div>
@@ -335,14 +247,14 @@ Database Alimenti - Analisi Completa
                 </div>
 
                 <details class="vista-tabella">
-                    <summary>Mostra i dati in tabella</summary>
+                    <summary>{{ _('Mostra i dati in tabella') }}</summary>
                     <div class="table-responsive">
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th scope="col">Rischio</th>
+                                    <th scope="col">{{ _('Rischio') }}</th>
                                     {% for liv in legenda_rischi %}
-                                        <th scope="col" class="text-end">{{ liv.etichetta }}</th>
+                                        <th scope="col" class="text-end">{{ liv.etichetta|traduci }}</th>
                                     {% endfor %}
                                 </tr>
                             </thead>
@@ -350,10 +262,10 @@ Database Alimenti - Analisi Completa
                                 {% for r in grafico_rischi %}
                                     {% set per_livello = {} %}
                                     {% for s in r.segmenti %}
-                                        {% set _ = per_livello.update({s.chiave: s}) %}
+                                        {% set _aggiunto = per_livello.update({s.chiave: s}) %}
                                     {% endfor %}
                                     <tr>
-                                        <th scope="row">{{ r.etichetta }}</th>
+                                        <th scope="row">{{ r.etichetta|traduci }}</th>
                                         {% for liv in legenda_rischi %}
                                             {% set s = per_livello.get(liv.chiave) %}
                                             <td class="text-end">
@@ -378,9 +290,9 @@ Database Alimenti - Analisi Completa
             <section class="card grafico-card h-100" aria-labelledby="classifica-{{ medaglia.chiave }}">
                 <div class="card-body">
                     <h2 class="grafico-titolo" id="classifica-{{ medaglia.chiave }}">
-                        <span aria-hidden="true">{{ medaglia.icona }}</span> {{ medaglia.titolo }}
+                        <span aria-hidden="true">{{ medaglia.icona }}</span> {{ medaglia.titolo|traduci }}
                     </h2>
-                    <p class="grafico-sottotitolo">{{ medaglia.descrizione }}</p>
+                    <p class="grafico-sottotitolo">{{ medaglia.descrizione|traduci }}</p>
 
                     {% if voci %}
                         <ol class="classifica">
@@ -392,7 +304,7 @@ Database Alimenti - Analisi Completa
                             {% endfor %}
                         </ol>
                     {% else %}
-                        <p class="classifica-vuota">Nessun alimento con i filtri correnti.</p>
+                        <p class="classifica-vuota">{{ _('Nessun alimento con i filtri correnti.') }}</p>
                     {% endif %}
                 </div>
             </section>
@@ -401,173 +313,227 @@ Database Alimenti - Analisi Completa
 </div>
 
 <p class="text-muted small mb-3">
-    Nella tabella, le icone
-    {% for medaglia, _ in classifiche %}<span aria-hidden="true">{{ medaglia.icona }}</span> {% endfor %}
-    accanto al nome segnalano gli alimenti tra i primi {{ posti_medaglia }} dell'intero database in ciascuna classifica.
+    {% set icone %}{% for medaglia, _voci in classifiche %}<span aria-hidden="true">{{ medaglia.icona }}</span> {% endfor %}{% endset %}
+    {% trans icone=icone, n=posti_medaglia %}Nella tabella, le icone {{ icone }} accanto al nome segnalano gli alimenti tra i primi {{ n }} dell'intero database in ciascuna classifica.{% endtrans %}
 </p>
 {% endif %}
 
 
 <div class="barra-export">
     <h2 class="grafico-titolo mb-0" id="titolo-tabella">
-        Tabella <span class="text-muted fw-normal">· {{ visualizzati }} alimenti</span>
+        {{ _('Tabella') }} <span class="text-muted fw-normal">· {{ ngettext('%(num)d alimento', '%(num)d alimenti', visualizzati) }}</span>
     </h2>
 
     <div class="d-flex flex-wrap align-items-center gap-2" role="group" aria-labelledby="etichetta-export">
-        <span class="small text-muted" id="etichetta-export">Esporta{% if filtri_attivi %} con i filtri{% endif %}:</span>
+        <span class="small text-muted" id="etichetta-export">{% if filtri_attivi %}{{ _('Esporta con i filtri:') }}{% else %}{{ _('Esporta:') }}{% endif %}</span>
         <a href="{{ url_for('esporta', formato='csv', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>CSV</a>
         <a href="{{ url_for('esporta', formato='xlsx', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>Excel</a>
         <a href="{{ url_for('esporta', formato='pdf', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>PDF</a>
     </div>
 </div>
 
+{# Legenda compatta: i dettagli sono nella pagina Guida #}
+<details class="legenda-tabella">
+    <summary>{{ _('Come leggere la tabella') }}</summary>
+    <div class="legenda-tabella-corpo">
+        <div>
+            <p class="legenda-tabella-titolo">{{ _('Livelli di rischio') }}</p>
+            <ul class="legenda-livelli">
+                {% set significati = {
+                    'trascurabile': _('nessun fattore rilevante'),
+                    'basso': _('un fattore lieve'),
+                    'medio': _('con moderazione'),
+                    'alto': _('da limitare'),
+                } %}
+                {% for liv in LIVELLI_RISCHIO %}
+                    <li><span class="badge-risk stato-{{ liv.stato }}">{{ liv.etichetta|traduci }}</span> {{ significati[liv.chiave] }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <dl class="legenda-definizioni">
+            <dt>{{ _('Punteggio') }}</dt>
+            <dd>{{ _('sintesi dei cinque rischi: 100 = tutti trascurabili, 0 = tutti alti.') }}</dd>
+            <dt>{{ _('TEF') }}</dt>
+            <dd>{{ _("energia spesa per digerire l'alimento, in Kcal e in percentuale delle Kcal.") }}</dd>
+            <dt>{{ _('Kcal nette') }}</dt>
+            <dd>{{ _('Kcal meno TEF.') }}</dd>
+            <dt>{{ _('Rapporto F/F') }}</dt>
+            <dd>{{ _('fruttosio diviso fibre: più è basso, meglio è.') }}</dd>
+        </dl>
+        <p class="mb-0">
+            <a href="{{ url_for('guida') }}">{{ _('Guida completa: soglie, calcoli e fonti') }}</a>
+        </p>
+    </div>
+</details>
+
+{# Su schermi piccoli la tabella diventa un elenco di schede senza intestazioni:
+   l'ordinamento si sceglie da qui #}
+<form method="get" action="{{ url_for('index') }}" class="ordina-mobile d-md-none">
+    {% for campo in ('categoria', 'rischio_diabete', 'rischio_colesterolo', 'rischio_malassorbimento', 'rischio_metabolico', 'rischio_tumorale') %}
+        {% if request.args.get(campo) %}
+            <input type="hidden" name="{{ campo }}" value="{{ request.args.get(campo) }}">
+        {% endif %}
+    {% endfor %}
+    <label class="form-label" for="ordina-mobile">{{ _('Ordina per') }}</label>
+    <div class="d-flex gap-2">
+        <select class="form-select" id="ordina-mobile" name="sort" onchange="this.form.submit()">
+            {% for campo, etichetta in [
+                ('alimento', _('Alimento')), ('categoria', _('Categoria')), ('punteggio', _('Punteggio')),
+                ('kcal', _('Kcal')), ('kcal_nette', _('Kcal nette')), ('tef_percent', _('TEF (%%)')),
+                ('fruttosio', _('Fruttosio')), ('fibre', _('Fibre')), ('rapporto', _('Rapporto F/F')),
+                ('rischio_diabete', _('Diabete')), ('rischio_colesterolo', _('Colesterolo')),
+                ('rischio_malassorbimento', _('Malassorbimento')), ('rischio_metabolico', _('Metabolico')),
+                ('rischio_tumorale', _('Tumorale')),
+            ] %}
+                <option value="{{ campo }}" {% if sort == campo %}selected{% endif %}>{{ etichetta }}</option>
+            {% endfor %}
+        </select>
+        <select class="form-select ordina-direzione" name="dir" aria-label="{{ _('Direzione') }}" onchange="this.form.submit()">
+            <option value="asc" {% if dir == 'asc' %}selected{% endif %}>{{ _('Crescente') }}</option>
+            <option value="desc" {% if dir == 'desc' %}selected{% endif %}>{{ _('Decrescente') }}</option>
+        </select>
+        <noscript><button type="submit" class="btn btn-outline-secondary">{{ _('Ordina') }}</button></noscript>
+    </div>
+</form>
+
+<div class="d-none d-md-flex justify-content-end mb-2">
+    <button type="button" class="btn btn-sm btn-outline-secondary" id="mostra-colonne" aria-pressed="false" hidden>
+        {{ _('Mostra tutte le colonne') }}
+    </button>
+</div>
+
+{# Testi uguali in ogni riga: tradotti una volta sola (la tabella ha più di 1000 righe) #}
+{% set T = {
+    'kcal': _('Kcal'), 'tef_kcal': _('TEF (Kcal)'), 'tef_percent': _('TEF (%%)'),
+    'kcal_nette': _('Kcal nette'), 'fruttosio': _('Fruttosio (g)'), 'fibre': _('Fibre (g)'),
+    'rapporto': _('Rapporto F/F'), 'colesterolo': _('Colesterolo'), 'diabete': _('Diabete'),
+    'malassorbimento': _('Malassorbimento'), 'metabolico': _('Metabolico'), 'tumorale': _('Tumorale'),
+    'modifica': _('Modifica'), 'elimina': _('Elimina'), 'elimina_alimento': _('Elimina alimento'),
+} %}
+{% set LIVELLI_TRADOTTI = {} %}
+{% set TITOLI_LIVELLO = {} %}
+{% for liv in LIVELLI_RISCHIO %}
+    {% set _aggiunto = LIVELLI_TRADOTTI.update({liv.etichetta: liv.etichetta|traduci}) %}
+    {% set _aggiunto = TITOLI_LIVELLO.update({liv.etichetta: _('Livello medio: %(livello)s', livello=liv.etichetta|traduci)}) %}
+{% endfor %}
+{% set CATEGORIE_TRADOTTE = {} %}
+
+{# Etichette dei valori nelle schede su mobile: una regola per colonna invece
+   di un attributo in ogni cella #}
+<style>
+@media (max-width: 767.98px) {
+{%- for colonna in ('kcal', 'tef_kcal', 'tef_percent', 'kcal_nette', 'fruttosio', 'fibre', 'rapporto', 'colesterolo', 'diabete', 'malassorbimento', 'metabolico', 'tumorale') %}
+    .tabella-alimenti .col-{{ colonna }}::before { content: {{ T[colonna]|css_testo }} " "; }
+{%- endfor %}
+}
+</style>
+
 <div class="card table-card">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0" aria-labelledby="titolo-tabella">
+        <table class="table table-hover align-middle mb-0 tabella-alimenti" aria-labelledby="titolo-tabella">
             <thead>
                 <tr>
-                    {{ th_sortable('alimento', 'Alimento') }}
-                    {{ th_sortable('categoria', 'Categoria') }}
-                    {{ th_sortable('punteggio', 'Punteggio', 'text-end') }}
+                    {{ th_sortable('alimento', _('Alimento')) }}
+                    {{ th_sortable('categoria', _('Categoria')) }}
+                    {{ th_sortable('punteggio', _('Punteggio'), 'text-end') }}
 
-                    {{ th_sortable('kcal', 'Kcal', 'text-end') }}
-                    {{ th_sortable('tef_kcal', 'TEF (Kcal)', 'text-end') }}
-                    {{ th_sortable('tef_percent', 'TEF (%)', 'text-end') }}
-                    {{ th_sortable('kcal_nette', 'Kcal Nette', 'text-end') }}
+                    {{ th_sortable('kcal', _('Kcal'), 'text-end') }}
+                    {{ th_sortable('tef_kcal', _('TEF (Kcal)'), 'text-end col-secondaria') }}
+                    {{ th_sortable('tef_percent', _('TEF (%%)'), 'text-end col-secondaria') }}
+                    {{ th_sortable('kcal_nette', _('Kcal Nette'), 'text-end') }}
 
-                    {{ th_sortable('fruttosio', 'Fruttosio (g)', 'text-end') }}
-                    {{ th_sortable('fibre', 'Fibre (g)', 'text-end') }}
-                    {{ th_sortable('rapporto', 'Rapporto F/F', 'text-end') }}
+                    {{ th_sortable('fruttosio', _('Fruttosio (g)'), 'text-end col-secondaria') }}
+                    {{ th_sortable('fibre', _('Fibre (g)'), 'text-end col-secondaria') }}
+                    {{ th_sortable('rapporto', _('Rapporto F/F'), 'text-end col-secondaria') }}
 
-                    {{ th_sortable('rischio_colesterolo', 'Colesterolo') }}
-                    {{ th_sortable('rischio_diabete', 'Diabete') }}
-                    {{ th_sortable('rischio_malassorbimento', 'Malassorb.') }}
-                    {{ th_sortable('rischio_metabolico', 'Metabolico') }}
-                    {{ th_sortable('rischio_tumorale', 'Tumorale') }}
+                    {{ th_sortable('rischio_colesterolo', _('Colesterolo')) }}
+                    {{ th_sortable('rischio_diabete', _('Diabete')) }}
+                    {{ th_sortable('rischio_malassorbimento', _('Malassorb.')) }}
+                    {{ th_sortable('rischio_metabolico', _('Metabolico')) }}
+                    {{ th_sortable('rischio_tumorale', _('Tumorale')) }}
 
                     {% if current_user.is_admin %}
-                        <th class="text-end">Azioni</th>
+                        <th class="text-end">{{ _('Azioni') }}</th>
                     {% endif %}
                 </tr>
             </thead>
 
             <tbody>
-                {% for a in alimenti %}
+                {%- for a in alimenti %}
+                    {%- if a.categoria and a.categoria not in CATEGORIE_TRADOTTE %}
+                        {%- set _aggiunta = CATEGORIE_TRADOTTE.update({a.categoria: a.categoria|traduci}) %}
+                    {%- endif %}
                     <tr>
-                        <td>
+                        <td class="col-nome">
                             <a class="nome-alimento" href="{{ url_for('scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
                             {%- if a.medaglie %}
-                                {% set titoli = a.medaglie|map(attribute='titolo')|join(', ') %}
+                                {% set titoli = a.medaglie|map(attribute='titolo')|map('traduci')|join(', ') %}
+                                {% set descrizione_medaglie = _('Tra i primi %(n)d: %(titoli)s', n=posti_medaglia, titoli=titoli) %}
                                 <span
                                     class="medaglie"
                                     role="img"
-                                    aria-label="Tra i primi {{ posti_medaglia }}: {{ titoli }}"
-                                    title="Tra i primi {{ posti_medaglia }}: {{ titoli }}"
+                                    aria-label="{{ descrizione_medaglie }}"
+                                    title="{{ descrizione_medaglie }}"
                                 >{% for m in a.medaglie %}{{ m.icona }}{% endfor %}</span>
                             {%- endif %}
                         </td>
-
-                        <td>
-                            {{ a.categoria or '-' }}
+                        <td class="col-categoria">{{ CATEGORIE_TRADOTTE.get(a.categoria) or '-' }}</td>
+                        <td class="text-end col-punteggio">
+                            {%- if a.punteggio is not none %}
+                                {%- set liv = livello_punteggio(a.punteggio) %}
+                                <span class="punteggio stato-{{ liv.stato }}" title="{{ TITOLI_LIVELLO[liv.etichetta] }}">{{ a.punteggio }}</span>
+                            {%- else %}-{% endif -%}
                         </td>
-
-                        <td class="text-end">
-                            {% if a.punteggio is not none %}
-                                {% set liv = livello_punteggio(a.punteggio) %}
-                                <span class="punteggio stato-{{ liv.stato }}" title="Livello medio: {{ liv.etichetta }}">{{ a.punteggio }}</span>
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-
-                        <td class="text-end">
-                            {{ '%g'|format(a.kcal or 0) }}
-                        </td>
-
-                        <td class="text-end">
-                            {{ '%g'|format(a.tef_kcal or 0) }}
-                        </td>
-
-                        <td class="text-end">
-                            {{ '%g'|format(a.tef_percent or 0) }}
-                        </td>
-
-                        <td class="text-end">
-                            {{ '%g'|format(a.kcal_nette or 0) }}
-                        </td>
-
-                        <td class="text-end">
-                            {{ '%.2f'|format(a.fruttosio or 0) }}
-                        </td>
-
-                        <td class="text-end">
-                            {{ '%.2f'|format(a.fibre or 0) }}
-                        </td>
-
-                        <td class="text-end">
-                            {{ '%.2f'|format(a.rapporto or 0) }}
-                        </td>
-
-                        <td>
-                            {{ risk_badge(a.rischio_colesterolo) }}
-                        </td>
-
-                        <td>
-                            {{ risk_badge(a.rischio_diabete) }}
-                        </td>
-
-                        <td>
-                            {{ risk_badge(a.rischio_malassorbimento) }}
-                        </td>
-
-                        <td>
-                            {{ risk_badge(a.rischio_metabolico) }}
-                        </td>
-
-                        <td>
-                            {{ risk_badge(a.rischio_tumorale) }}
-                        </td>
-
-                        {% if current_user.is_admin %}
-                        <td class="text-end actions-cell">
+                        <td class="text-end col-valore col-kcal">{{ (a.kcal or 0)|numero }}</td>
+                        <td class="text-end col-valore col-secondaria col-tef_kcal">{{ (a.tef_kcal or 0)|numero }}</td>
+                        <td class="text-end col-valore col-secondaria col-tef_percent">{{ (a.tef_percent or 0)|numero }}</td>
+                        <td class="text-end col-valore col-kcal_nette">{{ (a.kcal_nette or 0)|numero }}</td>
+                        <td class="text-end col-valore col-secondaria col-fruttosio">{{ (a.fruttosio or 0)|numero(2) }}</td>
+                        <td class="text-end col-valore col-secondaria col-fibre">{{ (a.fibre or 0)|numero(2) }}</td>
+                        <td class="text-end col-valore col-secondaria col-rapporto">{{ (a.rapporto or 0)|numero(2) }}</td>
+                        <td class="col-rischio col-colesterolo">{{ risk_badge(a.rischio_colesterolo, LIVELLI_TRADOTTI) }}</td>
+                        <td class="col-rischio col-diabete">{{ risk_badge(a.rischio_diabete, LIVELLI_TRADOTTI) }}</td>
+                        <td class="col-rischio col-malassorbimento">{{ risk_badge(a.rischio_malassorbimento, LIVELLI_TRADOTTI) }}</td>
+                        <td class="col-rischio col-metabolico">{{ risk_badge(a.rischio_metabolico, LIVELLI_TRADOTTI) }}</td>
+                        <td class="col-rischio col-tumorale">{{ risk_badge(a.rischio_tumorale, LIVELLI_TRADOTTI) }}</td>
+                        {%- if current_user.is_admin %}
+                        <td class="text-end actions-cell col-azioni">
                             <div class="d-inline-flex gap-1">
                                 <a
                                     href="{{ url_for('modifica', alimento_id=a.id) }}"
                                     class="btn btn-sm btn-outline-primary"
-                                    title="Modifica"
-                                >
-                                    ✏️
-                                </a>
-
+                                    title="{{ T.modifica }}"
+                                    aria-label="{{ _('Modifica %(nome)s', nome=a.alimento) }}"
+                                >✏️</a>
                                 <form
                                     action="{{ url_for('elimina', alimento_id=a.id) }}"
                                     method="post"
                                     class="d-inline"
-                                    onsubmit="return confirm('Vuoi eliminare questo alimento?');"
+                                    data-conferma="{{ _('Eliminare «%(nome)s» dal database? Puoi recuperarlo solo da un backup.', nome=a.alimento) }}"
+                                    data-conferma-titolo="{{ T.elimina_alimento }}"
+                                    data-conferma-pulsante="{{ T.elimina }}"
                                 >
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button
                                         type="submit"
                                         class="btn btn-sm btn-outline-danger"
-                                        title="Elimina"
-                                    >
-                                        🗑️
-                                    </button>
+                                        title="{{ T.elimina }}"
+                                        aria-label="{{ _('Elimina %(nome)s', nome=a.alimento) }}"
+                                    >🗑️</button>
                                 </form>
                             </div>
                         </td>
-                        {% endif %}
+                        {%- endif %}
                     </tr>
-                {% else %}
+                {%- else %}
                     <tr>
                         <td colspan="{{ 16 if current_user.is_admin else 15 }}" class="text-center py-4">
-                            Nessun alimento trovato con i filtri correnti.
+                            {{ _('Nessun alimento trovato con i filtri correnti.') }}
                         </td>
                     </tr>
-                {% endfor %}
+                {%- endfor %}
             </tbody>
         </table>
     </div>
 </div>
-
 {% endblock %}

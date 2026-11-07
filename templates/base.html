@@ -1,9 +1,15 @@
 <!doctype html>
-<html lang="it">
+<html lang="{{ lingua }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Database Alimenti{% endblock %}</title>
+    <title>{% block title %}{{ _('Database Alimenti') }}{% endblock %}</title>
+    <meta name="description" content="{{ _('Database degli alimenti con semaforo dei rischi per la salute, valori nutrizionali e TEF.') }}">
+    <meta name="theme-color" content="#006644">
+    <link rel="manifest" href="{{ url_for('pwa.manifest') }}" crossorigin="use-credentials">
+    <link rel="icon" href="{{ url_for('static', filename='icone/icona.svg') }}" type="image/svg+xml">
+    <link rel="icon" href="{{ url_for('static', filename='icone/icona-192.png') }}" sizes="192x192" type="image/png">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icone/apple-touch-icon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-italia/css/bootstrap-italia.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-italia/css/fonts.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
@@ -16,74 +22,100 @@
                 if (tema === "light" || tema === "dark") {
                     document.documentElement.setAttribute("data-theme", tema);
                 }
+                if (localStorage.getItem("tutte-colonne") === "1") {
+                    document.documentElement.classList.add("tutte-colonne");
+                }
             } catch (errore) {}
         })();
     </script>
 </head>
-<body>
+{# Dopo l'uscita dall'account la pagina chiede al service worker di cancellare le pagine salvate #}
+{% set svuota_cache = not precarica and session.pop('svuota_cache', False) %}
+<body
+    data-sw="{{ url_for('pwa.service_worker') }}"
+    {% if svuota_cache %}data-svuota-cache{% endif %}
+>
+    <a class="visually-hidden-focusable salta-al-contenuto" href="#contenuto">{{ _('Vai al contenuto') }}</a>
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('index') }}">
-                🥗 Database Alimenti
+                🥗 {{ _('Database Alimenti') }}
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="{{ _('Apri il menu') }}">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
                 <div class="navbar-nav ms-auto">
                     <a class="nav-link" href="{{ url_for('index') }}">
-                        Tabella
+                        {{ _('Tabella') }}
                     </a>
 
                     {% set voci_pasto = session.get('pasto', [])|length %}
                     <a class="nav-link" href="{{ url_for('pasto') }}">
-                        Pasto{% if voci_pasto %} <span class="contatore-pasto" aria-label="{{ voci_pasto }} alimenti nel pasto">{{ voci_pasto }}</span>{% endif %}
+                        {{ _('Pasto') }}{% if voci_pasto %} <span class="contatore-pasto" aria-label="{{ ngettext('%(num)d alimento nel pasto', '%(num)d alimenti nel pasto', voci_pasto) }}">{{ voci_pasto }}</span>{% endif %}
                     </a>
 
                     {% if current_user.is_authenticated %}
                         <a class="nav-link" href="{{ url_for('diario') }}">
-                            Diario
+                            {{ _('Diario') }}
                         </a>
                     {% endif %}
 
+                    <a class="nav-link" href="{{ url_for('guida') }}">
+                        {{ _('Guida') }}
+                    </a>
+
                     {% if current_user.is_admin %}
                         <a class="nav-link" href="{{ url_for('nuovo') }}">
-                            Nuovo alimento
+                            {{ _('Nuovo alimento') }}
                         </a>
 
                         <a class="nav-link" href="{{ url_for('importa') }}">
-                            Importa
+                            {{ _('Importa') }}
                         </a>
 
                         <a class="nav-link" href="{{ url_for('backup_pagina') }}">
-                            Backup
+                            {{ _('Backup') }}
                         </a>
                     {% endif %}
 
                     {% if current_user.is_authenticated %}
                         <span class="navbar-text text-white ms-lg-3">
                             👤 {{ current_user.username }}
-                            <small class="opacity-75">({{ current_user.ruolo }})</small>
+                            <small class="opacity-75">({{ current_user.ruolo|traduci }})</small>
                         </span>
 
                         <form method="post" action="{{ url_for('logout') }}" class="d-inline">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="nav-link btn btn-link border-0">
-                                Esci
+                                {{ _('Esci') }}
                             </button>
                         </form>
                     {% elif request.endpoint != 'login' %}
                         <a class="nav-link" href="{{ url_for('login', next=request.full_path.rstrip('?')) }}">
-                            Accedi
+                            {{ _('Accedi') }}
                         </a>
                     {% endif %}
+
+                    {% for codice, nome in LINGUE.items() if codice != lingua %}
+                        <a
+                            class="nav-link cambia-lingua"
+                            href="{{ url_for('cambia_lingua', codice=codice, next=request.full_path.rstrip('?')) }}"
+                            lang="{{ codice }}"
+                            hreflang="{{ codice }}"
+                            title="{{ nome }}"
+                        >
+                            <span aria-hidden="true">🌐</span> {{ codice|upper }}<span class="visually-hidden"> – {{ nome }}</span>
+                        </a>
+                    {% endfor %}
 
                     <button
                         type="button"
                         id="tema-toggle"
                         class="nav-link btn btn-link border-0 tema-toggle"
-                        aria-label="Passa alla modalità scura"
-                        title="Passa alla modalità scura"
+                        aria-label="{{ _('Passa alla modalità scura') }}"
+                        title="{{ _('Passa alla modalità scura') }}"
                         aria-pressed="false"
                     >
                         <span class="tema-icona" aria-hidden="true">🌙</span>
@@ -92,19 +124,46 @@
             </div>
         </div>
     </nav>
-    <div class="container mb-5">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Chiudi"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+
+    {# Notifiche: senza JavaScript restano nella pagina come avvisi; con JavaScript
+       diventano toast in un angolo (quelle di errore restano finché non si chiudono) #}
+    {% with messages = [] if precarica else get_flashed_messages(with_categories=true) %}
+        <div class="container">
+        <div class="notifiche" id="notifiche">
+            {% for categoria, messaggio in messages %}
+                {% set tipo = categoria if categoria in ('success', 'danger', 'warning', 'info') else 'info' %}
+                <div class="notifica notifica-{{ tipo }}" data-tipo="{{ tipo }}">
+                    <span class="notifica-icona" aria-hidden="true">{{ {'success': '✓', 'danger': '!', 'warning': '!', 'info': 'i'}[tipo] }}</span>
+                    <p class="notifica-testo">
+                        <span class="visually-hidden">{{ {'success': _('Fatto:'), 'danger': _('Errore:'), 'warning': _('Attenzione:'), 'info': _('Informazione:')}[tipo] }}</span>
+                        {{ messaggio }}
+                    </p>
+                    <button type="button" class="notifica-chiudi" aria-label="{{ _('Chiudi la notifica') }}" hidden>
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+        </div>
+    {% endwith %}
+
+    <main class="container mb-5" id="contenuto" tabindex="-1">
         {% block content %}{% endblock %}
-    </div>
+    </main>
+
+    {# Finestra di conferma per i form con data-conferma (eliminazioni, ripristini) #}
+    <dialog class="dialogo" id="dialogo-conferma" aria-labelledby="dialogo-titolo" aria-describedby="dialogo-testo">
+        <form method="dialog">
+            <h2 class="dialogo-titolo" id="dialogo-titolo">{{ _('Conferma') }}</h2>
+            <p class="dialogo-testo" id="dialogo-testo"></p>
+            <div class="dialogo-azioni">
+                <button type="submit" value="annulla" class="btn btn-outline-secondary" id="dialogo-annulla">{{ _('Annulla') }}</button>
+                <button type="submit" value="conferma" class="btn btn-danger" id="dialogo-conferma-pulsante">{{ _('Conferma') }}</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script id="testi-js" type="application/json">{{ testi_js|tojson }}</script>
     <script src="{{ url_for('static', filename='bootstrap-italia/js/bootstrap-italia.bundle.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block scripts %}{% endblock %}

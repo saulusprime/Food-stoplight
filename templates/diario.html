@@ -1,81 +1,81 @@
 {% extends "base.html" %}
 
 {% block title %}
-Diario alimentare
+{{ _('Diario alimentare') }}
 {% endblock %}
 
 {% block content %}
 
 <div class="page-header">
-    <h1>📔 Diario alimentare</h1>
-    <p>{{ giorno|data_estesa|capitalize }}{% if giorno == oggi %} · oggi{% endif %}</p>
+    <h1>📔 {{ _('Diario alimentare') }}</h1>
+    <p>{{ giorno|data_estesa|capitalize }}{% if giorno == oggi %} · {{ _('oggi') }}{% endif %}</p>
 </div>
 
-<nav class="barra-giorni mb-3" aria-label="Scegli il giorno">
+<nav class="barra-giorni mb-3" aria-label="{{ _('Scegli il giorno') }}">
     <a href="{{ url_for('diario', data=precedente.isoformat()) }}" class="btn btn-sm btn-outline-secondary">← {{ precedente|data_breve }}</a>
 
     <form method="get" class="d-flex gap-2 align-items-center">
-        <label for="data-diario" class="visually-hidden">Giorno</label>
+        <label for="data-diario" class="visually-hidden">{{ _('Giorno') }}</label>
         <input type="date" class="form-control form-control-sm" id="data-diario" name="data" value="{{ giorno.isoformat() }}">
-        <button type="submit" class="btn btn-sm btn-outline-primary">Vai</button>
+        <button type="submit" class="btn btn-sm btn-outline-primary">{{ _('Vai') }}</button>
     </form>
 
     <a href="{{ url_for('diario', data=successivo.isoformat()) }}" class="btn btn-sm btn-outline-secondary">{{ successivo|data_breve }} →</a>
 
     {% if giorno != oggi %}
-        <a href="{{ url_for('diario') }}" class="btn btn-sm btn-link">Oggi</a>
+        <a href="{{ url_for('diario') }}" class="btn btn-sm btn-link">{{ _('Oggi') }}</a>
     {% endif %}
 </nav>
 
 {% include "_elenco_alimenti.html" %}
 
 <section class="card card-form shadow-sm p-4 mb-3" aria-labelledby="titolo-aggiungi-diario">
-    <h2 class="grafico-titolo" id="titolo-aggiungi-diario">Aggiungi al diario</h2>
+    <h2 class="grafico-titolo" id="titolo-aggiungi-diario">{{ _('Aggiungi al diario') }}</h2>
 
     <form method="post" action="{{ url_for('diario_aggiungi') }}" class="row g-2 align-items-end">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="data" value="{{ giorno.isoformat() }}">
 
         <div class="col-6 col-md-2">
-            <label for="pasto-diario" class="form-label">Pasto</label>
+            <label for="pasto-diario" class="form-label">{{ _('Pasto') }}</label>
             <select class="form-select" id="pasto-diario" name="pasto">
                 {% for chiave, etichetta in nutrienti.PASTI %}
-                    <option value="{{ chiave }}" {% if chiave == pasto_suggerito %}selected{% endif %}>{{ etichetta }}</option>
+                    <option value="{{ chiave }}" {% if chiave == pasto_suggerito %}selected{% endif %}>{{ etichetta|traduci }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="col-6 col-md-2 order-md-last">
-            <button type="submit" class="btn btn-primary w-100">Aggiungi</button>
+            <button type="submit" class="btn btn-primary w-100">{{ _('Aggiungi') }}</button>
         </div>
 
         <div class="col-8 col-md-6">
-            <label for="cerca-diario" class="form-label">Alimento</label>
+            <label for="cerca-diario" class="form-label">{{ _('Alimento') }}</label>
             <input type="text" class="form-control" id="cerca-diario" name="cerca" list="elenco-alimenti"
-                   autocomplete="off" placeholder="Scrivi per cercare" required>
+                   autocomplete="off" placeholder="{{ _('Scrivi per cercare') }}" required>
         </div>
 
         <div class="col-4 col-md-2">
-            <label for="grammi-diario" class="form-label">Grammi</label>
+            <label for="grammi-diario" class="form-label">{{ _('Grammi') }}</label>
             <input type="number" class="form-control" id="grammi-diario" name="grammi" value="100"
                    min="{{ nutrienti.GRAMMI_MIN }}" max="{{ nutrienti.GRAMMI_MAX }}" step="any" required>
         </div>
     </form>
 
     <p class="small text-muted mt-2 mb-0">
-        Puoi anche comporre un pasto in <a href="{{ url_for('pasto') }}">Pasto</a> e salvarlo qui in un colpo solo.
+        {% trans url=url_for('pasto') %}Puoi anche comporre un pasto in <a href="{{ url }}">Pasto</a> e salvarlo qui in un colpo solo.{% endtrans %}
     </p>
 </section>
 
 {% set ns = namespace(voci=0) %}
-{% for _, _, voci, _ in per_pasto %}{% set ns.voci = ns.voci + voci|length %}{% endfor %}
+{% for _chiave, _etichetta, voci, _kcal in per_pasto %}{% set ns.voci = ns.voci + voci|length %}{% endfor %}
 
 {% if ns.voci %}
     <section class="card table-card mb-3" aria-labelledby="titolo-voci">
         <div class="card-body pb-2">
-            <h2 class="grafico-titolo" id="titolo-voci">Cosa hai mangiato</h2>
+            <h2 class="grafico-titolo" id="titolo-voci">{{ _('Cosa hai mangiato') }}</h2>
             <p class="grafico-sottotitolo mb-0">
-                I valori sono quelli dell'alimento al momento dell'inserimento.
+                {{ _("I valori sono quelli dell'alimento al momento dell'inserimento.") }}
             </p>
         </div>
 
@@ -83,19 +83,19 @@ Diario alimentare
             <table class="table align-middle mb-0 tabella-diario">
                 <thead>
                     <tr>
-                        <th scope="col">Alimento</th>
-                        <th scope="col" class="text-end">Grammi</th>
-                        <th scope="col" class="text-end">Kcal</th>
-                        <th scope="col" class="text-end">Kcal nette</th>
-                        <th scope="col" class="text-end">TEF</th>
-                        <th scope="col"><span class="visually-hidden">Azioni</span></th>
+                        <th scope="col">{{ _('Alimento') }}</th>
+                        <th scope="col" class="text-end">{{ _('Grammi') }}</th>
+                        <th scope="col" class="text-end">{{ _('Kcal') }}</th>
+                        <th scope="col" class="text-end">{{ _('Kcal nette') }}</th>
+                        <th scope="col" class="text-end">{{ _('TEF') }}</th>
+                        <th scope="col"><span class="visually-hidden">{{ _('Azioni') }}</span></th>
                     </tr>
                 </thead>
 
                 {% for chiave, etichetta, voci, kcal_pasto in per_pasto if voci %}
                     <tbody>
                         <tr class="riga-pasto">
-                            <th scope="rowgroup" colspan="6">{{ etichetta }} <span class="fw-normal text-muted">· {{ kcal_pasto|round(0)|numero }} Kcal</span></th>
+                            <th scope="rowgroup" colspan="6">{{ etichetta|traduci }} <span class="fw-normal text-muted">· {{ kcal_pasto|round(0)|numero }} Kcal</span></th>
                         </tr>
 
                         {% for v in voci %}
@@ -105,26 +105,32 @@ Diario alimentare
                                     {% if v.alimento_id in collegati %}
                                         <a href="{{ url_for('scheda', alimento_id=v.alimento_id, grammi=v.grammi) }}">{{ v.alimento }}</a>
                                     {% else %}
-                                        {{ v.alimento }} <small class="text-muted">(non più nel database)</small>
+                                        {{ v.alimento }} <small class="text-muted">{{ _('(non più nel database)') }}</small>
                                     {% endif %}
                                 </td>
                                 <td class="text-end">
                                     <form method="post" action="{{ url_for('diario_aggiorna', voce_id=v.id) }}" class="modulo-grammi">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <label class="visually-hidden" for="grammi-voce-{{ v.id }}">Grammi di {{ v.alimento }}</label>
+                                        <label class="visually-hidden" for="grammi-voce-{{ v.id }}">{{ _('Grammi di %(nome)s', nome=v.alimento) }}</label>
                                         <input type="number" class="form-control form-control-sm campo-grammi" id="grammi-voce-{{ v.id }}"
                                                name="grammi" value="{{ v.grammi|round(1)|numero|replace(',', '.') }}"
                                                min="{{ nutrienti.GRAMMI_MIN }}" max="{{ nutrienti.GRAMMI_MAX }}" step="any" required>
-                                        <button type="submit" class="btn btn-sm btn-outline-primary" aria-label="Salva i grammi di {{ v.alimento }}">Salva</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary" aria-label="{{ _('Salva i grammi di %(nome)s', nome=v.alimento) }}">{{ _('Salva') }}</button>
                                     </form>
                                 </td>
                                 <td class="text-end">{{ ((v.item.kcal or 0) * fattore)|round(0)|numero }}</td>
                                 <td class="text-end">{{ ((v.item.kcal_nette or 0) * fattore)|round(0)|numero }}</td>
                                 <td class="text-end">{{ ((v.item.tef_kcal or 0) * fattore)|round(0)|numero }}</td>
                                 <td class="text-end">
-                                    <form method="post" action="{{ url_for('diario_elimina', voce_id=v.id) }}">
+                                    <form
+                                        method="post"
+                                        action="{{ url_for('diario_elimina', voce_id=v.id) }}"
+                                        data-conferma="{{ _('Eliminare «%(nome)s» (%(grammi)s g) dal diario di questo giorno?', nome=v.alimento, grammi=v.grammi|numero) }}"
+                                        data-conferma-titolo="{{ _('Elimina dal diario') }}"
+                                        data-conferma-pulsante="{{ _('Elimina') }}"
+                                    >
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Elimina {{ v.alimento }} dal diario">Elimina</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="{{ _('Elimina %(nome)s dal diario', nome=v.alimento) }}">{{ _('Elimina') }}</button>
                                     </form>
                                 </td>
                             </tr>
@@ -135,29 +141,29 @@ Diario alimentare
         </div>
     </section>
 
-    {% with prefisso="giorno", titolo="della giornata" %}
+    {% with prefisso="giorno", titolo_nutrienti=_('Nutrienti della giornata'), titolo_profilo=_('Profilo di rischio della giornata') %}
         {% include "_riepilogo_pasto.html" %}
     {% endwith %}
 {% else %}
     <div class="card grafico-card mb-3">
         <div class="card-body">
-            <p class="mb-0">Nessun alimento registrato per questo giorno.</p>
+            <p class="mb-0">{{ _('Nessun alimento registrato per questo giorno.') }}</p>
         </div>
     </div>
 {% endif %}
 
 <section class="card grafico-card mt-3" aria-labelledby="titolo-settimana">
     <div class="card-body">
-        <h2 class="grafico-titolo" id="titolo-settimana">Ultimi {{ settimana|length }} giorni</h2>
-        <p class="grafico-sottotitolo">Kcal nette per giorno; accanto, il TEF.</p>
+        <h2 class="grafico-titolo" id="titolo-settimana">{{ _('Ultimi %(n)d giorni', n=settimana|length) }}</h2>
+        <p class="grafico-sottotitolo">{{ _('Kcal nette per giorno; accanto, il TEF.') }}</p>
 
         <table class="table table-sm mb-0 tabella-settimana">
             <thead>
                 <tr>
-                    <th scope="col">Giorno</th>
-                    <th scope="col" class="w-50">Kcal nette</th>
-                    <th scope="col" class="text-end">Kcal nette</th>
-                    <th scope="col" class="text-end">TEF</th>
+                    <th scope="col">{{ _('Giorno') }}</th>
+                    <th scope="col" class="w-50">{{ _('Kcal nette') }}</th>
+                    <th scope="col" class="text-end">{{ _('Kcal nette') }}</th>
+                    <th scope="col" class="text-end">{{ _('TEF') }}</th>
                 </tr>
             </thead>
             <tbody>

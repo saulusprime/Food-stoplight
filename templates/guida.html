@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Guida') }} – {{ _('Database Alimenti') }}{% endblock %}
+
+{% macro chip(stato, etichetta) -%}
+    <span class="badge-risk stato-{{ stato }}">{{ etichetta }}</span>
+{%- endmacro %}
+
+{% block content %}
+<div class="pagina-guida">
+
+    <header class="mb-4">
+        <h1>{{ _('Guida ai dati') }}</h1>
+        <p class="lead mb-2">
+            {% trans %}Come leggere i livelli di rischio, il punteggio, il TEF e gli altri indicatori della tabella e delle schede.{% endtrans %}
+        </p>
+        <p class="text-muted small mb-0">
+            {% trans %}I dati hanno scopo informativo e non sostituiscono il parere di un medico o di un dietista.{% endtrans %}
+        </p>
+    </header>
+
+    <div class="row g-4">
+        <nav class="col-lg-3 guida-indice-colonna" aria-labelledby="titolo-indice-guida">
+            <div class="guida-indice">
+                <h2 class="guida-indice-titolo" id="titolo-indice-guida">{{ _('In questa pagina') }}</h2>
+                <ol>
+                    <li><a href="#livelli">{{ _('Livelli di rischio') }}</a></li>
+                    <li><a href="#rischi">{{ _('I cinque rischi') }}</a></li>
+                    <li><a href="#punteggio">{{ _('Punteggio complessivo') }}</a></li>
+                    <li><a href="#pasti">{{ _('Pasti e diario') }}</a></li>
+                    <li><a href="#medaglie">{{ _('Medaglie') }}</a></li>
+                    <li><a href="#tef">{{ _('Energia, TEF e Kcal nette') }}</a></li>
+                    <li><a href="#glicemico">{{ _('Indice e carico glicemico') }}</a></li>
+                    <li><a href="#fodmap">{{ _('FODMAP') }}</a></li>
+                    <li><a href="#nova">{{ _('Grado di trasformazione (NOVA)') }}</a></li>
+                    <li><a href="#fonti">{{ _('Fonti e limiti') }}</a></li>
+                </ol>
+            </div>
+        </nav>
+
+        <div class="col-lg-9">
+
+            <section class="card guida-sezione" id="livelli" aria-labelledby="titolo-livelli">
+                <div class="card-body">
+                    <h2 id="titolo-livelli">{{ _('Livelli di rischio') }}</h2>
+                    <p>
+                        {% trans %}Ogni alimento ha cinque rischi per la salute, ciascuno su una scala a quattro livelli, come un semaforo. Il livello è sempre scritto oltre che colorato.{% endtrans %}
+                    </p>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle guida-tabella">
+                            <thead>
+                                <tr>
+                                    <th scope="col">{{ _('Livello') }}</th>
+                                    <th scope="col" class="text-end">{{ _('Punti') }}</th>
+                                    <th scope="col">{{ _('Significato') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set significati = {
+                                    'trascurabile': _('Nessun fattore di rischio rilevante.'),
+                                    'basso': _('Un fattore di rischio lieve.'),
+                                    'medio': _('Più fattori, o un fattore marcato: con moderazione.'),
+                                    'alto': _('Fattori di rischio marcati: da limitare.'),
+                                } %}
+                                {% for liv in livelli %}
+                                    <tr>
+                                        <td>{{ chip(liv.stato, liv.etichetta|traduci) }}</td>
+                                        <td class="text-end">{{ liv.punti }}</td>
+                                        <td>{{ significati[liv.chiave] }}</td>
+                                    </tr>
+                                {% endfor %}
+                                <tr>
+                                    <td>{{ chip(non_classificato.stato, non_classificato.etichetta|traduci) }}</td>
+                                    <td class="text-end">–</td>
+                                    <td>{{ _('Dato mancante o valore non riconosciuto: non entra nel punteggio.') }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card guida-sezione" id="rischi" aria-labelledby="titolo-rischi-guida">
+                <div class="card-body">
+                    <h2 id="titolo-rischi-guida">{{ _('I cinque rischi') }}</h2>
+                    <p>
+                        {% trans %}Quando i livelli sono calcolati dai valori nutrizionali, ogni criterio superato aggiunge punti (valori per 100 g): 0 punti Trascurabile, 1 Basso, 2 Medio, 3 o più Alto. Per gli alimenti inseriti a mano o importati vale il livello indicato nella fonte.{% endtrans %}
+                    </p>
+                    <dl class="guida-rischi">
+                        <dt>{{ _('Diabete') }}</dt>
+                        <dd>{% trans %}Zuccheri: oltre 10 g +1, oltre 15 g +2. Fibre: sotto 2 g +1, oltre 5 g −1.{% endtrans %}</dd>
+
+                        <dt>{{ _('Colesterolo') }}</dt>
+                        <dd>{% trans %}Grassi saturi oltre 5 g +2. Colesterolo: oltre 50 mg +1, oltre 100 mg +2.{% endtrans %}</dd>
+
+                        <dt>{{ _('Malassorbimento') }}</dt>
+                        <dd>{% trans %}Malassorbimento del fruttosio. Fruttosio oltre 3 g +1; oltre 5 g con meno di 2 g di fibre +2.{% endtrans %}</dd>
+
+                        <dt>{{ _('Metabolico') }}</dt>
+                        <dd>{% trans %}Oltre 250 Kcal con più di 10 g di zuccheri +2. Grassi saturi oltre 5 g +1.{% endtrans %}</dd>
+
+                        <dt>{{ _('Tumorale') }}</dt>
+                        <dd>{% trans %}Grassi saturi: oltre 4 g +1, oltre 7 g +2. Zuccheri oltre 15 g +1. Soglie ispirate alle raccomandazioni di OMS e WCRF.{% endtrans %}</dd>
+                    </dl>
+                </div>
+            </section>
+
+            <section class="card guida-sezione" id="punteggio" aria-labelledby="titolo-punteggio">
+                <div class="card-body">
+                    <h2 id="titolo-punteggio">{{ _('Punteggio complessivo') }}</h2>
+                    <p>
+                        {% trans %}Il punteggio riassume i cinque rischi in un numero da 0 a 100: 100 se sono tutti trascurabili, 0 se sono tutti alti. È la media dei punti dei rischi noti (da 0 a 3) riportata su 100: punteggio = 100 × (1 − media ÷ 3).{% endtrans %}
+                    </p>
+                    <p>
+                        {% trans %}Esempio: tre rischi trascurabili e due bassi danno una media di 0,4 punti, cioè un punteggio di 87.{% endtrans %}
+                    </p>
+                    <p class="mb-2">{{ _('Il livello medio indicato accanto al punteggio:') }}</p>
+                    <ul class="guida-soglie">
+                        <li>{{ chip('good', _('Trascurabile')) }} {{ _('da 84 a 100') }}</li>
+                        <li>{{ chip('warning', _('Basso')) }} {{ _('da 51 a 83') }}</li>
+                        <li>{{ chip('serious', _('Medio')) }} {{ _('da 17 a 50') }}</li>
+                        <li>{{ chip('critical', _('Alto')) }} {{ _('da 0 a 16') }}</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="card guida-sezione" id="pasti" aria-labelledby="titolo-pasti">
+                <div class="card-body">
+                    <h2 id="titolo-pasti">{{ _('Pasti e diario') }}</h2>
+                    <p>
+                        {% trans %}Il profilo di rischio di un pasto o di una giornata pesa ogni alimento sulle Kcal che apporta: 10 g di burro contano più di 300 g di insalata. Se nessun alimento ha Kcal si pesa sui grammi. Per questo nel radar di un pasto un rischio può cadere tra due livelli (per esempio 1,4 su 3).{% endtrans %}
+                    </p>
+                    <p class="mb-0">
+                        {% trans %}Il diario conserva i valori dell'alimento al momento della registrazione: le modifiche successive al database non cambiano i giorni passati.{% endtrans %}
+                    </p>
+                </div>
+            </section>
+
+            <section class="card guida-sezione" id="medaglie" aria-labelledby="titolo-medaglie">
+                <div class="card-body">
+                    <h2 id="titolo-medaglie">{{ _('Medaglie') }}</h2>
+                    <p>
+                        {% trans n=posti_medaglia %}Le icone accanto al nome segnalano gli alimenti tra i primi {{ n }} dell'intero database in ciascuna classifica:{% endtrans %}
+                    </p>
+                    <ul class="guida-medaglie">
+                        {% for medaglia in medaglie %}
+                            <li>
+                                <span aria-hidden="true">{{ medaglia.icona }}</span>
+                                <strong>{{ medaglia.titolo|traduci }}</strong> – {{ medaglia.descrizione|traduci }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+
+            <section class="card guida-sezione" id="tef" aria-labelledby="titolo-tef">
+                <div class="card-body">
+                    <h2 id="titolo-tef">{{ _('Energia, TEF e Kcal nette') }}</h2>
+                    <dl class="guida-definizioni">
+                        <dt>{{ _('Kcal') }}</dt>
+                        <dd>
+                            {% trans proteine=kcal_per_grammo.proteine|numero, carboidrati=kcal_per_grammo.carboidrati|numero, grassi=kcal_per_grammo.grassi|numero %}Energia per 100 g. Se manca si stima dai macronutrienti: {{ proteine }} Kcal per grammo di proteine, {{ carboidrati }} di carboidrati e {{ grassi }} di grassi.{% endtrans %}
+                        </dd>
+
+                        <dt>{{ _('TEF (effetto termico degli alimenti)') }}</dt>
+                        <dd>
+                            {% trans proteine=(tef.proteine * 100)|percentuale(0), carboidrati=(tef.carboidrati * 100)|percentuale(0), grassi=(tef.grassi * 100)|percentuale(0) %}L'energia che il corpo spende per digerire, assorbire e trasformare il cibo. Si stima come quota dell'energia di ciascun macronutriente: {{ proteine }} per le proteine, {{ carboidrati }} per i carboidrati, {{ grassi }} per i grassi. TEF (%) è la quota sulle Kcal totali; TEF (Kcal) lo stesso valore in calorie.{% endtrans %}
+                        </dd>
+
+                        <dt>{{ _('Kcal nette') }}</dt>
+                        <dd>{% trans %}Kcal meno TEF: l'energia che resta dopo la digestione.{% endtrans %}</dd>
+
+                        <dt>{{ _('Rapporto F/F') }}</dt>
+                        <dd>{% trans %}Fruttosio diviso fibre (0 se le fibre mancano). Più è basso, meglio è tollerato da chi ha malassorbimento del fruttosio.{% endtrans %}</dd>
+                    </dl>
+
+                    <div class="guida-esempio">
+                        <p class="guida-esempio-titolo">{{ _('Esempio: 100 g di pane') }}</p>
+                        <p class="mb-1">
+                            {% trans %}9 g di proteine, 49 g di carboidrati e 3,2 g di grassi danno 36 + 196 + 28,8 = 260,8 Kcal.{% endtrans %}
+                        </p>
+                        <p class="mb-1">
+                            {% trans %}TEF: 25% di 36 + 10% di 196 + 5% di 28,8 = 30 Kcal, cioè l'11,5% delle Kcal.{% endtrans %}
+                        </p>
+                        <p class="mb-0">{% trans %}Kcal nette: 260,8 − 30 = 230,8.{% endtrans %}</p>
+                    </div>
+
+                    <p class="text-muted small mt-3 mb-0">
+                        {% trans %}Il TEF reale varia da persona a persona: questi valori sono stime per confrontare gli alimenti tra loro.{% endtrans %}
+                    </p>
+                </div>
+            </section>
+
+            <section class="card guida-sezione" id="glicemico" aria-labelledby="titolo-glicemico">
+                <div class="card-body">
+                    <h2 id="titolo-glicemico">{{ _('Indice e carico glicemico') }}</h2>
+                    <p>
+                        {% trans %}L'indice glicemico (IG) dice quanto in fretta i carboidrati di un alimento alzano la glicemia, rispetto al glucosio (100). Il carico glicemico (CG) tiene conto anche della quantità: CG = IG × carboidrati disponibili della porzione ÷ 100, dove i carboidrati disponibili sono i carboidrati meno le fibre.{% endtrans %}
+                    </p>
+                    <div class="table-responsive">
+                        <table class="table table-sm guida-tabella">
+                            <thead>
+                                <tr>
+                                    <th scope="col"></th>
+                                    <th scope="col">{{ chip('good', _('Basso')) }}</th>
+                                    <th scope="col">{{ chip('warning', _('Medio')) }}</th>
+                                    <th scope="col">{{ chip('critical', _('Alto')) }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row">{{ _('Indice glicemico') }}</th>
+                                    <td>{{ _('fino a 55') }}</td>
+                                    <td>{{ _('da 56 a 69') }}</td>
+                                    <td>{{ _('da 70') }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">{{ _('Carico glicemico (porzione)') }}</th>
+                                    <td>{{ _('fino a 10') }}</td>
+                                    <td>{{ _('da 11 a 19') }}</td>
+                                    <td>{{ _('da 20') }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card guida-sezione" id="fodmap" aria-labelledby="titolo-fodmap">
+                <div class="card-body">
+                    <h2 id="titolo-fodmap">{{ _('FODMAP') }}</h2>
+                    <p>
+                        {% trans %}Carboidrati fermentabili che possono dare disturbi a chi soffre di colon irritabile. Ogni categoria ha un semaforo a tre livelli, come nelle tabelle della Monash University; il livello complessivo è il più alto tra le categorie classificate.{% endtrans %}
+                    </p>
+                    <ul class="guida-elenco-compatto">
+                        {% for campo, etichetta in fodmap %}
+                            <li>{{ etichetta|traduci }}</li>
+                        {% endfor %}
+                    </ul>
+                    <p class="mb-0">
+                        {% for liv in livelli_fodmap %}{{ chip(liv.stato, liv.etichetta|traduci) }} {% endfor %}
+                    </p>
+                </div>
+            </section>
+
+            <section class="card guida-sezione" id="nova" aria-labelledby="titolo-nova">
+                <div class="card-body">
+                    <h2 id="titolo-nova">{{ _('Grado di trasformazione (NOVA)') }}</h2>
+                    <p>{% trans %}La classificazione NOVA divide gli alimenti in quattro gruppi secondo quanto sono trasformati industrialmente.{% endtrans %}</p>
+                    <ul class="guida-soglie">
+                        {% for gruppo in nova %}
+                            <li>{{ chip(gruppo.stato, 'NOVA ' ~ gruppo.gruppo) }} {{ gruppo.etichetta|traduci }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+
+            <section class="card guida-sezione" id="fonti" aria-labelledby="titolo-fonti">
+                <div class="card-body">
+                    <h2 id="titolo-fonti">{{ _('Fonti e limiti') }}</h2>
+                    <ul class="mb-0">
+                        <li>{% trans %}I macro e micronutrienti con fonte USDA vengono da FoodData Central, la banca dati del Dipartimento dell'Agricoltura degli Stati Uniti.{% endtrans %}</li>
+                        <li>{% trans %}La scheda di ogni alimento indica la fonte dei valori; dove manca, i valori sono stime o dati dimostrativi da verificare.{% endtrans %}</li>
+                        <li>{% trans %}Le soglie dei rischi sono indicative e non sono ancora state riviste con riferimenti bibliografici puntuali.{% endtrans %}</li>
+                        <li>{% trans %}Tutti i valori si riferiscono a 100 g di alimento, salvo dove è indicata una porzione.{% endtrans %}</li>
+                    </ul>
+                </div>
+            </section>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

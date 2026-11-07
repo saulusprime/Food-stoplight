@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
 {% block title %}
-Accedi
+{{ _('Accedi') }}
 {% endblock %}
 
 {% block content %}
 
 <div class="page-header">
-    <h1>🔐 Accedi</h1>
-    <p>Effettua l'accesso per gestire il database degli alimenti.</p>
+    <h1>🔐 {{ _('Accedi') }}</h1>
+    <p>{{ _("Effettua l'accesso per gestire il database degli alimenti.") }}</p>
 </div>
 
 <div class="row justify-content-center">
@@ -21,7 +21,7 @@ Accedi
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div class="mb-3">
-                <label for="username" class="form-label">Nome utente</label>
+                <label for="username" class="form-label">{{ _('Nome utente') }}</label>
                 <input
                     type="text"
                     class="form-control"
@@ -37,7 +37,7 @@ Accedi
             </div>
 
             <div class="mb-4">
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label">{{ _('Password') }}</label>
                 <input
                     type="password"
                     class="form-control"
@@ -49,7 +49,7 @@ Accedi
             </div>
 
             <button type="submit" class="btn btn-primary w-100">
-                Accedi
+                {{ _('Accedi') }}
             </button>
         </form>
     </div>

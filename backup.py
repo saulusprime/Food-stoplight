@@ -16,17 +16,21 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from flask_babel import gettext
+
+from lingue import N_
+
 # Backup conservati nella cartella: oltre, si eliminano i più vecchi
 BACKUP_CONSERVATI = 20
 
 INTESTAZIONE_SQLITE = b"SQLite format 3\x00"
 
 MOTIVI = {
-    "manuale": "Manuale",
-    "import": "Prima di un import",
-    "ripristino": "Prima di un ripristino",
-    "usda": "Prima dei nutrienti USDA",
-    "migrazione": "Prima di una migrazione dello schema",
+    "manuale": N_("Manuale"),
+    "import": N_("Prima di un import"),
+    "ripristino": N_("Prima di un ripristino"),
+    "usda": N_("Prima dei nutrienti USDA"),
+    "migrazione": N_("Prima di una migrazione dello schema"),
 }
 
 NOME_RE = re.compile(r"^alimenti_(\d{8}-\d{6})(?:-(\d+))?_([a-z]+)\.db$")
@@ -172,38 +176,36 @@ def verifica(file_db: str) -> int:
     """
     with open(file_db, "rb") as f:
         if f.read(16) != INTESTAZIONE_SQLITE:
-            raise ErroreBackup("Il file non è un database SQLite.")
+            raise ErroreBackup(gettext("Il file non è un database SQLite."))
 
     try:
         conn = sqlite3.connect(_uri_sola_lettura(file_db), uri=True)
     except sqlite3.Error:
-        raise ErroreBackup("Il database non si apre.") from None
+        raise ErroreBackup(gettext("Il database non si apre.")) from None
 
     try:
         # Lo schema arriva da un file caricato: niente funzioni negli oggetti dello schema
         conn.execute("PRAGMA trusted_schema = OFF")
 
         if conn.execute("PRAGMA quick_check").fetchone()[0] != "ok":
-            raise ErroreBackup("Il database è danneggiato.")
+            raise ErroreBackup(gettext("Il database è danneggiato."))
 
         oggetti = conn.execute("SELECT type, name FROM sqlite_master").fetchall()
 
         if any(tipo in ("trigger", "view") for tipo, _ in oggetti):
-            raise ErroreBackup(
-                "Il database contiene trigger o viste: non è un backup di Food-stoplight."
-            )
+            raise ErroreBackup(gettext("Il database contiene trigger o viste: non è un backup di Food-stoplight."))
 
         if ("table", "alimenti") not in oggetti:
-            raise ErroreBackup("Nel database manca la tabella «alimenti».")
+            raise ErroreBackup(gettext("Nel database manca la tabella «alimenti»."))
 
         colonne = {riga[1] for riga in conn.execute("PRAGMA table_info(alimenti)")}
 
         if not {"id", "alimento"} <= colonne:
-            raise ErroreBackup("La tabella «alimenti» non ha le colonne attese.")
+            raise ErroreBackup(gettext("La tabella «alimenti» non ha le colonne attese."))
 
         return conn.execute("SELECT COUNT(*) FROM alimenti").fetchone()[0]
     except sqlite3.Error as exc:
-        raise ErroreBackup(f"Il database non è leggibile ({exc}).") from None
+        raise ErroreBackup(gettext("Il database non è leggibile (%(errore)s).", errore=exc)) from None
     finally:
         conn.close()
 

@@ -53,7 +53,7 @@ strict_equality = true
 
 [[tool.mypy.overrides]]
 # Librerie senza annotazioni di tipo
-module = ["flask_login.*", "flask_wtf.*"]
+module = ["flask_login.*", "flask_wtf.*", "flask_babel.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

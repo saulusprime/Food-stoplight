@@ -35,3 +35,6 @@ instance/
 # Cache degli strumenti di sviluppo
 .ruff_cache/
 .pytest_cache/
+
+# Template delle traduzioni (si rigenera con pybabel extract, vedi lingue.py)
+messages.pot

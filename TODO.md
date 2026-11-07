@@ -34,12 +34,8 @@ Le attività completate sono in [ASIS.md](ASIS.md).
 
 ## 📱 Esperienza utente
 
-- [ ] Ottimizzazione mobile della tabella (colonne prioritarie, schede compatte)
-- [ ] PWA installabile con consultazione offline
-- [ ] Internazionalizzazione (italiano/inglese)
-- [ ] Legenda esplicativa dei livelli di rischio e della metodologia TEF nell'interfaccia
-- [ ] Conferma di eliminazione con modale (invece del solo submit)
-- [ ] Toast di notifica non invasivi al posto degli alert
+- [ ] Export (CSV, Excel, PDF) e messaggi dell'API anche in inglese (oggi restano in italiano, come le intestazioni che l'import riconosce)
+- [ ] Filtri e ricerca anche offline (senza rete oggi si vede la tabella completa salvata, senza filtri)
 
 ## 💡 Idee a lungo termine
 

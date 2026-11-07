@@ -31,6 +31,12 @@
        valore cade sull'anello o tra due anelli. Li spiega il sottotitolo. #}
 
     {% for v in radar.vertici %}
+        {% set nome_rischio = v.etichetta|traduci %}
+        {% if v.media is not none %}
+            {% set valore = _('%(livello)s (%(media)s su %(massimo)s)', livello=v.livello|traduci, media=v.media|numero(1), massimo=LIVELLI_RISCHIO[-1].punti) %}
+        {% else %}
+            {% set valore = v.valore|traduci %}
+        {% endif %}
         <g class="stato-{{ v.stato }}">
             <circle class="vertice" cx="{{ v.x }}" cy="{{ v.y }}" r="5"></circle>
             <circle
@@ -38,10 +44,10 @@
                 cx="{{ v.x }}" cy="{{ v.y }}" r="13"
                 tabindex="0"
                 role="img"
-                aria-label="{{ v.etichetta }}: {{ v.valore }}"
-                data-tooltip="{{ v.etichetta }}"
+                aria-label="{{ nome_rischio }}: {{ valore }}"
+                data-tooltip="{{ nome_rischio }}"
                 data-tooltip-stato="{{ v.stato }}"
-                data-tooltip-valore="{{ v.valore }}"
+                data-tooltip-valore="{{ valore }}"
             ></circle>
         </g>
     {% endfor %}
@@ -53,6 +59,6 @@
             y="{{ asse.etichetta_xy[1] }}"
             text-anchor="{{ asse.ancora }}"
             aria-hidden="true"
-        >{{ asse.etichetta }}</text>
+        >{{ asse.etichetta|traduci }}</text>
     {% endfor %}
 </svg>

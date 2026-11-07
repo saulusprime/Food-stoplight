@@ -29,6 +29,8 @@ from flask import (
     url_for,
 )
 from flask.typing import ResponseReturnValue
+from flask_babel import Babel, format_date, format_datetime, ngettext
+from flask_babel import gettext as _
 from flask_login import (
     AnonymousUserMixin,
     LoginManager,
@@ -39,6 +41,9 @@ from flask_login import (
     logout_user,
 )
 from flask_wtf.csrf import CSRFError, CSRFProtect
+from jinja2 import pass_context
+from jinja2.runtime import Context
+from markupsafe import Markup
 from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -51,10 +56,13 @@ import calcoli
 import database
 import esportazione
 import importazione
+import lingue
 import nutrienti
+import pwa
 import usda
 from archivio import Alimento
 from config import carica_config
+from lingue import N_
 
 # Funzione di vista di Flask (per il decoratore solo_admin)
 Vista = TypeVar("Vista", bound=Callable[..., Any])
@@ -62,54 +70,128 @@ Vista = TypeVar("Vista", bound=Callable[..., Any])
 app = Flask(__name__)
 app.config.update(carica_config())
 
+# Lingue dell'interfaccia: italiano e inglese (vedi lingue.py)
+babel = Babel(app, locale_selector=lingue.scegli_lingua)
+app.jinja_env.policies["ext.i18n.trimmed"] = True
+
 # Funzioni di analisi disponibili nei template
 app.jinja_env.globals.update(
     nutrienti=nutrienti,
     stato_rischio=analisi.stato,
     livello_punteggio=analisi.livello_punteggio,
     LIVELLI_RISCHIO=analisi.LIVELLI,
+    LINGUE=lingue.LINGUE,
 )
+
+# Etichette, livelli e categorie scritti in italiano nei dati
+app.add_template_filter(lingue.traduci, "traduci")
 
 
 @app.template_filter("percentuale")
 def filtro_percentuale(valore: float, decimali: int = 1) -> str:
     """
-    59.43 -> "59,4%" (virgola decimale italiana).
+    59.43 -> "59,4%" (in inglese "59.4%").
     """
-    return f"{valore:.{decimali}f}".replace(".", ",") + "%"
+    return lingue.decimale(f"{valore:.{decimali}f}") + "%"
 
 
-GIORNI_SETTIMANA = ("lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica")
-MESI = ("gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio",
-        "agosto", "settembre", "ottobre", "novembre", "dicembre")
+@app.template_filter("css_testo")
+def filtro_css_testo(testo: object) -> Markup:
+    """
+    Testo come stringa CSS per content:, sicuro anche dentro <style>.
+    """
+    sicuro = (
+        str(testo).replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\a ")
+        .replace("<", "\\3c ").replace(">", "\\3e ")
+    )
+    return Markup(f'"{sicuro}"')
 
 
 @app.template_filter("data_estesa")
 def filtro_data_estesa(giorno: date) -> str:
     """
-    date(2026, 11, 7) -> "sabato 7 novembre 2026".
+    date(2026, 11, 7) -> "sabato 7 novembre 2026" ("Saturday, November 7, 2026").
     """
-    return f"{GIORNI_SETTIMANA[giorno.weekday()]} {giorno.day} {MESI[giorno.month - 1]} {giorno.year}"
+    return format_date(giorno, _("EEEE d MMMM y"))
 
 
 @app.template_filter("data_breve")
 def filtro_data_breve(giorno: date) -> str:
     """
-    date(2026, 11, 7) -> "sab 7/11".
+    date(2026, 11, 7) -> "sab 7/11" ("Sat 11/7").
     """
-    return f"{GIORNI_SETTIMANA[giorno.weekday()][:3]} {giorno.day}/{giorno.month}"
+    return format_date(giorno, _("EEE d/M"))
 
 
-@app.template_filter("numero")
-def filtro_numero(valore: float | None, decimali: int | None = None) -> str:
+def filtro_numero(valore: float | None, decimali: int | None = None, lingua: str | None = None) -> str:
     """
-    Numero con virgola decimale; senza decimali indicati usa la forma compatta (%g).
+    Numero con la virgola decimale in italiano (il punto in inglese);
+    senza decimali indicati usa la forma compatta (%g).
     """
     if valore is None:
         return "–"
 
     testo = f"{valore:g}" if decimali is None else f"{valore:.{decimali}f}"
-    return testo.replace(".", ",")
+
+    if lingua is None:
+        return lingue.decimale(testo)
+
+    return testo.replace(".", ",") if lingua == "it" else testo
+
+
+@app.template_filter("numero")
+@pass_context
+def filtro_numero_template(contesto: Context, valore: float | None, decimali: int | None = None) -> str:
+    """
+    |numero nei template: la lingua arriva dal contesto della pagina
+    (la tabella della home ne formatta migliaia).
+    """
+    return filtro_numero(valore, decimali, contesto.get("lingua"))
+
+
+@app.template_filter("migliaia")
+def filtro_migliaia(valore: int) -> str:
+    """
+    20000 -> "20.000" ("20,000" in inglese).
+    """
+    testo = f"{valore:,}"
+    return testo.replace(",", ".") if lingue.corrente() == "it" else testo
+
+
+@app.template_filter("data_ora")
+def filtro_data_ora(momento: datetime) -> str:
+    """
+    datetime(2026, 11, 7, 18, 5) -> "07/11/2026 18:05:00" ("7 Nov 2026, 18:05:00").
+    """
+    return format_datetime(momento, _("dd/MM/y HH:mm:ss"))
+
+
+def testi_js() -> dict[str, Any]:
+    """
+    Testi usati da static/js/app.js, nella lingua della pagina.
+    """
+    return {
+        "lingua": lingue.corrente(),
+        "temaChiaro": _("Passa alla modalità chiara"),
+        "temaScuro": _("Passa alla modalità scura"),
+        "conferma": _("Conferma"),
+        "chiudiNotifica": _("Chiudi la notifica"),
+        "offline": _("Sei offline: le pagine già aperte restano consultabili."),
+        "online": _("Di nuovo online."),
+        "livelli": {livello: _(livello) for livello in ("Basso", "Medio", "Alto")},
+        "tutteLeColonne": _("Mostra tutte le colonne"),
+        "colonnePrincipali": _("Solo le colonne principali"),
+    }
+
+
+@app.context_processor
+def contesto_comune() -> dict[str, Any]:
+    return {
+        "lingua": lingue.corrente(),
+        "testi_js": testi_js(),
+        # Pagine salvate in anticipo dal service worker: non consumano i messaggi flash
+        "precarica": request.headers.get(pwa.INTESTAZIONE_PRECARICA) == "1",
+    }
 
 DB_PATH = app.config["DATABASE_PATH"]
 UTENTI_DB_PATH = app.config["UTENTI_DB_PATH"]
@@ -125,8 +207,9 @@ csrf = CSRFProtect(app)
 
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
-login_manager.login_message = "Accedi per continuare."
+login_manager.login_message = N_("Accedi per continuare.")
 login_manager.login_message_category = "warning"
+login_manager.localize_callback = _
 
 # JSON dell'API leggibile: accenti così come sono, campi nell'ordine di definizione
 app.json.ensure_ascii = False  # type: ignore[attr-defined]
@@ -191,12 +274,12 @@ CAMPI_TESTO_FORM = ("alimento", "categoria", *analisi.CAMPI_RISCHIO)
 
 # Campi energia e fruttosio/fibre: vuoti valgono 0 (o vengono calcolati)
 CAMPI_ENERGIA_FORM = (
-    ("kcal", "Kcal", None),
-    ("tef_percent", "TEF (%)", 100.0),
-    ("tef_kcal", "TEF (Kcal)", None),
-    ("kcal_nette", "Kcal nette", None),
-    ("fruttosio", "Fruttosio", None),
-    ("fibre", "Fibre", None),
+    ("kcal", N_("Kcal"), None),
+    ("tef_percent", N_("TEF (%)"), 100.0),
+    ("tef_kcal", N_("TEF (Kcal)"), None),
+    ("kcal_nette", N_("Kcal nette"), None),
+    ("fruttosio", N_("Fruttosio"), None),
+    ("fibre", N_("Fibre"), None),
 )
 
 NOTE_MAX = 2000
@@ -223,8 +306,16 @@ def parse_form() -> tuple[dict[str, Any], list[str]]:
         valore, valido = calcoli.leggi_numero(testo)
 
         if not valido or valore is None or valore < minimo or (massimo is not None and valore > massimo):
-            intervallo = f" tra {minimo:g} e {massimo:g}" if massimo is not None else " maggiore o uguale a 0"
-            errori.append(f"{etichetta}: «{testo}» non è valido, serve un numero{intervallo}.")
+            if massimo is not None:
+                errori.append(_(
+                    "%(campo)s: «%(testo)s» non è valido, serve un numero tra %(minimo)s e %(massimo)s.",
+                    campo=lingue.traduci(etichetta), testo=testo, minimo=f"{minimo:g}", massimo=f"{massimo:g}",
+                ))
+            else:
+                errori.append(_(
+                    "%(campo)s: «%(testo)s» non è valido, serve un numero maggiore o uguale a 0.",
+                    campo=lingue.traduci(etichetta), testo=testo,
+                ))
             return testo
 
         forniti.add(campo)
@@ -234,24 +325,27 @@ def parse_form() -> tuple[dict[str, Any], list[str]]:
         valore = numero(campo, etichetta, 0, massimo)
         valori[campo] = 0.0 if valore is None else valore
 
-    for campo, etichetta, *_ in nutrienti.NUTRIENTI:
+    for campo, etichetta, *_dettagli in nutrienti.NUTRIENTI:
         valori[campo] = numero(campo, etichetta)
 
-    valori["indice_glicemico"] = numero("indice_glicemico", "Indice glicemico", 0, 100)
+    valori["indice_glicemico"] = numero("indice_glicemico", N_("Indice glicemico"), 0, 100)
 
     nova = (form.get("nova") or "").strip()
     valori["nova"] = nutrienti.leggi_nova(nova) if nova else None
 
     if nova and valori["nova"] is None:
-        errori.append("NOVA: scegli un gruppo da 1 a 4.")
+        errori.append(_("NOVA: scegli un gruppo da 1 a 4."))
 
-    for campo, etichetta in nutrienti.FODMAP:
+    for campo in nutrienti.CAMPI_FODMAP:
         testo = (form.get(campo) or "").strip()
         livello_fodmap = nutrienti.livello_fodmap(testo) if testo else None
         valori[campo] = livello_fodmap["etichetta"] if livello_fodmap else None
 
         if testo and not livello_fodmap:
-            errori.append(f"FODMAP {etichetta.lower()}: livello «{testo}» non riconosciuto.")
+            errori.append(_(
+                "%(campo)s: livello «%(testo)s» non riconosciuto.",
+                campo=lingue.traduci(nutrienti.ETICHETTE[campo]), testo=testo,
+            ))
 
     valori["fonte_nutrienti"] = (form.get("fonte_nutrienti") or "").strip() or None
 
@@ -259,19 +353,19 @@ def parse_form() -> tuple[dict[str, Any], list[str]]:
     valori["url_fonte"] = url or None
 
     if url and not nutrienti.URL_RE.match(url):
-        errori.append("URL della fonte: serve un indirizzo che inizia con http:// o https://.")
+        errori.append(_("URL della fonte: serve un indirizzo che inizia con http:// o https://."))
 
     fdc = (form.get("fdc_id") or "").strip()
     valori["fdc_id"] = int(fdc) if fdc.isdigit() else (fdc or None)
 
     if fdc and not fdc.isdigit():
-        errori.append("FDC ID: serve un numero intero.")
+        errori.append(_("FDC ID: serve un numero intero."))
 
     note = (form.get("note") or "").strip()
     valori["note"] = note or None
 
     if len(note) > NOTE_MAX:
-        errori.append(f"Note: al massimo {NOTE_MAX} caratteri.")
+        errori.append(_("Note: al massimo %(n)d caratteri.", n=NOTE_MAX))
 
     if not errori:
         calcoli.completa_energia(valori, forniti, nuovo=True)
@@ -295,10 +389,10 @@ def get_form_options() -> dict[str, Any]:
     return {
         **get_filter_options(),
         "nova": [
-            (gruppo, f"{gruppo} – {info['etichetta']}")
+            (gruppo, f"{gruppo} – {lingue.traduci(info['etichetta'])}")
             for gruppo, info in nutrienti.NOVA.items()
         ],
-        "fodmap": [(liv["etichetta"], liv["etichetta"]) for liv in nutrienti.LIVELLI_FODMAP],
+        "fodmap": [(liv["etichetta"], lingue.traduci(liv["etichetta"])) for liv in nutrienti.LIVELLI_FODMAP],
     }
 
 
@@ -306,7 +400,7 @@ def get_form_options() -> dict[str, Any]:
 # AUTENTICAZIONE E RUOLI
 # ---------------------------------------------------------------
 
-RUOLI = ("admin", "visitatore")
+RUOLI = (N_("admin"), N_("visitatore"))
 USERNAME_RE = re.compile(r"^[A-Za-z0-9_.-]{3,32}$")
 PASSWORD_MIN = 8
 
@@ -365,6 +459,13 @@ def solo_admin(view: Vista) -> Vista:
     return cast(Vista, wrapper)
 
 
+# Raggiungibili anche senza login con ACCESSO_PUBBLICO=false: il manifest e il
+# service worker si scaricano senza credenziali, la lingua si sceglie anche al login
+ENDPOINT_SEMPRE_ACCESSIBILI = (
+    "login", "static", "salute", "cambia_lingua", "pwa.manifest", "pwa.service_worker", "pwa.offline",
+)
+
+
 @app.before_request
 def controlla_accesso() -> ResponseReturnValue | None:
     """
@@ -373,7 +474,7 @@ def controlla_accesso() -> ResponseReturnValue | None:
     if app.config["ACCESSO_PUBBLICO"] or current_user.is_authenticated:
         return None
 
-    if request.endpoint in ("login", "static", "salute"):
+    if request.endpoint in ENDPOINT_SEMPRE_ACCESSIBILI:
         return None
 
     if request.path.startswith("/api"):
@@ -434,10 +535,10 @@ def login() -> ResponseReturnValue:
 
         if row and password_ok:
             login_user(Utente(row))
-            flash(f"Accesso effettuato come {row['username']}.", "success")
+            flash(_("Accesso effettuato come %(nome)s.", nome=row["username"]), "success")
             return redirect(url_sicuro(request.args.get("next")) or url_for("index"))
 
-        flash("Nome utente o password non validi.", "danger")
+        flash(_("Nome utente o password non validi."), "danger")
         return render_template("login.html", username=username), 401
 
     return render_template("login.html", username="")
@@ -446,8 +547,30 @@ def login() -> ResponseReturnValue:
 @app.route("/logout", methods=["POST"])
 def logout() -> ResponseReturnValue:
     logout_user()
-    flash("Disconnessione effettuata.", "info")
+    # La pagina successiva chiede al service worker di cancellare le pagine salvate
+    session["svuota_cache"] = True
+    flash(_("Disconnessione effettuata."), "info")
     return redirect(url_for("index"))
+
+
+@app.route("/lingua/<codice>")
+def cambia_lingua(codice: str) -> ResponseReturnValue:
+    """
+    Lingua dell'interfaccia scelta dal menu: resta in un cookie per un anno.
+    """
+    if codice not in lingue.LINGUE:
+        abort(404)
+
+    risposta = redirect(url_sicuro(request.args.get("next")) or url_for("index"))
+    risposta.set_cookie(
+        lingue.COOKIE,
+        codice,
+        max_age=lingue.DURATA_COOKIE,
+        secure=app.config["SESSION_COOKIE_SECURE"],
+        httponly=True,
+        samesite="Lax",
+    )
+    return risposta
 
 
 # ---------------------------------------------------------------
@@ -558,8 +681,8 @@ def scheda(alimento_id: int) -> ResponseReturnValue:
 @solo_admin
 def nuovo() -> ResponseReturnValue:
     pagina = {
-        "titolo": "Nuovo alimento",
-        "sottotitolo": "Inserisci un nuovo alimento nel database.",
+        "titolo": _("Nuovo alimento"),
+        "sottotitolo": _("Inserisci un nuovo alimento nel database."),
         "action": url_for("nuovo"),
     }
 
@@ -567,7 +690,7 @@ def nuovo() -> ResponseReturnValue:
         valori, errori = parse_form()
 
         if not valori["alimento"]:
-            errori.insert(0, "Il campo Alimento è obbligatorio.")
+            errori.insert(0, _("Il campo Alimento è obbligatorio."))
 
         if errori:
             for errore in errori:
@@ -576,7 +699,7 @@ def nuovo() -> ResponseReturnValue:
             return render_template("form.html", **pagina, item=valori, opzioni=get_form_options())
 
         nuovo_id = salva_alimento(valori)
-        flash("Alimento aggiunto correttamente.", "success")
+        flash(_("Alimento aggiunto correttamente."), "success")
         return redirect(url_for("scheda", alimento_id=nuovo_id))
 
     return render_template("form.html", **pagina, item=None, opzioni=get_form_options())
@@ -591,8 +714,8 @@ def modifica(alimento_id: int) -> ResponseReturnValue:
         abort(404)
 
     pagina = {
-        "titolo": "Modifica alimento",
-        "sottotitolo": "Aggiorna i dati dell'alimento.",
+        "titolo": _("Modifica alimento"),
+        "sottotitolo": _("Aggiorna i dati dell'alimento."),
         "action": url_for("modifica", alimento_id=alimento_id),
     }
 
@@ -600,7 +723,7 @@ def modifica(alimento_id: int) -> ResponseReturnValue:
         valori, errori = parse_form()
 
         if not valori["alimento"]:
-            errori.insert(0, "Il campo Alimento è obbligatorio.")
+            errori.insert(0, _("Il campo Alimento è obbligatorio."))
 
         if errori:
             for errore in errori:
@@ -609,7 +732,7 @@ def modifica(alimento_id: int) -> ResponseReturnValue:
             return render_template("form.html", **pagina, item={**item, **valori}, opzioni=get_form_options())
 
         salva_alimento(valori, alimento_id)
-        flash("Alimento aggiornato correttamente.", "success")
+        flash(_("Alimento aggiornato correttamente."), "success")
         return redirect(url_for("scheda", alimento_id=alimento_id))
 
     return render_template("form.html", **pagina, item=item, opzioni=get_form_options())
@@ -624,7 +747,7 @@ def elimina(alimento_id: int) -> ResponseReturnValue:
         abort(404)
 
     archivio.elimina_alimento(alimento_id)
-    flash("Alimento eliminato.", "warning")
+    flash(_("Alimento eliminato: %(nome)s.", nome=item["alimento"]), "warning")
     return redirect(url_for("index"))
 
 
@@ -781,7 +904,7 @@ def importa() -> ResponseReturnValue:
         file = request.files.get("file")
 
         if not file or not file.filename:
-            flash("Seleziona un file CSV o Excel da importare.", "danger")
+            flash(_("Seleziona un file CSV o Excel da importare."), "danger")
             return redirect(url_for("importa"))
 
         nome_file = os.path.basename(file.filename.replace("\\", "/"))
@@ -793,7 +916,7 @@ def importa() -> ResponseReturnValue:
             return redirect(url_for("importa"))
         except Exception:
             app.logger.exception("Lettura del file di import non riuscita")
-            flash("Il file non è leggibile: controlla che sia un CSV o un Excel valido.", "danger")
+            flash(_("Il file non è leggibile: controlla che sia un CSV o un Excel valido."), "danger")
             return redirect(url_for("importa"))
 
         scarta_import()
@@ -835,7 +958,7 @@ def importa_anteprima() -> ResponseReturnValue:
     letto = carica_import()
 
     if letto is None:
-        flash("Nessun file in attesa di conferma: caricane uno.", "warning")
+        flash(_("Nessun file in attesa di conferma: caricane uno."), "warning")
         return redirect(url_for("importa"))
 
     modalita = request.args.get("modalita", importazione.MODALITA_PREDEFINITA)
@@ -878,7 +1001,7 @@ def importa_conferma() -> ResponseReturnValue:
     letto = carica_import()
 
     if letto is None:
-        flash("Nessun file in attesa di conferma: caricane uno.", "warning")
+        flash(_("Nessun file in attesa di conferma: caricane uno."), "warning")
         return redirect(url_for("importa"))
 
     modalita = request.form.get("modalita", "")
@@ -887,7 +1010,7 @@ def importa_conferma() -> ResponseReturnValue:
         abort(400)
 
     if modalita == "sostituisci" and request.form.get("conferma_sostituisci") != "1":
-        flash("Per sostituire l'intera tabella spunta la casella di conferma.", "danger")
+        flash(_("Per sostituire l'intera tabella spunta la casella di conferma."), "danger")
         return redirect(url_for("importa_anteprima", modalita=modalita))
 
     conn = get_db()
@@ -897,12 +1020,12 @@ def importa_conferma() -> ResponseReturnValue:
         sommario = importazione.riepilogo(voci)
 
         if modalita == "sostituisci" and sommario["nuovo"] == 0:
-            flash("Il file non contiene righe valide: la tabella non è stata svuotata.", "danger")
+            flash(_("Il file non contiene righe valide: la tabella non è stata svuotata."), "danger")
             return redirect(url_for("importa_anteprima", modalita=modalita))
 
         if sommario["scritture"] == 0:
             scarta_import()
-            flash("Nessuna modifica da applicare: il database contiene già questi dati.", "info")
+            flash(_("Nessuna modifica da applicare: il database contiene già questi dati."), "info")
             return redirect(url_for("index"))
 
         nome_backup = backup.crea(DB_PATH, app.config["BACKUP_DIR"], "import")
@@ -912,7 +1035,7 @@ def importa_conferma() -> ResponseReturnValue:
     except Exception:
         conn.rollback()
         app.logger.exception("Import non riuscito")
-        flash("Errore durante l'importazione: nessuna modifica è stata salvata.", "danger")
+        flash(_("Errore durante l'importazione: nessuna modifica è stata salvata."), "danger")
         return redirect(url_for("importa_anteprima", modalita=modalita))
     finally:
         conn.close()
@@ -922,19 +1045,21 @@ def importa_conferma() -> ResponseReturnValue:
     parti = []
 
     if eliminati:
-        parti.append(f"{eliminati} eliminati")
+        parti.append(ngettext("%(num)d eliminato", "%(num)d eliminati", eliminati))
 
-    parti.append(f"{sommario['nuovo']} aggiunti")
+    parti.append(ngettext("%(num)d aggiunto", "%(num)d aggiunti", sommario["nuovo"]))
 
     if sommario["aggiornato"]:
-        parti.append(f"{sommario['aggiornato']} aggiornati")
+        parti.append(ngettext("%(num)d aggiornato", "%(num)d aggiornati", sommario["aggiornato"]))
 
     if sommario["saltato"]:
-        parti.append(f"{sommario['saltato']} righe saltate")
+        parti.append(ngettext("%(num)d riga saltata", "%(num)d righe saltate", sommario["saltato"]))
 
     flash(
-        f"Import completato: {', '.join(parti)}. "
-        f"Il database precedente è nel backup {nome_backup}.",
+        _(
+            "Import completato: %(parti)s. Il database precedente è nel backup %(backup)s.",
+            parti=", ".join(parti), backup=nome_backup,
+        ),
         "success"
     )
     return redirect(url_for("index"))
@@ -944,7 +1069,7 @@ def importa_conferma() -> ResponseReturnValue:
 @solo_admin
 def importa_annulla() -> ResponseReturnValue:
     scarta_import()
-    flash("Import annullato: il database non è stato modificato.", "info")
+    flash(_("Import annullato: il database non è stato modificato."), "info")
     return redirect(url_for("importa"))
 
 
@@ -990,7 +1115,7 @@ def backup_scarica_salvato(nome: str) -> ResponseReturnValue:
 @solo_admin
 def backup_crea() -> ResponseReturnValue:
     nome = backup.crea(DB_PATH, app.config["BACKUP_DIR"], "manuale")
-    flash(f"Backup salvato: {nome}.", "success")
+    flash(_("Backup salvato: %(nome)s.", nome=nome), "success")
     return redirect(url_for("backup_pagina"))
 
 
@@ -998,7 +1123,7 @@ def esegui_ripristino(file_db: str, etichetta: str) -> None:
     try:
         alimenti = backup.verifica(file_db)
     except backup.ErroreBackup as exc:
-        flash(f"Ripristino non eseguito: {exc}", "danger")
+        flash(_("Ripristino non eseguito: %(motivo)s", motivo=exc), "danger")
         return
 
     cartella = app.config["BACKUP_DIR"]
@@ -1014,8 +1139,11 @@ def esegui_ripristino(file_db: str, etichetta: str) -> None:
     init_db(backup_prima=False)
 
     flash(
-        f"Database ripristinato da {etichetta}: {alimenti} alimenti. "
-        f"Il database precedente è nel backup {nome_backup}.",
+        ngettext(
+            "Database ripristinato da %(origine)s: %(num)d alimento. Il database precedente è nel backup %(backup)s.",
+            "Database ripristinato da %(origine)s: %(num)d alimenti. Il database precedente è nel backup %(backup)s.",
+            alimenti, origine=etichetta, backup=nome_backup,
+        ),
         "success"
     )
 
@@ -1026,11 +1154,11 @@ def backup_ripristina() -> ResponseReturnValue:
     file = request.files.get("file")
 
     if not file or not file.filename:
-        flash("Seleziona il file del database da ripristinare.", "danger")
+        flash(_("Seleziona il file del database da ripristinare."), "danger")
         return redirect(url_for("backup_pagina"))
 
     if request.form.get("conferma") != "1":
-        flash("Per ripristinare spunta la casella di conferma.", "danger")
+        flash(_("Per ripristinare spunta la casella di conferma."), "danger")
         return redirect(url_for("backup_pagina"))
 
     temporaneo = os.path.join(cartella_import(), f"ripristino-{secrets.token_hex(8)}.db")
@@ -1063,7 +1191,7 @@ def backup_ripristina_salvato(nome: str) -> ResponseReturnValue:
 PASTO_MAX_VOCI = 30
 GIORNI_RIEPILOGO = 7
 ID_IN_TESTO_RE = re.compile(r"#(\d+)\s*$")
-CHIAVI_PASTI = {chiave for chiave, _ in nutrienti.PASTI}
+CHIAVI_PASTI = {chiave for chiave, _etichetta in nutrienti.PASTI}
 
 # Valori per 100 g copiati nel diario al momento dell'inserimento
 CAMPI_DIARIO = (
@@ -1090,10 +1218,10 @@ def trova_alimento_da_modulo(form: Mapping[str, str]) -> tuple[Alimento | None, 
 
     if testo_id.isdigit():
         item = get_alimento(int(testo_id))
-        return (item, None) if item else (None, "Alimento non trovato.")
+        return (item, None) if item else (None, _("Alimento non trovato."))
 
     if not testo:
-        return None, "Scegli un alimento dall'elenco."
+        return None, _("Scegli un alimento dall'elenco.")
 
     righe = archivio.ids_per_nome(testo)
 
@@ -1101,14 +1229,15 @@ def trova_alimento_da_modulo(form: Mapping[str, str]) -> tuple[Alimento | None, 
         return get_alimento(righe[0]), None
 
     if righe:
-        return None, f"Ci sono {len(righe)} alimenti «{testo}»: scegline uno dall'elenco."
+        return None, _("Ci sono %(n)d alimenti «%(testo)s»: scegline uno dall'elenco.", n=len(righe), testo=testo)
 
-    return None, f"Nessun alimento «{testo}»: scegline uno dall'elenco."
+    return None, _("Nessun alimento «%(testo)s»: scegline uno dall'elenco.", testo=testo)
 
 
 def grammi_non_validi() -> None:
     flash(
-        f"Grammi non validi: servono da {nutrienti.GRAMMI_MIN} a {nutrienti.GRAMMI_MAX} g.",
+        _("Grammi non validi: servono da %(minimo)d a %(massimo)d g.",
+          minimo=nutrienti.GRAMMI_MIN, massimo=nutrienti.GRAMMI_MAX),
         "danger"
     )
 
@@ -1181,7 +1310,7 @@ def pasto() -> ResponseReturnValue:
     return render_template(
         "pasto.html",
         voci=voci,
-        riepilogo=riepilogo_nutrizionale([(item, grammi) for item, grammi, _ in voci]),
+        riepilogo=riepilogo_nutrizionale([(item, grammi) for item, grammi, _indice in voci]),
         elenco=elenco_per_ricerca(),
         oggi=date.today().isoformat(),
         pasto_suggerito=pasto_dell_ora(),
@@ -1196,7 +1325,7 @@ def pasto_aggiungi() -> ResponseReturnValue:
     grammi = nutrienti.leggi_grammi(request.form.get("grammi"))
 
     if errore or item is None:
-        flash(errore or "Alimento non trovato.", "danger")
+        flash(errore or _("Alimento non trovato."), "danger")
         return redirect(destinazione)
 
     if grammi is None:
@@ -1209,13 +1338,16 @@ def pasto_aggiungi() -> ResponseReturnValue:
     if esistente:
         esistente["grammi"] = min(round(esistente["grammi"] + grammi, 1), nutrienti.GRAMMI_MAX)
     elif len(voci) >= PASTO_MAX_VOCI:
-        flash(f"Il pasto può contenere al massimo {PASTO_MAX_VOCI} alimenti.", "warning")
+        flash(_("Il pasto può contenere al massimo %(n)d alimenti.", n=PASTO_MAX_VOCI), "warning")
         return redirect(destinazione)
     else:
         voci.append({"id": item["id"], "grammi": grammi})
 
     session["pasto"] = voci
-    flash(f"Aggiunto al pasto: {item['alimento']}, {filtro_numero(grammi)} g.", "success")
+    flash(
+        _("Aggiunto al pasto: %(nome)s, %(grammi)s g.", nome=item["alimento"], grammi=filtro_numero(grammi)),
+        "success"
+    )
     return redirect(destinazione)
 
 
@@ -1249,7 +1381,7 @@ def pasto_aggiorna() -> ResponseReturnValue:
 @app.route("/pasto/svuota", methods=["POST"])
 def pasto_svuota() -> ResponseReturnValue:
     session.pop("pasto", None)
-    flash("Pasto svuotato.", "info")
+    flash(_("Pasto svuotato."), "info")
     return redirect(url_for("pasto"))
 
 
@@ -1346,7 +1478,7 @@ def diario() -> ResponseReturnValue:
     for i in range(GIORNI_RIEPILOGO):
         g = inizio + timedelta(days=i)
         del_giorno = [(v["item"], v["grammi"]) for v in voci_diario(current_user.id, g)]
-        somme, _ = nutrienti.totali(del_giorno) if del_giorno else ({}, {})
+        somme, _mancanti = nutrienti.totali(del_giorno) if del_giorno else ({}, {})
         settimana.append({
             "giorno": g,
             "voci": len(del_giorno),
@@ -1381,9 +1513,9 @@ def diario_aggiungi() -> ResponseReturnValue:
     grammi = nutrienti.leggi_grammi(request.form.get("grammi"))
 
     if pasto_chiave not in CHIAVI_PASTI:
-        flash("Scegli il pasto: colazione, pranzo, cena o spuntino.", "danger")
+        flash(_("Scegli il pasto: colazione, pranzo, cena o spuntino."), "danger")
     elif errore or item is None:
-        flash(errore or "Alimento non trovato.", "danger")
+        flash(errore or _("Alimento non trovato."), "danger")
     elif grammi is None:
         grammi_non_validi()
     else:
@@ -1391,7 +1523,10 @@ def diario_aggiungi() -> ResponseReturnValue:
         inserisci_diario(conn, giorno, pasto_chiave, item, grammi)
         conn.commit()
         conn.close()
-        flash(f"Aggiunto al diario: {item['alimento']}, {filtro_numero(grammi)} g.", "success")
+        flash(
+            _("Aggiunto al diario: %(nome)s, %(grammi)s g.", nome=item["alimento"], grammi=filtro_numero(grammi)),
+            "success"
+        )
 
     return torna_al_diario(giorno)
 
@@ -1404,16 +1539,16 @@ def diario_aggiungi_pasto() -> ResponseReturnValue:
     voci = carica_voci(leggi_pasto())
 
     if pasto_chiave not in CHIAVI_PASTI:
-        flash("Scegli il pasto: colazione, pranzo, cena o spuntino.", "danger")
+        flash(_("Scegli il pasto: colazione, pranzo, cena o spuntino."), "danger")
         return redirect(url_for("pasto"))
 
     if not voci:
-        flash("Il pasto è vuoto.", "warning")
+        flash(_("Il pasto è vuoto."), "warning")
         return redirect(url_for("pasto"))
 
     conn = get_db_diario()
 
-    for item, grammi, _ in voci:
+    for item, grammi, _indice in voci:
         inserisci_diario(conn, giorno, pasto_chiave, item, grammi)
 
     conn.commit()
@@ -1422,7 +1557,10 @@ def diario_aggiungi_pasto() -> ResponseReturnValue:
     if request.form.get("svuota") == "1":
         session.pop("pasto", None)
 
-    flash(f"Salvati nel diario {len(voci)} alimenti.", "success")
+    flash(
+        ngettext("Salvato nel diario %(num)d alimento.", "Salvati nel diario %(num)d alimenti.", len(voci)),
+        "success"
+    )
     return torna_al_diario(giorno)
 
 
@@ -1469,7 +1607,7 @@ def diario_elimina(voce_id: int) -> ResponseReturnValue:
     conn.commit()
     conn.close()
 
-    flash("Voce eliminata dal diario.", "info")
+    flash(_("Voce eliminata dal diario."), "info")
     return torna_al_diario(date.fromisoformat(riga["data"]))
 
 
@@ -1695,7 +1833,12 @@ def forbidden(error: HTTPException) -> ResponseReturnValue:
     if richiesta_api():
         return api.errore_json(error)
 
-    return "<h1>403</h1><p>Operazione riservata agli amministratori.</p>", 403
+    return render_template(
+        "errore.html",
+        codice=403,
+        titolo=_("Accesso negato"),
+        messaggio=_("Operazione riservata agli amministratori."),
+    ), 403
 
 
 @app.errorhandler(404)
@@ -1703,7 +1846,12 @@ def not_found(error: HTTPException) -> ResponseReturnValue:
     if richiesta_api():
         return api.errore_json(error)
 
-    return "<h1>404</h1><p>Risorsa non trovata.</p>", 404
+    return render_template(
+        "errore.html",
+        codice=404,
+        titolo=_("Pagina non trovata"),
+        messaggio=_("Risorsa non trovata."),
+    ), 404
 
 
 @app.errorhandler(HTTPException)
@@ -1720,7 +1868,7 @@ def errore_http(error: HTTPException) -> ResponseReturnValue:
 @app.errorhandler(413)
 def file_troppo_grande(error: HTTPException) -> ResponseReturnValue:
     flash(
-        f"File troppo grande: il limite è {app.config['MAX_UPLOAD_MB']} MB.",
+        _("File troppo grande: il limite è %(mb)d MB.", mb=app.config["MAX_UPLOAD_MB"]),
         "danger"
     )
     pagina = "backup_pagina" if request.path.startswith("/backup") else "importa"
@@ -1729,7 +1877,7 @@ def file_troppo_grande(error: HTTPException) -> ResponseReturnValue:
 
 @app.errorhandler(CSRFError)
 def csrf_non_valido(error: CSRFError) -> ResponseReturnValue:
-    flash("Sessione scaduta o richiesta non valida: riprova.", "danger")
+    flash(_("Sessione scaduta o richiesta non valida: riprova."), "danger")
     return redirect(pagina_precedente() or url_for("index"))
 
 
@@ -1754,6 +1902,28 @@ def intestazioni_sicurezza(response: Response) -> Response:
 # ---------------------------------------------------------------
 
 app.register_blueprint(api.bp)
+app.register_blueprint(pwa.bp)
+
+
+@app.route("/guida")
+def guida() -> ResponseReturnValue:
+    """
+    Legenda dei livelli di rischio e metodologia (punteggio, TEF, indicatori).
+    """
+    return render_template(
+        "guida.html",
+        livelli=analisi.LIVELLI,
+        non_classificato=analisi.NON_CLASSIFICATO,
+        rischi=analisi.RISCHI,
+        medaglie=analisi.MEDAGLIE,
+        posti_medaglia=analisi.POSTI_MEDAGLIA,
+        tef=calcoli.TEF_MACRONUTRIENTI,
+        kcal_per_grammo=calcoli.KCAL_PER_GRAMMO,
+        nova=nutrienti.NOVA.values(),
+        livelli_fodmap=nutrienti.LIVELLI_FODMAP,
+        fodmap=nutrienti.FODMAP,
+        totale_alimenti=get_stats()[0],
+    )
 
 
 @app.route("/salute")

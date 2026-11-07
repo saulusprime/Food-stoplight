@@ -38,6 +38,11 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 - **Alternative migliori**: nella scheda, gli alimenti della stessa categoria con punteggio più alto.
 - **Componi un pasto**: somma più alimenti con le loro porzioni e mostra totali e profilo di rischio del pasto.
 - **Diario alimentare** per ogni utente registrato: pasti del giorno, totali di Kcal, Kcal nette e TEF, profilo di rischio della giornata e riepilogo degli ultimi 7 giorni.
+- **Italiano e inglese**: la lingua segue il browser e si cambia dal menu (🌐). Export, API e riga di comando restano in italiano.
+- **App installabile** su telefono e computer: senza connessione restano consultabili la tabella, la guida e le schede già aperte.
+- **Guida ai dati** (livelli di rischio, soglie, punteggio, TEF, indice glicemico, FODMAP, NOVA, fonti) e legenda compatta sopra la tabella.
+- **Tabella su ogni schermo**: su telefono ogni alimento è una scheda compatta, con un menu per l'ordinamento; da tablet in su si vedono le colonne principali e «Mostra tutte le colonne» aggiunge TEF, fruttosio, fibre e rapporto F/F.
+- **Notifiche e conferme**: i messaggi compaiono come notifiche in un angolo (gli errori restano finché non si chiudono); eliminazioni, ripristini e svuotamento del pasto chiedono conferma in una finestra.
 
 ## 📂 Struttura del progetto
 
@@ -54,6 +59,9 @@ Food-stoplight/
 ├── backup.py           # Backup, verifica e ripristino del database alimenti
 ├── nutrienti.py        # Campi nutrizionali, carico glicemico, porzioni, profilo dei pasti, alternative
 ├── usda.py             # Macro e micronutrienti da USDA FoodData Central
+├── lingue.py           # Scelta della lingua (italiano, inglese) e traduzione dei valori mostrati
+├── pwa.py              # App installabile: manifest, service worker, pagina offline
+├── babel.cfg, translations/   # Estrazione dei testi e traduzione inglese (messages.po / .mo)
 ├── config.py           # Configurazione da variabili d'ambiente / .env (sviluppo e produzione)
 ├── .env.example        # Modello del file .env
 ├── update.py           # Aggiornamento del database da CSV/Excel da riga di comando (stesse regole dell'import web)
@@ -63,7 +71,7 @@ Food-stoplight/
 ├── diario.db           # Diario alimentare degli utenti (creato al primo avvio, escluso da git)
 ├── instance/           # Backup del database e file in attesa di import (creata all'uso, esclusa da git)
 ├── templates/          # Template Jinja2
-│   ├── base.html       # Layout comune (navbar, tema chiaro/scuro, flash message)
+│   ├── base.html       # Layout comune (navbar, lingua, tema chiaro/scuro, notifiche, finestra di conferma)
 │   ├── index.html      # Riepilogo grafico e tabella alimenti con filtri e ordinamento
 │   ├── scheda.html     # Scheda del singolo alimento: porzione, nutrienti, radar, alternative
 │   ├── pasto.html      # Composizione di un pasto
@@ -73,10 +81,14 @@ Food-stoplight/
 │   ├── import.html     # Caricamento del file da importare (CSV o Excel)
 │   ├── import_anteprima.html  # Anteprima dell'import e scelta della modalità
 │   ├── backup.html     # Backup e ripristino del database
+│   ├── guida.html      # Guida ai dati: livelli, soglie, punteggio, TEF, indicatori, fonti
+│   ├── offline.html, errore.html  # Pagina senza connessione e pagine di errore (403, 404)
+│   ├── sw.js           # Service worker (generato con la versione dei file statici)
 │   └── login.html      # Pagina di accesso
 ├── static/
 │   ├── css/app.css     # Stili dell'app, colori dei livelli, modalità scura
-│   ├── js/app.js       # Pulsante del tema e tooltip dei grafici
+│   ├── js/app.js       # Tema, tooltip, notifiche, conferme, porzione, colonne, service worker
+│   ├── icone/          # Icone dell'app (SVG e PNG)
 │   └── bootstrap-italia/   # Bootstrap Italia 2.18.3 (CSS, JS, font, icone)
 ├── tests/              # Test automatici (pytest)
 ├── docker/avvio.sh     # Avvio del container: prepara /data e l'amministratore iniziale
@@ -172,6 +184,27 @@ flask --app app elimina-utente lucia                   # elimina anche il suo di
 - **Diario**: per gli utenti registrati, sia amministratori sia visitatori; ognuno vede solo il proprio. Si aggiungono alimenti a colazione, pranzo, cena o spuntino, oppure si salva un pasto intero. Ogni voce conserva i valori dell'alimento al momento dell'inserimento, quindi il diario non cambia se l'alimento viene poi modificato o eliminato.
 - Il diario sta in `diario.db`, separato dagli altri database ed escluso da git e dai backup.
 
+## 🌐 Lingue
+
+L'interfaccia è in italiano e in inglese. Al primo accesso la lingua segue le preferenze del browser; il link 🌐 nel menu la cambia e la scelta resta in un cookie per un anno. Si traducono pagine, messaggi, errori dei form, livelli, categorie e guida; i nomi degli alimenti restano quelli del database. Export (CSV, Excel, PDF), API e comandi da riga di comando restano in italiano, così i file esportati si reimportano senza cambiare intestazioni.
+
+I testi sono scritti in italiano nel codice e nei template (con `_()` e `{% trans %}`); la traduzione è in `translations/en/LC_MESSAGES/messages.po`. Dopo aver aggiunto o cambiato dei testi:
+
+```bash
+pybabel extract -F babel.cfg -o messages.pot --no-location --sort-output .
+pybabel update -i messages.pot -d translations --no-fuzzy-matching --ignore-obsolete
+# tradurre le voci nuove in messages.po, poi:
+pybabel compile -d translations
+```
+
+`pytest` segnala i testi senza traduzione, le voci non più usate e un `messages.mo` non ricompilato.
+
+## 📱 App installabile e offline
+
+Il sito si installa come app (Chrome, Edge, Safari su iPhone con «Aggiungi alla schermata Home»). Il service worker conserva sul dispositivo i file statici, la tabella completa e la guida; le schede degli alimenti restano disponibili dopo averle aperte una volta. Senza connessione la tabella mostra l'ultima copia salvata (senza filtri), e le pagine che richiedono la rete (pasto, diario, amministrazione) lasciano il posto a una pagina offline con l'elenco delle schede salvate.
+
+All'uscita dall'account le pagine salvate vengono cancellate, perché possono contenere il nome dell'utente e i pulsanti di amministrazione. A ogni deploy che cambia CSS, JavaScript, icone o traduzioni il service worker si aggiorna da solo. L'app installabile richiede HTTPS (in locale va bene `http://localhost`).
+
 ## 🥦 Dati nutrizionali da USDA
 
 ```bash
@@ -242,6 +275,8 @@ ruff check .          # lint
 mypy                  # controllo dei tipi
 ```
 
+I test controllano anche che ogni testo dell'interfaccia abbia la traduzione inglese (vedi *Lingue*).
+
 GitHub Actions (`.github/workflows/ci.yml`) esegue lint, tipi e test con Python 3.11, 3.12 e 3.13 a ogni push, poi costruisce l'immagine Docker e ne verifica l'avvio.
 
 ## 🛠️ Strumenti a riga di comando
@@ -295,7 +330,8 @@ python autogen.py --output dataset.csv --seed 42 --per-categoria 115
 | Backend | Python 3.11+, Flask 3, gunicorn |
 | Sicurezza | Flask-Login (sessioni e ruoli), Flask-WTF (CSRF), python-dotenv |
 | Database | SQLite 3 |
-| Frontend | Jinja2, Bootstrap Italia 2.18.3 |
+| Frontend | Jinja2, Bootstrap Italia 2.18.3, service worker (app installabile) |
+| Lingue | Flask-Babel (italiano, inglese) |
 | Import / Export | openpyxl (Excel), fpdf2 (PDF) |
 | Dati | USDA FoodData Central API (requests) |
 | Qualità | pytest, ruff, mypy, GitHub Actions |

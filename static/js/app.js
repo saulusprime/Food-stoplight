@@ -1,4 +1,23 @@
-/* Food-stoplight — tema chiaro/scuro e tooltip dei grafici */
+/* Food-stoplight — comportamento delle pagine
+ * Tema chiaro/scuro, tooltip dei grafici, notifiche, conferme, calcolatore
+ * della porzione, colonne della tabella e app installabile (service worker).
+ * I testi arrivano tradotti dal blocco <script id="testi-js"> di base.html.
+ */
+var TESTI = (function () {
+    "use strict";
+
+    try {
+        return JSON.parse(document.getElementById("testi-js").textContent);
+    } catch (errore) {
+        return {};
+    }
+})();
+
+function testo(chiave, alternativa) {
+    "use strict";
+    return TESTI[chiave] || alternativa;
+}
+
 (function () {
     "use strict";
 
@@ -24,7 +43,9 @@
             return;
         }
         var scuro = temaCorrente() === "dark";
-        var etichetta = scuro ? "Passa alla modalità chiara" : "Passa alla modalità scura";
+        var etichetta = scuro
+            ? testo("temaChiaro", "Passa alla modalità chiara")
+            : testo("temaScuro", "Passa alla modalità scura");
         btn.querySelector(".tema-icona").textContent = scuro ? "☀️" : "🌙";
         btn.setAttribute("aria-label", etichetta);
         btn.setAttribute("title", etichetta);
@@ -138,20 +159,198 @@
 })();
 
 // ---------------------------------------------------------------
-// Conferma prima di inviare i form con data-conferma="messaggio"
-// (es. ripristino di un backup dall'elenco)
+// Notifiche (toast): i messaggi del server arrivano nella pagina come
+// avvisi; qui diventano toast in un angolo. Conferme e informazioni
+// si chiudono da sole dopo qualche secondo (non mentre il puntatore o
+// il focus sono sopra), errori e avvisi restano finché non si chiudono.
+// ---------------------------------------------------------------
+var Notifiche = (function () {
+    "use strict";
+
+    var DURATA = 6000;
+    var contenitore = document.getElementById("notifiche");
+
+    if (!contenitore) {
+        return { mostra: function () {} };
+    }
+
+    contenitore.classList.add("notifiche-toast");
+
+    // Regioni live vuote all'avvio: i lettori di schermo annunciano i
+    // messaggi quando vengono inseriti, non quelli già presenti
+    var cortese = document.createElement("div");
+    cortese.setAttribute("role", "status");
+    cortese.setAttribute("aria-live", "polite");
+
+    var urgente = document.createElement("div");
+    urgente.setAttribute("role", "alert");
+
+    contenitore.appendChild(cortese);
+    contenitore.appendChild(urgente);
+
+    function chiudi(notifica) {
+        if (!notifica.isConnected || notifica.classList.contains("in-uscita")) {
+            return;
+        }
+        notifica.classList.add("in-uscita");
+        window.setTimeout(function () {
+            notifica.remove();
+        }, 200);
+    }
+
+    function attiva(notifica) {
+        var tipo = notifica.getAttribute("data-tipo") || "info";
+        var pulsante = notifica.querySelector(".notifica-chiudi");
+        var timer = null;
+
+        if (pulsante) {
+            pulsante.hidden = false;
+            pulsante.addEventListener("click", function () {
+                chiudi(notifica);
+            });
+        }
+
+        if (tipo === "success" || tipo === "info") {
+            var avvia = function () {
+                window.clearTimeout(timer);
+                timer = window.setTimeout(function () {
+                    chiudi(notifica);
+                }, DURATA);
+            };
+            var ferma = function () {
+                window.clearTimeout(timer);
+            };
+
+            notifica.addEventListener("pointerenter", ferma);
+            notifica.addEventListener("pointerleave", avvia);
+            notifica.addEventListener("focusin", ferma);
+            notifica.addEventListener("focusout", avvia);
+            avvia();
+        }
+
+        (tipo === "danger" || tipo === "warning" ? urgente : cortese).appendChild(notifica);
+    }
+
+    var iniziali = Array.prototype.slice.call(contenitore.querySelectorAll(":scope > .notifica"));
+
+    // Un attimo dopo il caricamento, così le regioni live sono già registrate,
+    // i messaggi del server si spostano nelle regioni (restando visibili)
+    window.setTimeout(function () {
+        iniziali.forEach(attiva);
+    }, 150);
+
+    function mostra(messaggio, tipo) {
+        var modello = document.createElement("div");
+        modello.className = "notifica notifica-" + tipo;
+        modello.setAttribute("data-tipo", tipo);
+
+        var icona = document.createElement("span");
+        icona.className = "notifica-icona";
+        icona.setAttribute("aria-hidden", "true");
+        icona.textContent = tipo === "success" ? "✓" : (tipo === "info" ? "i" : "!");
+
+        var corpo = document.createElement("p");
+        corpo.className = "notifica-testo";
+        corpo.textContent = messaggio;
+
+        var pulsante = document.createElement("button");
+        pulsante.type = "button";
+        pulsante.className = "notifica-chiudi";
+        pulsante.setAttribute("aria-label", testo("chiudiNotifica", "Chiudi la notifica"));
+        pulsante.innerHTML = "<span aria-hidden=\"true\">×</span>";
+
+        modello.appendChild(icona);
+        modello.appendChild(corpo);
+        modello.appendChild(pulsante);
+        attiva(modello);
+    }
+
+    return { mostra: mostra };
+})();
+
+// ---------------------------------------------------------------
+// Conferma con finestra modale prima di inviare i form (o i pulsanti)
+// con data-conferma="messaggio"; facoltativi data-conferma-titolo e
+// data-conferma-pulsante. Senza <dialog> si usa confirm().
 // ---------------------------------------------------------------
 (function () {
     "use strict";
 
+    var dialogo = document.getElementById("dialogo-conferma");
+    var supportato = dialogo && typeof dialogo.showModal === "function";
+
+    function attributo(nome, submitter, form) {
+        return (submitter && submitter.getAttribute(nome)) || form.getAttribute(nome) || "";
+    }
+
     document.addEventListener("submit", function (evento) {
         var form = evento.target;
-        var messaggio = form.getAttribute && form.getAttribute("data-conferma");
+        var submitter = evento.submitter || null;
+        var messaggio = attributo("data-conferma", submitter, form);
 
-        if (messaggio && !window.confirm(messaggio)) {
-            evento.preventDefault();
+        if (!messaggio) {
+            return;
         }
+
+        if (form.getAttribute("data-confermato") === "1") {
+            form.removeAttribute("data-confermato");
+            return;
+        }
+
+        evento.preventDefault();
+
+        if (!supportato) {
+            if (window.confirm(messaggio)) {
+                form.setAttribute("data-confermato", "1");
+                if (form.requestSubmit) {
+                    form.requestSubmit(submitter || undefined);
+                } else {
+                    form.submit();
+                }
+            }
+            return;
+        }
+
+        var titolo = attributo("data-conferma-titolo", submitter, form) || testo("conferma", "Conferma");
+        var pulsante = attributo("data-conferma-pulsante", submitter, form) || testo("conferma", "Conferma");
+
+        document.getElementById("dialogo-titolo").textContent = titolo;
+        document.getElementById("dialogo-testo").textContent = messaggio;
+        document.getElementById("dialogo-conferma-pulsante").textContent = pulsante;
+
+        dialogo.returnValue = "";
+        dialogo.showModal();
+        // Il focus parte da «Annulla»: Invio per sbaglio non elimina nulla
+        document.getElementById("dialogo-annulla").focus();
+
+        dialogo.addEventListener("close", function chiusura() {
+            dialogo.removeEventListener("close", chiusura);
+
+            if (dialogo.returnValue !== "conferma") {
+                if (submitter) {
+                    submitter.focus();
+                }
+                return;
+            }
+
+            form.setAttribute("data-confermato", "1");
+
+            if (form.requestSubmit) {
+                form.requestSubmit(submitter || undefined);
+            } else {
+                form.submit();
+            }
+        });
     });
+
+    // Clic sullo sfondo: come Annulla
+    if (supportato) {
+        dialogo.addEventListener("click", function (evento) {
+            if (evento.target === dialogo) {
+                dialogo.close("annulla");
+            }
+        });
+    }
 })();
 
 // ---------------------------------------------------------------
@@ -169,9 +368,11 @@
 
     var MIN = parseFloat(campo.min) || 1;
     var MAX = parseFloat(campo.max) || 2000;
+    var LINGUA = document.documentElement.lang || "it";
+    var LIVELLI = TESTI.livelli || { Basso: "Basso", Medio: "Medio", Alto: "Alto" };
 
     function formatta(valore, decimali) {
-        return valore.toLocaleString("it-IT", {
+        return valore.toLocaleString(LINGUA, {
             maximumFractionDigits: decimali,
             useGrouping: false
         });
@@ -179,9 +380,9 @@
 
     function livelloCarico(carico) {
         if (carico <= 10) {
-            return ["good", "Basso"];
+            return ["good", LIVELLI.Basso];
         }
-        return carico < 20 ? ["warning", "Medio"] : ["critical", "Alto"];
+        return carico < 20 ? ["warning", LIVELLI.Medio] : ["critical", LIVELLI.Alto];
     }
 
     function aggiorna(grammi) {
@@ -245,4 +446,130 @@
             aggiorna(parseFloat(campo.value));
         });
     });
+})();
+
+// ---------------------------------------------------------------
+// Tabella da tablet in su: le colonne secondarie (TEF, fruttosio, fibre,
+// rapporto F/F) sono nascoste; il pulsante le mostra tutte e la scelta
+// resta memorizzata.
+// ---------------------------------------------------------------
+(function () {
+    "use strict";
+
+    var pulsante = document.getElementById("mostra-colonne");
+
+    if (!pulsante) {
+        return;
+    }
+
+    var root = document.documentElement;
+
+    function aggiorna() {
+        var tutte = root.classList.contains("tutte-colonne");
+        pulsante.setAttribute("aria-pressed", tutte ? "true" : "false");
+        pulsante.textContent = tutte
+            ? testo("colonnePrincipali", "Solo le colonne principali")
+            : testo("tutteLeColonne", "Mostra tutte le colonne");
+    }
+
+    pulsante.hidden = false;
+    aggiorna();
+
+    pulsante.addEventListener("click", function () {
+        var tutte = root.classList.toggle("tutte-colonne");
+        try {
+            localStorage.setItem("tutte-colonne", tutte ? "1" : "0");
+        } catch (errore) {
+            /* la scelta vale solo per questa pagina */
+        }
+        aggiorna();
+    });
+})();
+
+// ---------------------------------------------------------------
+// App installabile: registrazione del service worker, pagine salvate
+// cancellate all'uscita dall'account, avvisi di connessione persa e
+// ritrovata, elenco delle schede salvate nella pagina offline.
+// ---------------------------------------------------------------
+(function () {
+    "use strict";
+
+    var corpo = document.body;
+    var supportato = "serviceWorker" in navigator && window.isSecureContext;
+
+    if (supportato && corpo.getAttribute("data-sw")) {
+        window.addEventListener("load", function () {
+            navigator.serviceWorker.register(corpo.getAttribute("data-sw")).catch(function () {
+                /* senza service worker l'app funziona lo stesso, solo online */
+            });
+        });
+
+        if (corpo.hasAttribute("data-svuota-cache")) {
+            navigator.serviceWorker.ready.then(function (registrazione) {
+                if (registrazione.active) {
+                    registrazione.active.postMessage("svuota-pagine");
+                }
+            });
+        }
+    }
+
+    window.addEventListener("offline", function () {
+        Notifiche.mostra(testo("offline", "Sei offline: le pagine già aperte restano consultabili."), "warning");
+    });
+
+    window.addEventListener("online", function () {
+        Notifiche.mostra(testo("online", "Di nuovo online."), "success");
+    });
+
+    var pagina = document.querySelector("[data-cache-pagine]");
+    var elenco = document.getElementById("schede-salvate");
+
+    if (!pagina || !elenco || !window.caches) {
+        return;
+    }
+
+    var vuoto = document.getElementById("schede-salvate-vuoto");
+
+    caches.open(pagina.getAttribute("data-cache-pagine"))
+        .then(function (cache) {
+            return cache.keys().then(function (richieste) {
+                var schede = richieste.filter(function (richiesta) {
+                    return /\/alimento\/\d+$/.test(new URL(richiesta.url).pathname);
+                });
+
+                return Promise.all(schede.map(function (richiesta) {
+                    return cache.match(richiesta)
+                        .then(function (risposta) { return risposta.text(); })
+                        .then(function (html) {
+                            var documento = new DOMParser().parseFromString(html, "text/html");
+                            var titolo = documento.querySelector("h1");
+                            return { url: richiesta.url, nome: titolo ? titolo.textContent.trim() : richiesta.url };
+                        });
+                }));
+            });
+        })
+        .then(function (schede) {
+            if (!schede.length) {
+                return;
+            }
+
+            schede.sort(function (a, b) {
+                return a.nome.localeCompare(b.nome, document.documentElement.lang || "it");
+            });
+
+            schede.forEach(function (scheda) {
+                var voce = document.createElement("li");
+                var link = document.createElement("a");
+                link.href = scheda.url;
+                link.textContent = scheda.nome;
+                voce.appendChild(link);
+                elenco.appendChild(voce);
+            });
+
+            elenco.hidden = false;
+            vuoto.hidden = true;
+        })
+        .catch(function () {
+            /* cache non leggibile: resta il messaggio "nessuna scheda" */
+        });
 })();

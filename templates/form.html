@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{ titolo|default('Alimento') }}
+{{ titolo|default(_('Alimento')) }}
 {% endblock %}
 
 {% block content %}
@@ -63,7 +63,7 @@
             name="{{ name }}"
             {% if aiuto %}aria-describedby="{{ name }}-aiuto"{% endif %}
         >
-            <option value="">Non disponibile</option>
+            <option value="">{{ _('Non disponibile') }}</option>
             {% for valore_opzione, etichetta in opzioni_scelta %}
                 <option value="{{ valore_opzione }}" {% if valore == valore_opzione|string %}selected{% endif %}>{{ etichetta }}</option>
             {% endfor %}
@@ -77,7 +77,7 @@
 
 
 <div class="page-header">
-    <h1>{{ titolo|default('Alimento') }}</h1>
+    <h1>{{ titolo|default(_('Alimento')) }}</h1>
     {% if sottotitolo %}
         <p>{{ sottotitolo }}</p>
     {% endif %}
@@ -91,44 +91,44 @@
 
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-    <h2 class="h5 mb-3">Dati generali</h2>
+    <h2 class="h5 mb-3">{{ _('Dati generali') }}</h2>
 
     <div class="row g-3 mb-4">
-        {{ campo('alimento', 'Alimento', col='col-md-8', obbligatorio=true) }}
-        {{ campo('categoria', 'Categoria', col='col-md-4', suggerimenti=opzioni.categoria) }}
+        {{ campo('alimento', _('Alimento'), col='col-md-8', obbligatorio=true) }}
+        {{ campo('categoria', _('Categoria'), col='col-md-4', suggerimenti=opzioni.categoria) }}
     </div>
 
-    <h2 class="h5 mb-3">Energia</h2>
+    <h2 class="h5 mb-3">{{ _('Energia') }}</h2>
 
     <div class="row g-3 mb-4">
-        {{ campo('kcal', 'Kcal (per 100 g)', tipo='numero', aiuto='Vuoto: stimate dai macronutrienti.') }}
-        {{ campo('tef_percent', 'TEF (%)', tipo='numero',
-                 aiuto='Vuoto: da TEF (Kcal) e Kcal, oppure stimato dai macronutrienti.') }}
-        {{ campo('tef_kcal', 'TEF (Kcal)', tipo='numero',
-                 aiuto='Vuoto: da Kcal e TEF (%), oppure stimato dai macronutrienti.') }}
-        {{ campo('kcal_nette', 'Kcal nette', tipo='numero',
-                 aiuto='Vuoto: Kcal − TEF (Kcal).') }}
+        {{ campo('kcal', _('Kcal (per 100 g)'), tipo='numero', aiuto=_('Vuoto: stimate dai macronutrienti.')) }}
+        {{ campo('tef_percent', _('TEF (%%)'), tipo='numero',
+                 aiuto=_('Vuoto: da TEF (Kcal) e Kcal, oppure stimato dai macronutrienti.')) }}
+        {{ campo('tef_kcal', _('TEF (Kcal)'), tipo='numero',
+                 aiuto=_('Vuoto: da Kcal e TEF (%%), oppure stimato dai macronutrienti.')) }}
+        {{ campo('kcal_nette', _('Kcal nette'), tipo='numero',
+                 aiuto=_('Vuoto: Kcal − TEF (Kcal).')) }}
     </div>
 
-    <h2 class="h5 mb-3">Fruttosio e fibre</h2>
+    <h2 class="h5 mb-3">{{ _('Fruttosio e fibre') }}</h2>
 
     <div class="row g-3 mb-4">
-        {{ campo('fruttosio', 'Fruttosio (g/100 g)', col='col-md-4', tipo='numero') }}
-        {{ campo('fibre', 'Fibre (g/100 g)', col='col-md-4', tipo='numero') }}
+        {{ campo('fruttosio', _('Fruttosio (g/100 g)'), col='col-md-4', tipo='numero') }}
+        {{ campo('fibre', _('Fibre (g/100 g)'), col='col-md-4', tipo='numero') }}
         <div class="col-md-4">
-            <label for="rapporto" class="form-label">Rapporto F/Fibre</label>
+            <label for="rapporto" class="form-label">{{ _('Rapporto F/Fibre') }}</label>
             <input type="text" class="form-control" id="rapporto" value="{{ item.rapporto|numero(3) if item and item.rapporto is defined and item.rapporto is not none else '' }}"
                    readonly aria-describedby="rapporto-aiuto">
-            <small id="rapporto-aiuto" class="form-text text-muted">Calcolato al salvataggio: fruttosio ÷ fibre.</small>
+            <small id="rapporto-aiuto" class="form-text text-muted">{{ _('Calcolato al salvataggio: fruttosio ÷ fibre.') }}</small>
         </div>
     </div>
 
-    <h2 class="h5 mb-1">Macronutrienti</h2>
-    <p class="text-muted small mb-3">Per 100 g. Lasciare vuoto se il dato non è disponibile.</p>
+    <h2 class="h5 mb-1">{{ _('Macronutrienti') }}</h2>
+    <p class="text-muted small mb-3">{{ _('Per 100 g. Lasciare vuoto se il dato non è disponibile.') }}</p>
 
     <div class="row g-3 mb-4">
-        {% for nome_campo, etichetta, unita, _, _ in nutrienti.MACRO %}
-            {{ campo(nome_campo, etichetta ~ ' (' ~ unita ~ ')', col='col-6 col-md-4 col-xl-2', tipo='numero') }}
+        {% for nome_campo, etichetta, unita, _decimali, _codice in nutrienti.MACRO %}
+            {{ campo(nome_campo, etichetta|traduci ~ ' (' ~ unita ~ ')', col='col-6 col-md-4 col-xl-2', tipo='numero') }}
         {% endfor %}
     </div>
 
@@ -141,67 +141,71 @@
     {% endif %}
 
     <details class="mb-4 sezione-form"{% if ns.aperta %} open{% endif %}>
-        <summary class="h5 mb-3">Micronutrienti</summary>
+        <summary class="h5 mb-3">{{ _('Micronutrienti') }}</summary>
 
         <div class="row g-3">
-            {% for nome_campo, etichetta, unita, _, _ in nutrienti.MICRO %}
-                {{ campo(nome_campo, etichetta ~ ' (' ~ unita ~ ')', col='col-6 col-md-3', tipo='numero') }}
+            {% for nome_campo, etichetta, unita, _decimali, _codice in nutrienti.MICRO %}
+                {{ campo(nome_campo, etichetta|traduci ~ ' (' ~ unita ~ ')', col='col-6 col-md-3', tipo='numero') }}
             {% endfor %}
         </div>
     </details>
 
-    <h2 class="h5 mb-3">Indice glicemico, FODMAP e processazione</h2>
+    <h2 class="h5 mb-3">{{ _('Indice glicemico, FODMAP e processazione') }}</h2>
 
     <div class="row g-3 mb-4">
-        {{ campo('indice_glicemico', 'Indice glicemico (0–100)', col='col-md-4', tipo='numero',
-                 aiuto='Il carico glicemico si calcola da indice e carboidrati.') }}
-        {{ scelta('nova', 'Grado di processazione (NOVA)', opzioni.nova, col='col-md-8') }}
+        {{ campo('indice_glicemico', _('Indice glicemico (0–100)'), col='col-md-4', tipo='numero',
+                 aiuto=_('Il carico glicemico si calcola da indice e carboidrati.')) }}
+        {{ scelta('nova', _('Grado di processazione (NOVA)'), opzioni.nova, col='col-md-8') }}
 
         {% for nome_campo, etichetta in nutrienti.FODMAP %}
-            {{ scelta(nome_campo, 'FODMAP: ' ~ etichetta, opzioni.fodmap, col='col-md-4') }}
+            {{ scelta(nome_campo, 'FODMAP: ' ~ etichetta|traduci, opzioni.fodmap, col='col-md-4') }}
         {% endfor %}
     </div>
 
-    <h2 class="h5 mb-3">Fonte dei dati nutrizionali</h2>
+    <h2 class="h5 mb-3">{{ _('Fonte dei dati nutrizionali') }}</h2>
 
     <div class="row g-3 mb-4">
-        {{ campo('fonte_nutrienti', 'Fonte', col='col-md-4') }}
-        {{ campo('url_fonte', 'URL della fonte', col='col-md-5', aiuto='Indirizzo http:// o https://.') }}
-        {{ campo('fdc_id', 'FDC ID (USDA)', col='col-md-3', tipo='numero') }}
+        {{ campo('fonte_nutrienti', _('Fonte'), col='col-md-4') }}
+        {{ campo('url_fonte', _('URL della fonte'), col='col-md-5', aiuto=_('Indirizzo http:// o https://.')) }}
+        {{ campo('fdc_id', _('FDC ID (USDA)'), col='col-md-3', tipo='numero') }}
 
         <div class="col-12">
-            <label for="note" class="form-label">Note</label>
+            <label for="note" class="form-label">{{ _('Note') }}</label>
             <textarea class="form-control" id="note" name="note" rows="2" maxlength="2000">{{ item.note if item and item.note else '' }}</textarea>
         </div>
     </div>
 
-    <h2 class="h5 mb-3">Profilo di rischio</h2>
+    <h2 class="h5 mb-1">{{ _('Profilo di rischio') }}</h2>
+    <p class="text-muted small mb-3">
+        {% trans %}Livelli: Trascurabile, Basso, Medio, Alto (si salvano in italiano, come nel resto del database).{% endtrans %}
+        <a href="{{ url_for('guida') }}#livelli">{{ _('Cosa significano') }}</a>
+    </p>
 
     <div class="row g-3 mb-4">
-        {{ campo('rischio_diabete', 'Rischio Diabete', col='col-md-4',
+        {{ campo('rischio_diabete', _('Rischio Diabete'), col='col-md-4',
                  suggerimenti=opzioni.rischio_diabete) }}
-        {{ campo('rischio_colesterolo', 'Rischio Colesterolo', col='col-md-4',
+        {{ campo('rischio_colesterolo', _('Rischio Colesterolo'), col='col-md-4',
                  suggerimenti=opzioni.rischio_colesterolo) }}
-        {{ campo('rischio_malassorbimento', 'Rischio Malassorbimento', col='col-md-4',
+        {{ campo('rischio_malassorbimento', _('Rischio Malassorbimento'), col='col-md-4',
                  suggerimenti=opzioni.rischio_malassorbimento) }}
-        {{ campo('rischio_metabolico', 'Rischio Metabolico', col='col-md-4',
+        {{ campo('rischio_metabolico', _('Rischio Metabolico'), col='col-md-4',
                  suggerimenti=opzioni.rischio_metabolico) }}
-        {{ campo('rischio_tumorale', 'Rischio Tumorale', col='col-md-4',
+        {{ campo('rischio_tumorale', _('Rischio Tumorale'), col='col-md-4',
                  suggerimenti=opzioni.rischio_tumorale) }}
     </div>
 
     <p class="text-muted small mb-3">
-        <span class="text-danger">*</span> campo obbligatorio.
-        I valori numerici accettano anche la virgola decimale (es. 5,9).
+        <span class="text-danger">*</span> {{ _('campo obbligatorio.') }}
+        {{ _('I valori numerici accettano anche la virgola decimale (es. 5,9).') }}
     </p>
 
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">
-            Salva
+            {{ _('Salva') }}
         </button>
 
         <a href="{{ url_for('index') }}" class="btn btn-secondary">
-            Annulla
+            {{ _('Annulla') }}
         </a>
     </div>
 

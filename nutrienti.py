@@ -19,6 +19,7 @@ from typing import Any
 
 import analisi
 from analisi import Alimento, Livello
+from lingue import N_
 
 # (alimento, grammi) di un pasto o di una giornata
 Voce = tuple[Alimento, float]
@@ -29,27 +30,27 @@ Voce = tuple[Alimento, float]
 # ---------------------------------------------------------------
 
 MACRO = (
-    ("proteine", "Proteine", "g", 1, "203"),
-    ("carboidrati", "Carboidrati", "g", 1, "205"),
-    ("zuccheri", "di cui zuccheri", "g", 1, "269"),
-    ("grassi", "Grassi", "g", 1, "204"),
-    ("grassi_saturi", "di cui saturi", "g", 1, "606"),
-    ("colesterolo", "Colesterolo", "mg", 0, "601"),
+    ("proteine", N_("Proteine"), "g", 1, "203"),
+    ("carboidrati", N_("Carboidrati"), "g", 1, "205"),
+    ("zuccheri", N_("di cui zuccheri"), "g", 1, "269"),
+    ("grassi", N_("Grassi"), "g", 1, "204"),
+    ("grassi_saturi", N_("di cui saturi"), "g", 1, "606"),
+    ("colesterolo", N_("Colesterolo"), "mg", 0, "601"),
 )
 
 MICRO = (
-    ("vitamina_a", "Vitamina A", "µg", 0, "320"),
-    ("vitamina_c", "Vitamina C", "mg", 1, "401"),
-    ("vitamina_d", "Vitamina D", "µg", 1, "328"),
-    ("vitamina_e", "Vitamina E", "mg", 1, "323"),
-    ("vitamina_b12", "Vitamina B12", "µg", 2, "418"),
-    ("folati", "Folati", "µg", 0, "435"),
-    ("calcio", "Calcio", "mg", 0, "301"),
-    ("ferro", "Ferro", "mg", 1, "303"),
-    ("magnesio", "Magnesio", "mg", 0, "304"),
-    ("potassio", "Potassio", "mg", 0, "306"),
-    ("sodio", "Sodio", "mg", 0, "307"),
-    ("zinco", "Zinco", "mg", 1, "309"),
+    ("vitamina_a", N_("Vitamina A"), "µg", 0, "320"),
+    ("vitamina_c", N_("Vitamina C"), "mg", 1, "401"),
+    ("vitamina_d", N_("Vitamina D"), "µg", 1, "328"),
+    ("vitamina_e", N_("Vitamina E"), "mg", 1, "323"),
+    ("vitamina_b12", N_("Vitamina B12"), "µg", 2, "418"),
+    ("folati", N_("Folati"), "µg", 0, "435"),
+    ("calcio", N_("Calcio"), "mg", 0, "301"),
+    ("ferro", N_("Ferro"), "mg", 1, "303"),
+    ("magnesio", N_("Magnesio"), "mg", 0, "304"),
+    ("potassio", N_("Potassio"), "mg", 0, "306"),
+    ("sodio", N_("Sodio"), "mg", 0, "307"),
+    ("zinco", N_("Zinco"), "mg", 1, "309"),
 )
 
 NUTRIENTI = MACRO + MICRO
@@ -57,20 +58,20 @@ CAMPI_NUTRIENTI = tuple(n[0] for n in NUTRIENTI)
 PER_CAMPO = {n[0]: n for n in NUTRIENTI}
 
 FODMAP = (
-    ("fodmap_fruttani", "Fruttani"),
-    ("fodmap_gos", "GOS (galatto-oligosaccaridi)"),
-    ("fodmap_lattosio", "Lattosio"),
-    ("fodmap_fruttosio", "Fruttosio in eccesso"),
-    ("fodmap_polioli", "Polioli (sorbitolo, mannitolo)"),
+    ("fodmap_fruttani", N_("Fruttani")),
+    ("fodmap_gos", N_("GOS (galatto-oligosaccaridi)")),
+    ("fodmap_lattosio", N_("Lattosio")),
+    ("fodmap_fruttosio", N_("Fruttosio in eccesso")),
+    ("fodmap_polioli", N_("Polioli (sorbitolo, mannitolo)")),
 )
 
 CAMPI_FODMAP = tuple(campo for campo, _ in FODMAP)
 
 # Semaforo FODMAP come nelle tabelle Monash: verde, giallo, rosso
 LIVELLI_FODMAP = (
-    {"etichetta": "Basso", "stato": "good", "ordine": 0},
-    {"etichetta": "Medio", "stato": "warning", "ordine": 1},
-    {"etichetta": "Alto", "stato": "critical", "ordine": 2},
+    {"etichetta": N_("Basso"), "stato": "good", "ordine": 0},
+    {"etichetta": N_("Medio"), "stato": "warning", "ordine": 1},
+    {"etichetta": N_("Alto"), "stato": "critical", "ordine": 2},
 )
 
 _FODMAP_PER_ETICHETTA = {liv["etichetta"]: liv for liv in LIVELLI_FODMAP}
@@ -83,21 +84,14 @@ SINONIMI_FODMAP = {
 }
 
 NOVA = {
-    1: {"gruppo": 1, "etichetta": "Non trasformati o minimamente trasformati", "stato": "good"},
-    2: {"gruppo": 2, "etichetta": "Ingredienti culinari trasformati", "stato": "warning"},
-    3: {"gruppo": 3, "etichetta": "Alimenti trasformati", "stato": "serious"},
-    4: {"gruppo": 4, "etichetta": "Ultra-trasformati", "stato": "critical"},
+    1: {"gruppo": 1, "etichetta": N_("Non trasformati o minimamente trasformati"), "stato": "good"},
+    2: {"gruppo": 2, "etichetta": N_("Ingredienti culinari trasformati"), "stato": "warning"},
+    3: {"gruppo": 3, "etichetta": N_("Alimenti trasformati"), "stato": "serious"},
+    4: {"gruppo": 4, "etichetta": N_("Ultra-trasformati"), "stato": "critical"},
 }
 
 CAMPI_FONTE = ("fonte_nutrienti", "url_fonte", "fdc_id")
 
-
-def _nome_fodmap(etichetta: str) -> str:
-    """
-    "GOS (galatto-oligosaccaridi)" -> "GOS", "Fruttani" -> "fruttani".
-    """
-    nome = etichetta.split(" (")[0]
-    return nome if nome.isupper() else nome.lower()
 
 # Tutti i nuovi campi (None = non disponibile)
 CAMPI_NUMERICI_NULLABILI = (*CAMPI_NUTRIENTI, "indice_glicemico", "nova", "fdc_id")
@@ -109,15 +103,19 @@ CAMPI_PER_PORZIONE = ("kcal", "tef_kcal", "kcal_nette", "fruttosio", "fibre", *C
 
 ETICHETTE = {
     **{n[0]: n[1] for n in NUTRIENTI},
-    "zuccheri": "Zuccheri",
-    "grassi_saturi": "Grassi saturi",
-    "indice_glicemico": "Indice glicemico",
-    "nova": "NOVA",
-    **{campo: f"FODMAP {_nome_fodmap(etichetta)}" for campo, etichetta in FODMAP},
-    "fonte_nutrienti": "Fonte nutrienti",
-    "url_fonte": "URL fonte",
-    "fdc_id": "FDC ID",
-    "note": "Note",
+    "zuccheri": N_("Zuccheri"),
+    "grassi_saturi": N_("Grassi saturi"),
+    "indice_glicemico": N_("Indice glicemico"),
+    "nova": N_("NOVA"),
+    "fodmap_fruttani": N_("FODMAP fruttani"),
+    "fodmap_gos": N_("FODMAP GOS"),
+    "fodmap_lattosio": N_("FODMAP lattosio"),
+    "fodmap_fruttosio": N_("FODMAP fruttosio in eccesso"),
+    "fodmap_polioli": N_("FODMAP polioli"),
+    "fonte_nutrienti": N_("Fonte nutrienti"),
+    "url_fonte": N_("URL fonte"),
+    "fdc_id": N_("FDC ID"),
+    "note": N_("Note"),
 }
 
 # Porzione: limiti accettati dal calcolatore, dal pasto e dal diario
@@ -125,10 +123,10 @@ GRAMMI_MIN = 1
 GRAMMI_MAX = 2000
 
 PASTI = (
-    ("colazione", "Colazione"),
-    ("pranzo", "Pranzo"),
-    ("cena", "Cena"),
-    ("spuntino", "Spuntino"),
+    ("colazione", N_("Colazione")),
+    ("pranzo", N_("Pranzo")),
+    ("cena", N_("Cena")),
+    ("spuntino", N_("Spuntino")),
 )
 
 URL_RE = re.compile(r"^https?://[^\s<>\"']+$", re.IGNORECASE)
@@ -184,12 +182,12 @@ def livello_indice_glicemico(indice: float | None) -> dict[str, str] | None:
         return None
 
     if indice <= 55:
-        return {"etichetta": "Basso", "stato": "good"}
+        return {"etichetta": N_("Basso"), "stato": "good"}
 
     if indice < 70:
-        return {"etichetta": "Medio", "stato": "warning"}
+        return {"etichetta": N_("Medio"), "stato": "warning"}
 
-    return {"etichetta": "Alto", "stato": "critical"}
+    return {"etichetta": N_("Alto"), "stato": "critical"}
 
 
 def livello_carico_glicemico(carico: float | None) -> dict[str, str] | None:
@@ -200,12 +198,12 @@ def livello_carico_glicemico(carico: float | None) -> dict[str, str] | None:
         return None
 
     if carico <= 10:
-        return {"etichetta": "Basso", "stato": "good"}
+        return {"etichetta": N_("Basso"), "stato": "good"}
 
     if carico < 20:
-        return {"etichetta": "Medio", "stato": "warning"}
+        return {"etichetta": N_("Medio"), "stato": "warning"}
 
-    return {"etichetta": "Alto", "stato": "critical"}
+    return {"etichetta": N_("Alto"), "stato": "critical"}
 
 
 def carboidrati_disponibili(item: Alimento) -> float | None:
@@ -337,7 +335,7 @@ def profilo_rischio(voci: Sequence[Voce]) -> dict[str, Any]:
         "rischi": rischi,
         "punteggio": punteggio,
         "livello": analisi.livello_punteggio(punteggio),
-        "pesato_su": "Kcal" if su_kcal else "grammi",
+        "pesato_su": N_("Kcal") if su_kcal else N_("grammi"),
     }
 
 

@@ -49,7 +49,7 @@ Commit `01e743e` — 7 novembre 2026 — macro e micronutrienti reali per i 199 
 
 ## 🏗️ Architettura e qualità del codice
 
-7 novembre 2026 — deploy preparato (Docker, `render.yaml`), il primo deploy su Render resta da fare
+Commit `4008fd4` — 7 novembre 2026 — deploy preparato (Docker, `render.yaml`), il primo deploy su Render resta da fare
 
 - [x] **API REST** (JSON) per l'accesso programmatico ai dati (`/api/alimenti`, `/api/alimenti/<id>`)
 - [x] Unificare lo schema del database tra `app.py` e `update.py` (oggi differiscono: rischi diabete/colesterolo vs macronutrienti/fonti)
@@ -60,3 +60,14 @@ Commit `01e743e` — 7 novembre 2026 — macro e micronutrienti reali per i 199 
 - [x] GitHub Actions: lint + test a ogni push
 - [x] Dockerfile e docker-compose per il deploy
 - [x] Deploy su piattaforma cloud: configurazione per Render (`render.yaml`, Dockerfile, docker-compose)
+
+## 📱 Esperienza utente
+
+7 novembre 2026 — interfaccia tradotta in inglese (export, API e riga di comando restano in italiano); offline la tabella completa, la guida e le schede già aperte
+
+- [x] Ottimizzazione mobile della tabella (colonne prioritarie, schede compatte)
+- [x] PWA installabile con consultazione offline
+- [x] Internazionalizzazione (italiano/inglese)
+- [x] Legenda esplicativa dei livelli di rischio e della metodologia TEF nell'interfaccia
+- [x] Conferma di eliminazione con modale (invece del solo submit)
+- [x] Toast di notifica non invasivi al posto degli alert

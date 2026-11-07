@@ -22,6 +22,7 @@ from collections.abc import Callable, Mapping, Sequence
 from datetime import date, datetime, time
 from typing import Any
 
+from flask_babel import gettext
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
 
@@ -29,6 +30,7 @@ import analisi
 import calcoli
 import nutrienti
 from calcoli import arrotonda, leggi_numero  # noqa: F401  (usati anche da altri moduli)
+from lingue import N_, traduci
 
 # Limite di righe di dati per file (oltre si chiede di dividerlo)
 MAX_RIGHE = 20000
@@ -54,36 +56,41 @@ CAMPI = (
 
 CAMPI_NULLABILI = set(nutrienti.CAMPI_NULLABILI)
 
+# Etichette dei campi (in italiano: l'export le usa così; l'interfaccia le traduce)
 ETICHETTE = {
-    "id": "ID",
-    "alimento": "Alimento",
-    "categoria": "Categoria",
-    "kcal": "Kcal",
-    "tef_kcal": "TEF (Kcal)",
-    "tef_percent": "TEF (%)",
-    "kcal_nette": "Kcal nette",
-    "fruttosio": "Fruttosio (g)",
-    "fibre": "Fibre (g)",
-    "rapporto": "Rapporto F/F",
-    **{campo: f"Rischio {etichetta.lower()}" for campo, etichetta in analisi.RISCHI},
+    "id": N_("ID"),
+    "alimento": N_("Alimento"),
+    "categoria": N_("Categoria"),
+    "kcal": N_("Kcal"),
+    "tef_kcal": N_("TEF (Kcal)"),
+    "tef_percent": N_("TEF (%)"),
+    "kcal_nette": N_("Kcal nette"),
+    "fruttosio": N_("Fruttosio (g)"),
+    "fibre": N_("Fibre (g)"),
+    "rapporto": N_("Rapporto F/F"),
+    "rischio_diabete": N_("Rischio diabete"),
+    "rischio_colesterolo": N_("Rischio colesterolo"),
+    "rischio_malassorbimento": N_("Rischio malassorbimento"),
+    "rischio_metabolico": N_("Rischio metabolico"),
+    "rischio_tumorale": N_("Rischio tumorale"),
     **nutrienti.ETICHETTE,
 }
 
 MODALITA = {
     "aggiorna": {
-        "titolo": "Aggiorna o aggiungi",
-        "descrizione": (
+        "titolo": N_("Aggiorna o aggiungi"),
+        "descrizione": N_(
             "Le righe già presenti (stesso ID, oppure stesso nome e categoria) vengono "
             "aggiornate con i valori non vuoti del file; le altre vengono aggiunte."
         ),
     },
     "aggiungi": {
-        "titolo": "Aggiungi tutte come nuove",
-        "descrizione": "Ogni riga diventa un nuovo alimento, anche se esiste già.",
+        "titolo": N_("Aggiungi tutte come nuove"),
+        "descrizione": N_("Ogni riga diventa un nuovo alimento, anche se esiste già."),
     },
     "sostituisci": {
-        "titolo": "Sostituisci l'intera tabella",
-        "descrizione": "Elimina tutti gli alimenti attuali e inserisce quelli del file.",
+        "titolo": N_("Sostituisci l'intera tabella"),
+        "descrizione": N_("Elimina tutti gli alimenti attuali e inserisce quelli del file."),
     },
 }
 
@@ -313,7 +320,7 @@ def guess_delimiter(sample: str) -> str:
         return ";" if sample.count(";") > sample.count(",") else ","
 
 
-NOMI_SEPARATORI = {",": "virgola", ";": "punto e virgola", "\t": "tabulazione"}
+NOMI_SEPARATORI = {",": N_("virgola"), ";": N_("punto e virgola"), "\t": N_("tabulazione")}
 
 
 def _righe_csv(raw: bytes) -> tuple[list[Riga], str]:
@@ -331,9 +338,11 @@ def _righe_csv(raw: bytes) -> tuple[list[Riga], str]:
             piene += any(celle)
             _controlla_limite(piene)
     except csv.Error as exc:
-        raise ErroreImport(f"CSV non leggibile alla riga {lettore.line_num}: {exc}.") from None
+        raise ErroreImport(
+            gettext("CSV non leggibile alla riga %(riga)d: %(errore)s.", riga=lettore.line_num, errore=exc)
+        ) from None
 
-    return righe, f"separatore: {NOMI_SEPARATORI.get(separatore, separatore)}"
+    return righe, gettext("separatore: %(nome)s", nome=traduci(NOMI_SEPARATORI.get(separatore, separatore)))
 
 
 def _cella_excel(cella: Any) -> str:
@@ -374,10 +383,10 @@ def _righe_xlsx(raw: bytes) -> tuple[list[Riga], str]:
     try:
         cartella = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
     except (InvalidFileException, zipfile.BadZipFile, KeyError, OSError, ValueError):
-        raise ErroreImport(
+        raise ErroreImport(gettext(
             "Il file non è un foglio Excel .xlsx valido "
             "(il vecchio formato .xls non è supportato: salvalo come .xlsx o .csv)."
-        ) from None
+        )) from None
 
     try:
         primo = None
@@ -406,21 +415,23 @@ def _righe_xlsx(raw: bytes) -> tuple[list[Riga], str]:
                 primo = (righe, foglio.title)
 
             if _trova_intestazione(righe)[1].get("alimento") is not None:
-                return righe, f"foglio: {foglio.title}"
+                return righe, gettext("foglio: %(nome)s", nome=foglio.title)
 
         if primo is None:
-            raise ErroreImport("Il file Excel non contiene fogli.")
+            raise ErroreImport(gettext("Il file Excel non contiene fogli."))
 
-        return primo[0], f"foglio: {primo[1]}"
+        return primo[0], gettext("foglio: %(nome)s", nome=primo[1])
     finally:
         cartella.close()
 
 
+def troppe_righe() -> str:
+    return gettext("Il file supera le %(n)d righe: dividilo in più file.", n=MAX_RIGHE)
+
+
 def _controlla_limite(righe_piene: int) -> None:
     if righe_piene > MAX_RIGHE + RIGHE_RICERCA_INTESTAZIONE:
-        raise ErroreImport(
-            f"Il file supera le {MAX_RIGHE} righe: dividilo in più file."
-        )
+        raise ErroreImport(troppe_righe())
 
 
 def _trova_intestazione(righe: list[Riga]) -> tuple[int | None, dict[str, int]]:
@@ -503,7 +514,7 @@ def normalizza_riga(numero: int, celle: list[str], mappa: dict[str, int]) -> dic
         if numero_id is not None and numero_id > 0 and float(numero_id).is_integer():
             id_riga = int(numero_id)
         else:
-            avvisi.append(f"ID «{testo_id}» non valido: ignorato")
+            avvisi.append(gettext("ID «%(testo)s» non valido: ignorato", testo=testo_id))
 
     for campo in CAMPI_TESTO:
         testo = grezzo(campo)
@@ -524,9 +535,13 @@ def normalizza_riga(numero: int, celle: list[str], mappa: dict[str, int]) -> dic
         valore, valido = leggi_numero(testo)
 
         if not valido:
-            avvisi.append(f"{ETICHETTE[campo]}: «{testo}» non è un numero, ignorato")
+            avvisi.append(gettext(
+                "%(campo)s: «%(testo)s» non è un numero, ignorato", campo=traduci(ETICHETTE[campo]), testo=testo
+            ))
         elif valore is not None and valore < 0:
-            avvisi.append(f"{ETICHETTE[campo]}: valore negativo ({testo}), ignorato")
+            avvisi.append(gettext(
+                "%(campo)s: valore negativo (%(testo)s), ignorato", campo=traduci(ETICHETTE[campo]), testo=testo
+            ))
         elif valore is not None:
             valori[campo] = valore
             forniti.append(campo)
@@ -547,7 +562,10 @@ def normalizza_riga(numero: int, celle: list[str], mappa: dict[str, int]) -> dic
             valori[campo] = etichetta
             forniti.append(campo)
         else:
-            avvisi.append(f"{ETICHETTE[campo]}: livello «{testo}» non riconosciuto, ignorato")
+            avvisi.append(gettext(
+                "%(campo)s: livello «%(testo)s» non riconosciuto, ignorato",
+                campo=traduci(ETICHETTE[campo]), testo=testo,
+            ))
 
     _normalizza_nutrienti(grezzo, valori, forniti, avvisi)
 
@@ -578,7 +596,9 @@ def _normalizza_nutrienti(
         valore, valido = leggi_numero(testo)
 
         if not valido or valore is None or valore < 0:
-            avvisi.append(f"{ETICHETTE[campo]}: «{testo}» non è un numero valido, ignorato")
+            avvisi.append(gettext(
+                "%(campo)s: «%(testo)s» non è un numero valido, ignorato", campo=traduci(ETICHETTE[campo]), testo=testo
+            ))
         else:
             valori[campo] = valore
             forniti.append(campo)
@@ -592,7 +612,7 @@ def _normalizza_nutrienti(
             valori["indice_glicemico"] = valore
             forniti.append("indice_glicemico")
         else:
-            avvisi.append(f"Indice glicemico: «{testo}» fuori scala (0-100), ignorato")
+            avvisi.append(gettext("Indice glicemico: «%(testo)s» fuori scala (0-100), ignorato", testo=testo))
 
     testo = grezzo("nova")
 
@@ -603,7 +623,7 @@ def _normalizza_nutrienti(
             valori["nova"] = gruppo
             forniti.append("nova")
         else:
-            avvisi.append(f"NOVA: «{testo}» non è un gruppo da 1 a 4, ignorato")
+            avvisi.append(gettext("NOVA: «%(testo)s» non è un gruppo da 1 a 4, ignorato", testo=testo))
 
     for campo in nutrienti.CAMPI_FODMAP:
         testo = grezzo(campo)
@@ -617,7 +637,10 @@ def _normalizza_nutrienti(
             valori[campo] = livello_fodmap["etichetta"]
             forniti.append(campo)
         else:
-            avvisi.append(f"{ETICHETTE[campo]}: livello «{testo}» non riconosciuto, ignorato")
+            avvisi.append(gettext(
+                "%(campo)s: livello «%(testo)s» non riconosciuto, ignorato",
+                campo=traduci(ETICHETTE[campo]), testo=testo,
+            ))
 
     testo = grezzo("fonte_nutrienti")
 
@@ -638,7 +661,7 @@ def _normalizza_nutrienti(
             valori["url_fonte"] = testo
             forniti.append("url_fonte")
         else:
-            avvisi.append(f"URL fonte: «{testo[:60]}» non è un indirizzo http(s), ignorato")
+            avvisi.append(gettext("URL fonte: «%(testo)s» non è un indirizzo http(s), ignorato", testo=testo[:60]))
 
     testo = grezzo("fdc_id")
 
@@ -649,7 +672,7 @@ def _normalizza_nutrienti(
             valori["fdc_id"] = int(valore)
             forniti.append("fdc_id")
         else:
-            avvisi.append(f"FDC ID: «{testo}» non valido, ignorato")
+            avvisi.append(gettext("FDC ID: «%(testo)s» non valido, ignorato", testo=testo))
 
 
 def leggi_file(nome_file: str, raw: bytes) -> dict[str, Any]:
@@ -664,25 +687,23 @@ def leggi_file(nome_file: str, raw: bytes) -> dict[str, Any]:
     elif estensione == "xlsx":
         righe, dettaglio = _righe_xlsx(raw)
     elif estensione == "xls":
-        raise ErroreImport("Il vecchio formato .xls non è supportato: salva il file come .xlsx o .csv.")
+        raise ErroreImport(gettext("Il vecchio formato .xls non è supportato: salva il file come .xlsx o .csv."))
     else:
-        raise ErroreImport("Formato non supportato: carica un file .csv oppure .xlsx.")
+        raise ErroreImport(gettext("Formato non supportato: carica un file .csv oppure .xlsx."))
 
     posizione, mappa = _trova_intestazione(righe)
 
     if posizione is None:
-        raise ErroreImport("Il file è vuoto.")
+        raise ErroreImport(gettext("Il file è vuoto."))
 
     if "alimento" not in mappa:
-        raise ErroreImport(
-            "Colonna «Alimento» non trovata: controlla le intestazioni del file."
-        )
+        raise ErroreImport(gettext("Colonna «Alimento» non trovata: controlla le intestazioni del file."))
 
     intestazioni = righe[posizione][1]
     campi_per_indice = {indice: campo for campo, indice in mappa.items()}
 
     colonne = [
-        {"nome": nome or f"(colonna {indice + 1} senza nome)", "campo": campi_per_indice.get(indice)}
+        {"nome": nome or gettext("(colonna %(n)d senza nome)", n=indice + 1), "campo": campi_per_indice.get(indice)}
         for indice, nome in enumerate(intestazioni)
         if nome or indice in campi_per_indice
     ]
@@ -694,10 +715,10 @@ def leggi_file(nome_file: str, raw: bytes) -> dict[str, Any]:
     ]
 
     if not dati:
-        raise ErroreImport("Il file non contiene righe di dati sotto l'intestazione.")
+        raise ErroreImport(gettext("Il file non contiene righe di dati sotto l'intestazione."))
 
     if len(dati) > MAX_RIGHE:
-        raise ErroreImport(f"Il file supera le {MAX_RIGHE} righe: dividilo in più file.")
+        raise ErroreImport(troppe_righe())
 
     return {
         "nome_file": nome_file,
@@ -827,13 +848,12 @@ def pianifica(conn: sqlite3.Connection, letto: dict[str, Any], modalita: str) ->
                 esistente = esistenti.get(riga["id"])
 
                 if esistente and nome and _chiave_nome(nome) != _chiave_nome(esistente["alimento"]):
-                    avvisi_extra.append(
-                        f"ID {riga['id']}: il nome cambia da «{esistente['alimento']}» a «{nome}»"
-                    )
+                    avvisi_extra.append(gettext(
+                        "ID %(id)d: il nome cambia da «%(prima)s» a «%(dopo)s»",
+                        id=riga["id"], prima=esistente["alimento"], dopo=nome,
+                    ))
                 elif esistente is None:
-                    avvisi_extra.append(
-                        f"ID {riga['id']} non presente nel database: cerco per nome"
-                    )
+                    avvisi_extra.append(gettext("ID %(id)d non presente nel database: cerco per nome", id=riga["id"]))
 
             if esistente is None and nome:
                 if con_categoria:
@@ -844,10 +864,10 @@ def pianifica(conn: sqlite3.Connection, letto: dict[str, Any], modalita: str) ->
 
                     if len(trovati) > 1:
                         voce = _voce(riga, "saltato")
-                        voce["avvisi"] += avvisi_extra + [
-                            f"«{nome}» corrisponde a {len(trovati)} alimenti: "
-                            "aggiungi la colonna Categoria per distinguerli"
-                        ]
+                        voce["avvisi"] += avvisi_extra + [gettext(
+                            "«%(nome)s» corrisponde a %(n)d alimenti: aggiungi la colonna Categoria per distinguerli",
+                            nome=nome, n=len(trovati),
+                        )]
                         voci.append(voce)
                         continue
 
@@ -887,15 +907,16 @@ def pianifica(conn: sqlite3.Connection, letto: dict[str, Any], modalita: str) ->
                     precedente["forniti"] = sorted(unione_forniti)
 
                     voce = _voce(riga, "unito")
-                    voce["avvisi"] += avvisi_extra + [
-                        f"«{nome}» è già alla riga {precedente['riga']} del file: valori uniti a quella riga"
-                    ]
+                    voce["avvisi"] += avvisi_extra + [gettext(
+                        "«%(nome)s» è già alla riga %(riga)d del file: valori uniti a quella riga",
+                        nome=nome, riga=precedente["riga"],
+                    )]
                     voci.append(voce)
                     continue
 
         if not nome:
             voce = _voce(riga, "saltato")
-            voce["avvisi"].append("Alimento vuoto")
+            voce["avvisi"].append(gettext("Alimento vuoto"))
             voci.append(voce)
             continue
 
@@ -918,7 +939,7 @@ def pianifica(conn: sqlite3.Connection, letto: dict[str, Any], modalita: str) ->
                 id_doppione = omonimi[0] if omonimi else None
 
             if id_doppione:
-                voce["avvisi"].append(f"Già presente nel database (ID {id_doppione}): sarà duplicato")
+                voce["avvisi"].append(gettext("Già presente nel database (ID %(id)d): sarà duplicato", id=id_doppione))
                 voce["doppione"] = True
 
         voci.append(voce)

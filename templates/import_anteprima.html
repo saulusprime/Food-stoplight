@@ -1,28 +1,36 @@
 {% extends "base.html" %}
 
 {% block title %}
-Anteprima import
+{{ _('Anteprima import') }}
 {% endblock %}
 
 {% block content %}
 
 {% set AZIONI = {
-    "nuovo": ("➕", "Nuovo"),
-    "aggiornato": ("✏️", "Aggiornato"),
-    "invariato": ("=", "Invariato"),
-    "unito": ("🔗", "Unito"),
-    "saltato": ("⚠️", "Saltato"),
+    "nuovo": ("➕", _("Nuovo")),
+    "aggiornato": ("✏️", _("Aggiornato")),
+    "invariato": ("=", _("Invariato")),
+    "unito": ("🔗", _("Unito")),
+    "saltato": ("⚠️", _("Saltato")),
+} %}
+
+{% set NOMI_RISCHI = {
+    "rischio_diabete": _("Diabete"),
+    "rischio_colesterolo": _("Colesterolo"),
+    "rischio_malassorbimento": _("Malassorbimento"),
+    "rischio_metabolico": _("Metabolico"),
+    "rischio_tumorale": _("Tumorale"),
 } %}
 
 {% set r = riepiloghi[modalita] %}
 
 <div class="page-header">
-    <h1>🔎 Anteprima dell'import</h1>
+    <h1>🔎 {{ _("Anteprima dell'import") }}</h1>
     <p>
         <strong>{{ letto.nome_file }}</strong>
         · {{ letto.formato|upper }} ({{ letto.dettaglio }})
-        · {{ letto.righe|length }} righe di dati.
-        Il database non è ancora stato modificato.
+        · {{ ngettext('%(num)d riga di dati.', '%(num)d righe di dati.', letto.righe|length) }}
+        {{ _('Il database non è ancora stato modificato.') }}
     </p>
 </div>
 
@@ -32,8 +40,8 @@ Anteprima import
     <div class="col-lg-7">
         <section class="card grafico-card h-100" aria-labelledby="titolo-modalita">
             <div class="card-body">
-                <h2 class="grafico-titolo" id="titolo-modalita">Modalità</h2>
-                <p class="grafico-sottotitolo">Scegli cosa fare con le righe del file.</p>
+                <h2 class="grafico-titolo" id="titolo-modalita">{{ _('Modalità') }}</h2>
+                <p class="grafico-sottotitolo">{{ _('Scegli cosa fare con le righe del file.') }}</p>
 
                 <ul class="elenco-modalita">
                     {% for chiave, info in modalita_disponibili.items() %}
@@ -46,18 +54,18 @@ Anteprima import
                             >
                                 <span class="modalita-titolo">
                                     <span class="modalita-segno" aria-hidden="true"></span>
-                                    {{ info.titolo }}
+                                    {{ info.titolo|traduci }}
                                 </span>
-                                <span class="modalita-descrizione">{{ info.descrizione }}</span>
+                                <span class="modalita-descrizione">{{ info.descrizione|traduci }}</span>
                                 <span class="modalita-conteggi">
                                     {% if chiave == "aggiorna" %}
-                                        {{ c.nuovo }} nuovi · {{ c.aggiornato }} aggiornati · {{ c.invariato }} invariati
+                                        {{ _('%(nuovi)d nuovi · %(aggiornati)d aggiornati · %(invariati)d invariati', nuovi=c.nuovo, aggiornati=c.aggiornato, invariati=c.invariato) }}
                                     {% elif chiave == "aggiungi" %}
-                                        {{ c.nuovo }} nuovi{% if c.doppioni %} · {{ c.doppioni }} già presenti, verrebbero duplicati{% endif %}
+                                        {{ _('%(n)d nuovi', n=c.nuovo) }}{% if c.doppioni %} · {{ _('%(n)d già presenti, verrebbero duplicati', n=c.doppioni) }}{% endif %}
                                     {% else %}
-                                        elimina {{ totale_db }} · inserisce {{ c.nuovo }}
+                                        {{ _('elimina %(eliminati)d · inserisce %(inseriti)d', eliminati=totale_db, inseriti=c.nuovo) }}
                                     {% endif %}
-                                    {% if c.saltato %} · {{ c.saltato }} saltati{% endif %}
+                                    {% if c.saltato %} · {{ _('%(n)d saltati', n=c.saltato) }}{% endif %}
                                 </span>
                             </a>
                         </li>
@@ -71,22 +79,22 @@ Anteprima import
     <div class="col-lg-5">
         <section class="card grafico-card h-100" aria-labelledby="titolo-esito">
             <div class="card-body">
-                <h2 class="grafico-titolo" id="titolo-esito">Cosa succederà</h2>
-                <p class="grafico-sottotitolo">{{ modalita_disponibili[modalita].titolo }}</p>
+                <h2 class="grafico-titolo" id="titolo-esito">{{ _('Cosa succederà') }}</h2>
+                <p class="grafico-sottotitolo">{{ modalita_disponibili[modalita].titolo|traduci }}</p>
 
                 <dl class="esito-import">
                     {% if modalita == "sostituisci" %}
-                        <div><dt>Eliminati</dt><dd>{{ totale_db }}</dd></div>
+                        <div><dt>{{ _('Eliminati') }}</dt><dd>{{ totale_db }}</dd></div>
                     {% endif %}
-                    <div><dt>Nuovi</dt><dd>{{ r.nuovo }}</dd></div>
+                    <div><dt>{{ _('Nuovi') }}</dt><dd>{{ r.nuovo }}</dd></div>
                     {% if modalita == "aggiorna" %}
-                        <div><dt>Aggiornati</dt><dd>{{ r.aggiornato }}</dd></div>
-                        <div><dt>Invariati</dt><dd>{{ r.invariato }}</dd></div>
+                        <div><dt>{{ _('Aggiornati') }}</dt><dd>{{ r.aggiornato }}</dd></div>
+                        <div><dt>{{ _('Invariati') }}</dt><dd>{{ r.invariato }}</dd></div>
                     {% endif %}
                     {% if r.unito %}
-                        <div><dt>Ripetuti nel file</dt><dd>{{ r.unito }}</dd></div>
+                        <div><dt>{{ _('Ripetuti nel file') }}</dt><dd>{{ r.unito }}</dd></div>
                     {% endif %}
-                    <div><dt>Saltati</dt><dd>{{ r.saltato }}</dd></div>
+                    <div><dt>{{ _('Saltati') }}</dt><dd>{{ r.saltato }}</dd></div>
                 </dl>
 
                 <form method="post" action="{{ url_for('importa_conferma') }}">
@@ -97,7 +105,7 @@ Anteprima import
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" id="conferma_sostituisci" name="conferma_sostituisci" value="1" required>
                             <label class="form-check-label" for="conferma_sostituisci">
-                                Elimina i {{ totale_db }} alimenti attuali
+                                {{ ngettext("Elimina l'alimento attuale", 'Elimina i %(num)d alimenti attuali', totale_db) }}
                             </label>
                         </div>
                     {% endif %}
@@ -106,27 +114,27 @@ Anteprima import
 
                     <button type="submit" class="btn btn-primary w-100 mb-2" {% if not da_scrivere %}disabled{% endif %}>
                         {% if modalita == "sostituisci" %}
-                            Sostituisci la tabella
+                            {{ _('Sostituisci la tabella') }}
                         {% elif modalita == "aggiorna" %}
-                            Conferma: {{ r.nuovo }} nuovi, {{ r.aggiornato }} aggiornati
+                            {{ _('Conferma: %(nuovi)d nuovi, %(aggiornati)d aggiornati', nuovi=r.nuovo, aggiornati=r.aggiornato) }}
                         {% else %}
-                            Conferma: aggiungi {{ r.nuovo }} alimenti
+                            {{ ngettext('Conferma: aggiungi %(num)d alimento', 'Conferma: aggiungi %(num)d alimenti', r.nuovo) }}
                         {% endif %}
                     </button>
 
                     {% if not da_scrivere %}
-                        <p class="small text-muted mb-2">Nessuna modifica da applicare con questa modalità.</p>
+                        <p class="small text-muted mb-2">{{ _('Nessuna modifica da applicare con questa modalità.') }}</p>
                     {% endif %}
                 </form>
 
                 <form method="post" action="{{ url_for('importa_annulla') }}" class="d-flex gap-2">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-outline-secondary btn-sm">Annulla l'import</button>
-                    <a href="{{ url_for('importa') }}" class="btn btn-link btn-sm">Carica un altro file</a>
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">{{ _("Annulla l'import") }}</button>
+                    <a href="{{ url_for('importa') }}" class="btn btn-link btn-sm">{{ _('Carica un altro file') }}</a>
                 </form>
 
                 <p class="small text-muted mt-3 mb-0">
-                    Prima di scrivere viene salvato un backup automatico del database.
+                    {{ _('Prima di scrivere viene salvato un backup automatico del database.') }}
                 </p>
             </div>
         </section>
@@ -136,14 +144,13 @@ Anteprima import
 {# --- Righe con modifiche ---------------------------------------------- #}
 <section class="card table-card mb-3" aria-labelledby="titolo-righe">
     <div class="card-body pb-2">
-        <h2 class="grafico-titolo" id="titolo-righe">Righe con modifiche</h2>
+        <h2 class="grafico-titolo" id="titolo-righe">{{ _('Righe con modifiche') }}</h2>
         <p class="grafico-sottotitolo mb-0">
             {% if voci %}
-                Le prime {{ voci|length }}{% if modalita == "aggiorna" and r.invariato %} (le {{ r.invariato }} invariate non sono mostrate){% endif %}.
-                I valori calcolati (TEF, Kcal nette, rapporto F/F) sono già inclusi;
-                nelle righe aggiornate sono evidenziate le celle che cambiano.
+                {{ _('Le prime %(n)d', n=voci|length) }}{% if modalita == "aggiorna" and r.invariato %} {{ _('(le %(n)d invariate non sono mostrate)', n=r.invariato) }}{% endif %}.
+                {{ _('I valori calcolati (TEF, Kcal nette, rapporto F/F) sono già inclusi; nelle righe aggiornate sono evidenziate le celle che cambiano.') }}
             {% else %}
-                Nessuna: il file coincide con i dati del database.
+                {{ _('Nessuna: il file coincide con i dati del database.') }}
             {% endif %}
         </p>
     </div>
@@ -153,11 +160,11 @@ Anteprima import
             <table class="table table-sm align-middle mb-0 tabella-anteprima">
                 <thead>
                     <tr>
-                        <th scope="col" class="text-end">Riga</th>
-                        <th scope="col">Esito</th>
+                        <th scope="col" class="text-end">{{ _('Riga') }}</th>
+                        <th scope="col">{{ _('Esito') }}</th>
                         {% for campo in campi %}
                             <th scope="col" class="{{ 'text-end' if campo in ('kcal', 'tef_kcal', 'tef_percent', 'kcal_nette', 'fruttosio', 'fibre', 'rapporto') }}">
-                                {{ etichette[campo]|replace('Rischio ', '')|capitalize if campo.startswith('rischio_') else etichette[campo] }}
+                                {{ NOMI_RISCHI[campo] if campo in NOMI_RISCHI else etichette[campo]|traduci }}
                             </th>
                         {% endfor %}
                     </tr>
@@ -177,19 +184,20 @@ Anteprima import
                                     {% set valore = v.valori[campo] %}
                                     {% set modificato = campo in v.modificati %}
                                     {% set prima = v.precedente[campo] if modificato else none %}
+                                    {% set prima_testo = prima if prima not in (none, '') else _('vuoto') %}
                                     <td
                                         class="{{ 'text-end' if valore is number }} {{ 'cella-modificata' if modificato }}"
-                                        {% if modificato %}title="Prima: {{ prima if prima not in (none, '') else 'vuoto' }}"{% endif %}
+                                        {% if modificato %}title="{{ _('Prima: %(valore)s', valore=prima_testo) }}"{% endif %}
                                     >
                                         {% if campo.startswith('rischio_') %}
-                                            {% if valore %}<span class="badge-risk stato-{{ stato_rischio(valore) }}">{{ valore }}</span>{% else %}–{% endif %}
+                                            {% if valore %}<span class="badge-risk stato-{{ stato_rischio(valore) }}">{{ valore|traduci }}</span>{% else %}–{% endif %}
                                         {% elif valore is number %}
                                             {{ valore|numero }}
                                         {% else %}
                                             {{ valore or '–' }}
                                         {% endif %}
                                         {% if modificato %}
-                                            <span class="visually-hidden">(prima: {{ prima if prima not in (none, '') else 'vuoto' }})</span>
+                                            <span class="visually-hidden">{{ _('(prima: %(valore)s)', valore=prima_testo) }}</span>
                                         {% endif %}
                                     </td>
                                 {% endfor %}
@@ -212,13 +220,13 @@ Anteprima import
     <div class="col-lg-5">
         <section class="card grafico-card" aria-labelledby="titolo-colonne">
             <div class="card-body">
-                <h2 class="grafico-titolo" id="titolo-colonne">Colonne del file</h2>
+                <h2 class="grafico-titolo" id="titolo-colonne">{{ _('Colonne del file') }}</h2>
 
                 <table class="table table-sm mb-0 tabella-colonne">
                     <thead>
                         <tr>
-                            <th scope="col">Colonna</th>
-                            <th scope="col">Campo</th>
+                            <th scope="col">{{ _('Colonna') }}</th>
+                            <th scope="col">{{ _('Campo') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -227,11 +235,11 @@ Anteprima import
                                 <td>{{ colonna.nome }}</td>
                                 <td>
                                     {% if colonna.campo == 'rapporto' %}
-                                        Rapporto F/F <small class="text-muted">(ricalcolato)</small>
+                                        {{ _('Rapporto F/F') }} <small class="text-muted">{{ _('(ricalcolato)') }}</small>
                                     {% elif colonna.campo %}
-                                        {{ etichette[colonna.campo] }}
+                                        {{ etichette[colonna.campo]|traduci }}
                                     {% else %}
-                                        <span class="text-muted">ignorata</span>
+                                        <span class="text-muted">{{ _('ignorata') }}</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -241,7 +249,7 @@ Anteprima import
 
                 {% if not letto.categoria_presente %}
                     <p class="small text-muted mt-2 mb-0">
-                        Senza la colonna Categoria gli alimenti esistenti si riconoscono solo dal nome.
+                        {{ _('Senza la colonna Categoria gli alimenti esistenti si riconoscono solo dal nome.') }}
                     </p>
                 {% endif %}
             </div>
@@ -252,24 +260,24 @@ Anteprima import
     <div class="col-lg-7">
         <section class="card grafico-card" aria-labelledby="titolo-avvisi">
             <div class="card-body">
-                <h2 class="grafico-titolo" id="titolo-avvisi">Avvisi</h2>
+                <h2 class="grafico-titolo" id="titolo-avvisi">{{ _('Avvisi') }}</h2>
 
                 {% if voci_con_avvisi %}
                     <p class="grafico-sottotitolo">
-                        {{ r.con_avvisi }} righe con avvisi{% if r.con_avvisi > voci_con_avvisi|length %}, mostrate le prime {{ voci_con_avvisi|length }}{% endif %}.
-                        I valori segnalati non vengono importati, il resto della riga sì.
+                        {{ ngettext('%(num)d riga con avvisi', '%(num)d righe con avvisi', r.con_avvisi) }}{% if r.con_avvisi > voci_con_avvisi|length %}, {{ _('mostrate le prime %(n)d', n=voci_con_avvisi|length) }}{% endif %}.
+                        {{ _('I valori segnalati non vengono importati, il resto della riga sì.') }}
                     </p>
 
                     <ul class="elenco-avvisi">
                         {% for v in voci_con_avvisi %}
                             <li>
-                                <span class="elenco-avvisi-riga">Riga {{ v.riga }}</span>
+                                <span class="elenco-avvisi-riga">{{ _('Riga %(n)d', n=v.riga) }}</span>
                                 <span>{{ v.avvisi|join('; ') }}</span>
                             </li>
                         {% endfor %}
                     </ul>
                 {% else %}
-                    <p class="mb-0">Nessun avviso: tutti i valori sono stati riconosciuti.</p>
+                    <p class="mb-0">{{ _('Nessun avviso: tutti i valori sono stati riconosciuti.') }}</p>
                 {% endif %}
             </div>
         </section>

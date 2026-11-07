@@ -17,6 +17,7 @@ from flask import current_app
 import analisi
 import database
 import importazione
+import lingue
 
 Alimento = dict[str, Any]
 
@@ -288,9 +289,12 @@ def get_filter_options() -> dict[str, list[Opzione]]:
     finally:
         conn.close()
 
-    livelli = [(liv["etichetta"], f"{liv['emoji']} {liv['etichetta']}") for liv in analisi.LIVELLI]
+    livelli = [(liv["etichetta"], f"{liv['emoji']} {lingue.traduci(liv['etichetta'])}") for liv in analisi.LIVELLI]
 
     return {
-        "categoria": _opzioni([], distinti["categoria"]),
+        "categoria": [
+            {**opzione, "label": lingue.traduci(opzione["label"])}
+            for opzione in _opzioni([], distinti["categoria"])
+        ],
         **{campo: _opzioni(livelli, distinti[campo]) for campo in analisi.CAMPI_RISCHIO},
     }

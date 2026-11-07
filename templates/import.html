@@ -1,25 +1,24 @@
 {% extends "base.html" %}
 
 {% block title %}
-Importa alimenti
+{{ _('Importa alimenti') }}
 {% endblock %}
 
 {% block content %}
 
 <div class="page-header">
-    <h1>📥 Importa alimenti</h1>
+    <h1>📥 {{ _('Importa alimenti') }}</h1>
     <p>
-        Carica un file CSV o Excel: prima di scrivere nel database vedrai un'anteprima
-        delle righe e potrai scegliere se aggiornare, aggiungere o sostituire.
+        {{ _("Carica un file CSV o Excel: prima di scrivere nel database vedrai un'anteprima delle righe e potrai scegliere se aggiornare, aggiungere o sostituire.") }}
     </p>
 </div>
 
 {% if in_attesa %}
     <div class="alert alert-info d-flex flex-wrap align-items-center gap-2" role="status">
         <span class="me-auto">
-            Il file <strong>{{ in_attesa.nome_file }}</strong> è in attesa di conferma.
+            {% trans nome=in_attesa.nome_file %}Il file <strong>{{ nome }}</strong> è in attesa di conferma.{% endtrans %}
         </span>
-        <a href="{{ url_for('importa_anteprima') }}" class="btn btn-primary btn-sm">Riprendi l'anteprima</a>
+        <a href="{{ url_for('importa_anteprima') }}" class="btn btn-primary btn-sm">{{ _("Riprendi l'anteprima") }}</a>
     </div>
 {% endif %}
 
@@ -32,7 +31,7 @@ Importa alimenti
 
     <div class="mb-3">
         <label for="file" class="form-label">
-            File CSV o Excel (.xlsx)
+            {{ _('File CSV o Excel (.xlsx)') }}
         </label>
 
         <input
@@ -46,19 +45,17 @@ Importa alimenti
         >
 
         <p id="file-aiuto" class="form-text mb-0">
-            Fino a {{ max_mb }} MB e {{ '{:,}'.format(max_righe).replace(',', '.') }} righe.
-            Separatore e codifica dei CSV vengono riconosciuti da soli; dei file Excel
-            si legge il primo foglio con la colonna «Alimento».
+            {% trans mb=max_mb, righe=max_righe|migliaia %}Fino a {{ mb }} MB e {{ righe }} righe. Separatore e codifica dei CSV vengono riconosciuti da soli; dei file Excel si legge il primo foglio con la colonna «Alimento».{% endtrans %}
         </p>
     </div>
 
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">
-            Carica e mostra l'anteprima
+            {{ _("Carica e mostra l'anteprima") }}
         </button>
 
         <a href="{{ url_for('index') }}" class="btn btn-secondary">
-            Annulla
+            {{ _('Annulla') }}
         </a>
     </div>
 </form>
@@ -67,18 +64,21 @@ Importa alimenti
     <div class="col-lg-6">
         <section class="card grafico-card h-100" aria-labelledby="titolo-colonne">
             <div class="card-body">
-                <h2 class="grafico-titolo" id="titolo-colonne">Colonne riconosciute</h2>
+                <h2 class="grafico-titolo" id="titolo-colonne">{{ _('Colonne riconosciute') }}</h2>
                 <p class="grafico-sottotitolo">
-                    L'ordine non conta e le colonne mancanti si possono omettere: serve solo «Alimento».
+                    {{ _("L'ordine non conta e le colonne mancanti si possono omettere: serve solo «Alimento».") }}
                 </p>
 
                 <ul class="mb-0">
-                    <li><strong>Alimento</strong> (anche «Nome»), Categoria</li>
-                    <li>Kcal, TEF (Kcal), TEF (%), Kcal Nette</li>
-                    <li>Fruttosio, Fibre: il rapporto F/F viene sempre ricalcolato</li>
-                    <li>Rischio Diabete, Colesterolo, Malassorbimento, Metabolico, Tumorale</li>
-                    <li>ID: per aggiornare proprio quella riga (presente nei file esportati)</li>
+                    <li>{% trans %}<strong>Alimento</strong> (anche «Nome»), Categoria{% endtrans %}</li>
+                    <li>{{ _('Kcal, TEF (Kcal), TEF (%%), Kcal Nette') }}</li>
+                    <li>{{ _('Fruttosio, Fibre: il rapporto F/F viene sempre ricalcolato') }}</li>
+                    <li>{{ _('Rischio Diabete, Colesterolo, Malassorbimento, Metabolico, Tumorale') }}</li>
+                    <li>{{ _('ID: per aggiornare proprio quella riga (presente nei file esportati)') }}</li>
                 </ul>
+                <p class="small text-muted mt-2 mb-0">
+                    {{ _('Le intestazioni si scrivono in italiano, come nei file esportati.') }}
+                </p>
             </div>
         </section>
     </div>
@@ -86,19 +86,16 @@ Importa alimenti
     <div class="col-lg-6">
         <section class="card grafico-card h-100" aria-labelledby="titolo-valori-import">
             <div class="card-body">
-                <h2 class="grafico-titolo" id="titolo-valori-import">Valori accettati</h2>
+                <h2 class="grafico-titolo" id="titolo-valori-import">{{ _('Valori accettati') }}</h2>
 
                 <ul class="mb-0">
-                    <li>Numeri con virgola o punto decimale, anche con «%» o l'unità («5,9 g»).</li>
+                    <li>{{ _("Numeri con virgola o punto decimale, anche con «%%» o l'unità («5,9 g»).") }}</li>
                     <li>
-                        Livelli: Trascurabile, Basso, Medio, Alto, anche preceduti da emoji
-                        («🔴 Alto»). Protettivo e Neutro valgono Trascurabile, Elevato e
-                        Aumentato valgono Alto.
+                        {{ _('Livelli: Trascurabile, Basso, Medio, Alto, anche preceduti da emoji («🔴 Alto»). Protettivo e Neutro valgono Trascurabile, Elevato e Aumentato valgono Alto.') }}
                     </li>
-                    <li>Celle vuote, «-», «N/A», «nd»: valore assente.</li>
+                    <li>{{ _('Celle vuote, «-», «N/A», «nd»: valore assente.') }}</li>
                     <li>
-                        Per modificare i dati in Excel: <strong>esporta</strong> dalla tabella,
-                        modifica il file e reimportalo con «Aggiorna o aggiungi».
+                        {% trans %}Per modificare i dati in Excel: <strong>esporta</strong> dalla tabella, modifica il file e reimportalo con «Aggiorna o aggiungi».{% endtrans %}
                     </li>
                 </ul>
             </div>
@@ -108,7 +105,7 @@ Importa alimenti
 
 <section class="card card-form mt-3">
     <div class="card-header">
-        Esempio di CSV con separatore punto e virgola
+        {{ _('Esempio di CSV con separatore punto e virgola') }}
     </div>
 
     <div class="card-body">

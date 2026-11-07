@@ -9,6 +9,9 @@ from __future__ import annotations
 import math
 from typing import Any
 
+import lingue
+from lingue import N_
+
 # Righe del database e strutture per i template: dizionari con valori di tipo misto
 Alimento = dict[str, Any]
 Livello = dict[str, Any]
@@ -22,10 +25,10 @@ Medaglia = dict[str, Any]
 # ---------------------------------------------------------------
 
 LIVELLI: tuple[Livello, ...] = (
-    {"chiave": "trascurabile", "etichetta": "Trascurabile", "punti": 0, "stato": "good", "emoji": "🟢"},
-    {"chiave": "basso", "etichetta": "Basso", "punti": 1, "stato": "warning", "emoji": "🟡"},
-    {"chiave": "medio", "etichetta": "Medio", "punti": 2, "stato": "serious", "emoji": "🟠"},
-    {"chiave": "alto", "etichetta": "Alto", "punti": 3, "stato": "critical", "emoji": "🔴"},
+    {"chiave": "trascurabile", "etichetta": N_("Trascurabile"), "punti": 0, "stato": "good", "emoji": "🟢"},
+    {"chiave": "basso", "etichetta": N_("Basso"), "punti": 1, "stato": "warning", "emoji": "🟡"},
+    {"chiave": "medio", "etichetta": N_("Medio"), "punti": 2, "stato": "serious", "emoji": "🟠"},
+    {"chiave": "alto", "etichetta": N_("Alto"), "punti": 3, "stato": "critical", "emoji": "🔴"},
 )
 
 PUNTI_MAX: int = LIVELLI[-1]["punti"]
@@ -43,18 +46,18 @@ _PER_CHIAVE = {liv["chiave"]: liv for liv in LIVELLI}
 # Valore assente o non riconosciuto
 NON_CLASSIFICATO: Livello = {
     "chiave": "nd",
-    "etichetta": "Non classificato",
+    "etichetta": N_("Non classificato"),
     "punti": None,
     "stato": "nd",
     "emoji": "⚪",
 }
 
 RISCHI = (
-    ("rischio_diabete", "Diabete"),
-    ("rischio_colesterolo", "Colesterolo"),
-    ("rischio_malassorbimento", "Malassorbimento"),
-    ("rischio_metabolico", "Metabolico"),
-    ("rischio_tumorale", "Tumorale"),
+    ("rischio_diabete", N_("Diabete")),
+    ("rischio_colesterolo", N_("Colesterolo")),
+    ("rischio_malassorbimento", N_("Malassorbimento")),
+    ("rischio_metabolico", N_("Metabolico")),
+    ("rischio_tumorale", N_("Tumorale")),
 )
 
 CAMPI_RISCHIO = tuple(campo for campo, _ in RISCHI)
@@ -126,8 +129,8 @@ MEDAGLIE: tuple[Medaglia, ...] = (
     {
         "chiave": "protettivi",
         "icona": "🛡️",
-        "titolo": "Più protettivi",
-        "descrizione": "Punteggio più alto; a parità, più fibre.",
+        "titolo": N_("Più protettivi"),
+        "descrizione": N_("Punteggio più alto; a parità, più fibre."),
         "unita": "/100",
         "filtro": lambda a: a.get("punteggio") is not None,
         "ordine": lambda a: (-a["punteggio"], -(a.get("fibre") or 0)),
@@ -137,8 +140,8 @@ MEDAGLIE: tuple[Medaglia, ...] = (
     {
         "chiave": "fruttosio",
         "icona": "🍃",
-        "titolo": "Miglior rapporto fruttosio/fibre",
-        "descrizione": "Rapporto più basso tra gli alimenti con almeno 1 g di fruttosio.",
+        "titolo": N_("Miglior rapporto fruttosio/fibre"),
+        "descrizione": N_("Rapporto più basso tra gli alimenti con almeno 1 g di fruttosio."),
         "unita": "",
         "filtro": lambda a: (a.get("fruttosio") or 0) >= 1 and (a.get("fibre") or 0) > 0,
         "ordine": lambda a: (_rapporto_ff(a),),
@@ -148,8 +151,8 @@ MEDAGLIE: tuple[Medaglia, ...] = (
     {
         "chiave": "leggeri",
         "icona": "🪶",
-        "titolo": "Meno calorici",
-        "descrizione": "Meno Kcal per 100 g (esclusi i valori a 0, che indicano dati mancanti).",
+        "titolo": N_("Meno calorici"),
+        "descrizione": N_("Meno Kcal per 100 g (esclusi i valori a 0, che indicano dati mancanti)."),
         "unita": " kcal",
         "filtro": lambda a: (a.get("kcal") or 0) > 0,
         "ordine": lambda a: (a["kcal"],),
@@ -172,7 +175,7 @@ def classifica(alimenti: list[Alimento], medaglia: Medaglia, n: int) -> list[tup
     candidati.sort(key=lambda a: (*medaglia["ordine"](a), str(a.get("alimento") or "").lower(), a.get("id") or 0))
 
     return [
-        (a, medaglia["formato"].format(medaglia["valore"](a)).replace(".", ",") + medaglia["unita"])
+        (a, lingue.decimale(medaglia["formato"].format(medaglia["valore"](a))) + medaglia["unita"])
         for a in candidati[:n]
     ]
 
@@ -205,7 +208,7 @@ def distribuzione_categorie(alimenti: list[Alimento]) -> list[dict[str, Any]]:
     conteggi: dict[str, int] = {}
 
     for a in alimenti:
-        categoria = (a.get("categoria") or "").strip() or "Senza categoria"
+        categoria = (a.get("categoria") or "").strip() or N_("Senza categoria")
         conteggi[categoria] = conteggi.get(categoria, 0) + 1
 
     totale = len(alimenti)
@@ -328,6 +331,9 @@ def radar(
             "y": y,
             "etichetta": etichetta,
             "valore": (valore or "").strip() or NON_CLASSIFICATO["etichetta"],
+            # parti del valore, per comporlo tradotto nei template
+            "livello": liv["etichetta"] if liv else NON_CLASSIFICATO["etichetta"],
+            "media": punti.get(campo) if punti is not None else None,
             "stato": liv["stato"] if liv else NON_CLASSIFICATO["stato"],
         })
 

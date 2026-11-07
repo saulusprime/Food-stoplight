@@ -1163,3 +1163,581 @@ pre {
 .sezione-form summary {
     cursor: pointer;
 }
+
+/* =================================================================
+   Esperienza utente: notifiche, conferme, tabella su mobile e tablet,
+   legenda, guida, pagine offline e di errore
+   ================================================================= */
+
+.salta-al-contenuto {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 1090;
+    padding: 0.5rem 1rem;
+    background: var(--superficie);
+    color: var(--link);
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+main:focus {
+    outline: none;
+}
+
+.cambia-lingua {
+    white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------
+   Notifiche. Senza JavaScript: avvisi in cima alla pagina.
+   Con JavaScript (classe .js su <html>): toast in alto a destra,
+   in basso a tutta larghezza sugli schermi piccoli.
+   --------------------------------------------------------------- */
+.notifica {
+    --notifica-colore: var(--accento);
+    --notifica-icona-testo: #ffffff;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 0.75rem 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    background: var(--superficie);
+    color: var(--testo);
+    border: 1px solid var(--bordo);
+    border-left: 4px solid var(--notifica-colore);
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.notifica-success { --notifica-colore: var(--stato-good); }
+.notifica-danger { --notifica-colore: var(--stato-critical); }
+.notifica-warning { --notifica-colore: var(--stato-warning); --notifica-icona-testo: #0b0b0b; }
+
+.notifica-icona {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-top: 0.05rem;
+    border-radius: 50%;
+    background: var(--notifica-colore);
+    color: var(--notifica-icona-testo);
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.notifica-testo {
+    flex: 1;
+    margin: 0;
+    padding-top: 0.1rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.notifica-chiudi {
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    margin: -0.25rem -0.25rem -0.25rem 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--testo-secondario);
+    font-size: 1.35rem;
+    line-height: 1;
+}
+
+.notifica-chiudi:hover,
+.notifica-chiudi:focus-visible {
+    background: var(--superficie-2);
+    color: var(--testo);
+}
+
+.js .notifiche {
+    position: fixed;
+    top: 4rem;
+    right: 1rem;
+    z-index: 1080;
+    width: min(26rem, calc(100vw - 2rem));
+    pointer-events: none;
+}
+
+.js .notifiche,
+.js .notifiche > [role] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.js .notifica {
+    margin: 0;
+    pointer-events: auto;
+    animation: notifica-entra 0.2s ease-out;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.js .notifica.in-uscita {
+    opacity: 0;
+    transform: translateY(-0.4rem);
+}
+
+@keyframes notifica-entra {
+    from {
+        opacity: 0;
+        transform: translateY(-0.4rem);
+    }
+}
+
+@media (max-width: 575.98px) {
+    .js .notifiche {
+        top: auto;
+        right: 1rem;
+        bottom: 1rem;
+        left: 1rem;
+        width: auto;
+        flex-direction: column-reverse;
+    }
+}
+
+/* ---------------------------------------------------------------
+   Finestra di conferma (<dialog>)
+   --------------------------------------------------------------- */
+.dialogo {
+    width: min(30rem, calc(100vw - 2rem));
+    padding: 0;
+    border: 1px solid var(--bordo);
+    border-radius: 12px;
+    background: var(--superficie);
+    color: var(--testo);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.3);
+}
+
+.dialogo::backdrop {
+    background: rgba(11, 11, 11, 0.5);
+}
+
+.dialogo form {
+    padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.dialogo-titolo {
+    margin: 0 0 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.dialogo-testo {
+    margin: 0;
+    color: var(--testo-secondario);
+    overflow-wrap: anywhere;
+}
+
+.dialogo-azioni {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+.dialogo[open] {
+    animation: notifica-entra 0.15s ease-out;
+}
+
+/* ---------------------------------------------------------------
+   Legenda compatta sopra la tabella
+   --------------------------------------------------------------- */
+.legenda-tabella {
+    margin-bottom: 0.75rem;
+    padding: 0.6rem 1rem;
+    background: var(--superficie);
+    border: 1px solid var(--bordo);
+    border-radius: 0.75rem;
+}
+
+.legenda-tabella summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--testo);
+}
+
+.legenda-tabella-corpo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: 0.75rem 2rem;
+    padding: 0.75rem 0 0.25rem;
+    font-size: 0.92rem;
+}
+
+.legenda-tabella-corpo > p {
+    grid-column: 1 / -1;
+}
+
+.legenda-tabella-titolo {
+    margin: 0 0 0.4rem;
+    font-weight: 600;
+}
+
+.legenda-livelli {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.legenda-livelli .badge-risk {
+    min-width: 7.5rem;
+    margin-right: 0.35rem;
+}
+
+.legenda-definizioni {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.3rem 0.75rem;
+    margin: 0;
+}
+
+.legenda-definizioni dt {
+    font-weight: 600;
+}
+
+.legenda-definizioni dd {
+    margin: 0;
+    color: var(--testo-secondario);
+}
+
+@media (max-width: 767.98px) {
+    .legenda-tabella-corpo {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ---------------------------------------------------------------
+   Tabella degli alimenti
+   Da tablet in su: le colonne secondarie (TEF, fruttosio, fibre,
+   rapporto F/F) si nascondono finché non si sceglie «Mostra tutte le
+   colonne», così la tabella entra nello schermo (serve JavaScript;
+   senza, si vedono tutte e la tabella scorre in orizzontale).
+   Mobile: ogni riga diventa una scheda compatta.
+   --------------------------------------------------------------- */
+@media (min-width: 768px) {
+    html.js:not(.tutte-colonne) .tabella-alimenti .col-secondaria {
+        display: none;
+    }
+}
+
+.ordina-mobile {
+    margin-bottom: 0.75rem;
+}
+
+.ordina-mobile .ordina-direzione {
+    flex: 0 0 9.5rem;
+}
+
+@media (max-width: 767.98px) {
+    .tabella-alimenti thead {
+        display: none;
+    }
+
+    .tabella-alimenti,
+    .tabella-alimenti tbody {
+        display: block;
+    }
+
+    .tabella-alimenti tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.35rem 0.6rem;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--griglia);
+    }
+
+    .tabella-alimenti tr:last-child {
+        border-bottom: 0;
+    }
+
+    /* Due "a capo": dopo nome e punteggio, dopo categoria e Kcal */
+    .tabella-alimenti tr::before,
+    .tabella-alimenti tr::after {
+        content: "";
+        flex-basis: 100%;
+        height: 0;
+    }
+
+    .tabella-alimenti tr::before { order: 1; }
+    .tabella-alimenti tr::after { order: 3; }
+
+    .tabella-alimenti td {
+        display: block;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        text-align: left !important;
+    }
+
+    .tabella-alimenti .col-nome {
+        flex: 1 1 0;
+        min-width: 0;
+        order: 0;
+        font-size: 1.05rem;
+    }
+
+    .tabella-alimenti .col-punteggio {
+        flex: none;
+        order: 0;
+        font-size: 1.1rem;
+    }
+
+    .tabella-alimenti .col-categoria,
+    .tabella-alimenti .col-valore {
+        order: 2;
+        font-size: 0.88rem;
+        color: var(--testo-secondario);
+    }
+
+    .tabella-alimenti .col-valore {
+        font-variant-numeric: tabular-nums;
+        color: var(--testo);
+        font-weight: 600;
+    }
+
+    /* Il testo delle etichette (tradotto) è in un <style> della pagina: index.html */
+    .tabella-alimenti .col-valore::before,
+    .tabella-alimenti .col-rischio::before {
+        font-weight: 400;
+        color: var(--testo-tenue);
+    }
+
+    .tabella-alimenti .col-categoria::after {
+        content: " ·";
+        color: var(--testo-tenue);
+    }
+
+    .tabella-alimenti .col-secondaria {
+        display: none;
+    }
+
+    .tabella-alimenti .col-rischio {
+        order: 4;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.78rem;
+    }
+
+    .tabella-alimenti .col-rischio .badge-risk {
+        font-size: 0.75rem;
+        padding: 0.1em 0.5em 0.1em 0.4em;
+    }
+
+    .tabella-alimenti .col-azioni {
+        order: 5;
+        flex-basis: 100%;
+        text-align: right !important;
+    }
+
+    .tabella-alimenti td[colspan] {
+        flex-basis: 100%;
+        text-align: center !important;
+    }
+
+    .table-card .table-responsive {
+        overflow-x: visible;
+    }
+}
+
+/* ---------------------------------------------------------------
+   Guida
+   --------------------------------------------------------------- */
+.guida-indice {
+    position: sticky;
+    top: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--superficie);
+    border-radius: 1rem;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.guida-indice-titolo {
+    margin: 0 0 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--testo-secondario);
+}
+
+.guida-indice ol {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.95rem;
+}
+
+.guida-indice li + li {
+    margin-top: 0.3rem;
+}
+
+.guida-sezione {
+    margin-bottom: 1rem;
+    border: 0;
+    border-radius: 1rem;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+    scroll-margin-top: 1rem;
+}
+
+.guida-sezione::after {
+    display: none;
+}
+
+.guida-sezione h2 {
+    font-size: 1.35rem;
+    margin-bottom: 0.75rem;
+}
+
+.guida-tabella {
+    margin-bottom: 0;
+}
+
+.guida-tabella td,
+.guida-tabella th {
+    vertical-align: middle;
+}
+
+.guida-rischi,
+.guida-definizioni {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.5rem 1.25rem;
+    margin: 0;
+}
+
+.guida-rischi dt,
+.guida-definizioni dt {
+    font-weight: 700;
+}
+
+.guida-rischi dd,
+.guida-definizioni dd {
+    margin: 0;
+}
+
+.guida-soglie,
+.guida-medaglie {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.guida-soglie .badge-risk {
+    min-width: 7.5rem;
+    margin-right: 0.5rem;
+}
+
+.guida-elenco-compatto {
+    columns: 2;
+    margin-bottom: 0.75rem;
+}
+
+.guida-esempio {
+    margin-top: 1rem;
+    padding: 0.85rem 1rem;
+    background: var(--superficie-2);
+    border-radius: 0.75rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.guida-esempio-titolo {
+    margin: 0 0 0.35rem;
+    font-weight: 700;
+}
+
+@media (max-width: 991.98px) {
+    .guida-indice {
+        position: static;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .guida-rischi,
+    .guida-definizioni {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.15rem;
+    }
+
+    .guida-rischi dd,
+    .guida-definizioni dd {
+        margin-bottom: 0.6rem;
+    }
+
+    .guida-elenco-compatto {
+        columns: 1;
+    }
+}
+
+/* ---------------------------------------------------------------
+   Pagine offline e di errore
+   --------------------------------------------------------------- */
+.pagina-errore,
+.pagina-offline {
+    max-width: 44rem;
+    padding: 1.5rem 0 2rem;
+}
+
+.pagina-errore-codice {
+    margin: 0;
+    font-size: 4rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--testo-tenue);
+    font-variant-numeric: tabular-nums;
+}
+
+.schede-salvate {
+    columns: 2;
+    padding-left: 1.2rem;
+}
+
+@media (max-width: 575.98px) {
+    .schede-salvate {
+        columns: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .js .notifica,
+    .dialogo[open] {
+        animation: none;
+    }
+
+    .js .notifica {
+        transition: none;
+    }
+}
+
+/* Menu: le voci non vanno a capo; tra 992 e 1200 px sono più strette
+   (con Guida e lingua il menu dell'amministratore è al limite) */
+@media (min-width: 992px) {
+    .navbar-expand-lg .navbar-nav .nav-link,
+    .navbar-expand-lg .navbar-text {
+        white-space: nowrap;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .navbar-expand-lg .navbar-nav .nav-link {
+        padding-left: 0.45rem;
+        padding-right: 0.45rem;
+    }
+
+    .navbar-expand-lg .navbar-text {
+        margin-left: 0.5rem !important;
+    }
+}

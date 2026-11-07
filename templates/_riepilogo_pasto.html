@@ -1,46 +1,47 @@
 {#
     Totali e profilo di rischio di un pasto o di una giornata.
-    Variabili: riepilogo (da riepilogo_nutrizionale), prefisso (id univoci), titolo.
+    Variabili: riepilogo (da riepilogo_nutrizionale), prefisso (id univoci),
+    titolo_nutrienti e titolo_profilo (titoli già tradotti delle due sezioni).
 #}
 {% set t = riepilogo.totali %}
 {% set m = riepilogo.mancanti %}
 {% set p = riepilogo.profilo %}
 
-{% macro nota_mancanti(campo) %}{% if m[campo] %} <small class="text-muted">({{ m[campo] }} senza dato)</small>{% endif %}{% endmacro %}
+{% macro nota_mancanti(campo) %}{% if m[campo] %} <small class="text-muted">({{ ngettext('%(num)d senza dato', '%(num)d senza dato', m[campo]) }})</small>{% endif %}{% endmacro %}
 
 <div class="row g-3 mb-3">
     <div class="col-6 col-md-3">
         <div class="card grafico-card h-100"><div class="card-body py-3">
-            <p class="stat-label">Kcal</p>
+            <p class="stat-label">{{ _('Kcal') }}</p>
             <p class="stat-valore">{{ t.kcal|round(0)|numero }}</p>
-            <p class="stat-nota">{{ t.grammi|round(0)|numero }} g in tutto</p>
+            <p class="stat-nota">{{ _('%(grammi)s g in tutto', grammi=t.grammi|round(0)|numero) }}</p>
         </div></div>
     </div>
     <div class="col-6 col-md-3">
         <div class="card grafico-card h-100"><div class="card-body py-3">
-            <p class="stat-label">Kcal nette</p>
+            <p class="stat-label">{{ _('Kcal nette') }}</p>
             <p class="stat-valore">{{ t.kcal_nette|round(0)|numero }}</p>
-            <p class="stat-nota">Kcal − TEF</p>
+            <p class="stat-nota">{{ _('Kcal − TEF') }}</p>
         </div></div>
     </div>
     <div class="col-6 col-md-3">
         <div class="card grafico-card h-100"><div class="card-body py-3">
-            <p class="stat-label">TEF</p>
+            <p class="stat-label">{{ _('TEF') }}</p>
             <p class="stat-valore">{{ t.tef_kcal|round(0)|numero }}<span class="stat-scala"> Kcal</span></p>
             <p class="stat-nota">
-                {% if t.kcal %}{{ (t.tef_kcal / t.kcal * 100)|percentuale }} delle Kcal{% else %}effetto termico{% endif %}
+                {% if t.kcal %}{{ _('%(quota)s delle Kcal', quota=(t.tef_kcal / t.kcal * 100)|percentuale) }}{% else %}{{ _('effetto termico') }}{% endif %}
             </p>
         </div></div>
     </div>
     <div class="col-6 col-md-3">
         <div class="card grafico-card h-100"><div class="card-body py-3">
-            <p class="stat-label">Punteggio</p>
+            <p class="stat-label">{{ _('Punteggio') }}</p>
             {% if p.punteggio is not none %}
                 <p class="stat-valore">{{ p.punteggio }}<span class="stat-scala">/100</span></p>
-                <p class="stat-nota"><span class="badge-risk stato-{{ p.livello.stato }}">{{ p.livello.etichetta }}</span></p>
+                <p class="stat-nota"><span class="badge-risk stato-{{ p.livello.stato }}">{{ p.livello.etichetta|traduci }}</span></p>
             {% else %}
                 <p class="stat-valore">–</p>
-                <p class="stat-nota">nessun rischio classificato</p>
+                <p class="stat-nota">{{ _('nessun rischio classificato') }}</p>
             {% endif %}
         </div></div>
     </div>
@@ -50,26 +51,26 @@
     <div class="col-lg-5">
         <section class="card grafico-card h-100" aria-labelledby="{{ prefisso }}-titolo-totali">
             <div class="card-body">
-                <h2 class="grafico-titolo" id="{{ prefisso }}-titolo-totali">Nutrienti {{ titolo }}</h2>
-                <p class="grafico-sottotitolo">Somma delle porzioni. Tra parentesi gli alimenti senza quel dato.</p>
+                <h2 class="grafico-titolo" id="{{ prefisso }}-titolo-totali">{{ titolo_nutrienti }}</h2>
+                <p class="grafico-sottotitolo">{{ _('Somma delle porzioni. Tra parentesi gli alimenti senza quel dato.') }}</p>
 
                 <table class="table table-sm dati-nutrizionali mb-2">
                     <tbody>
-                        {% for campo, etichetta, unita, decimali, _ in nutrienti.MACRO %}
-                            <tr><th scope="row">{{ etichetta }} <span class="text-muted fw-normal">({{ unita }})</span></th>
+                        {% for campo, etichetta, unita, decimali, _codice in nutrienti.MACRO %}
+                            <tr><th scope="row">{{ etichetta|traduci }} <span class="text-muted fw-normal">({{ unita }})</span></th>
                                 <td>{% if m[campo] < riepilogo.voci %}{{ t[campo]|round(decimali)|numero }}{% else %}<span class="text-muted">–</span>{% endif %}{{ nota_mancanti(campo) }}</td></tr>
                         {% endfor %}
-                        <tr><th scope="row">Fibre <span class="text-muted fw-normal">(g)</span></th><td>{{ t.fibre|round(1)|numero }}</td></tr>
-                        <tr><th scope="row">Fruttosio <span class="text-muted fw-normal">(g)</span></th><td>{{ t.fruttosio|round(1)|numero }}</td></tr>
+                        <tr><th scope="row">{{ _('Fibre') }} <span class="text-muted fw-normal">(g)</span></th><td>{{ t.fibre|round(1)|numero }}</td></tr>
+                        <tr><th scope="row">{{ _('Fruttosio') }} <span class="text-muted fw-normal">(g)</span></th><td>{{ t.fruttosio|round(1)|numero }}</td></tr>
                     </tbody>
                 </table>
 
                 <details class="dettagli-micro">
-                    <summary>Vitamine e sali minerali</summary>
+                    <summary>{{ _('Vitamine e sali minerali') }}</summary>
                     <table class="table table-sm dati-nutrizionali mb-0 mt-2">
                         <tbody>
-                            {% for campo, etichetta, unita, decimali, _ in nutrienti.MICRO %}
-                                <tr><th scope="row">{{ etichetta }} <span class="text-muted fw-normal">({{ unita }})</span></th>
+                            {% for campo, etichetta, unita, decimali, _codice in nutrienti.MICRO %}
+                                <tr><th scope="row">{{ etichetta|traduci }} <span class="text-muted fw-normal">({{ unita }})</span></th>
                                     <td>{% if m[campo] < riepilogo.voci %}{{ t[campo]|round(decimali)|numero }}{% else %}<span class="text-muted">–</span>{% endif %}{{ nota_mancanti(campo) }}</td></tr>
                             {% endfor %}
                         </tbody>
@@ -82,34 +83,37 @@
     <div class="col-lg-7">
         <section class="card grafico-card h-100" aria-labelledby="{{ prefisso }}-titolo-profilo">
             <div class="card-body">
-                <h2 class="grafico-titolo" id="{{ prefisso }}-titolo-profilo">Profilo di rischio {{ titolo }}</h2>
+                <h2 class="grafico-titolo" id="{{ prefisso }}-titolo-profilo">{{ titolo_profilo }}</h2>
                 <p class="grafico-sottotitolo">
-                    Media dei livelli pesata sulle {{ p.pesato_su }} di ciascun alimento:
-                    un alimento conta tanto quanto apporta.
-                    Anelli dal centro: Trascurabile, Basso, Medio, Alto.
+                    {% if p.pesato_su == 'Kcal' %}
+                        {{ _('Media dei livelli pesata sulle Kcal di ciascun alimento: un alimento conta tanto quanto apporta.') }}
+                    {% else %}
+                        {{ _('Media dei livelli pesata sui grammi di ciascun alimento: un alimento conta tanto quanto apporta.') }}
+                    {% endif %}
+                    {{ _('Anelli dal centro: Trascurabile, Basso, Medio, Alto.') }}
                 </p>
 
-                {% set descrizione %}{% for r in p.rischi %}{{ r.etichetta }}: {{ r.livello.etichetta }}{% if not loop.last %}; {% endif %}{% endfor %}{% endset %}
+                {% set descrizione %}{% for r in p.rischi %}{{ r.etichetta|traduci }}: {{ r.livello.etichetta|traduci }}{% if not loop.last %}; {% endif %}{% endfor %}{% endset %}
                 {% with radar=riepilogo.radar, radar_titolo=prefisso ~ "-titolo-profilo", radar_descrizione=descrizione %}
                     {% include "_radar.html" %}
                 {% endwith %}
 
                 <div class="table-responsive mt-3">
                 <table class="table table-sm mb-0">
-                    <caption class="visually-hidden">Livelli medi di rischio</caption>
+                    <caption class="visually-hidden">{{ _('Livelli medi di rischio') }}</caption>
                     <thead>
                         <tr>
-                            <th scope="col">Rischio</th>
-                            <th scope="col">Livello medio</th>
-                            <th scope="col" class="text-end">Punti (0–3)</th>
-                            <th scope="col">Pesa di più</th>
+                            <th scope="col">{{ _('Rischio') }}</th>
+                            <th scope="col">{{ _('Livello medio') }}</th>
+                            <th scope="col" class="text-end">{{ _('Punti (0–3)') }}</th>
+                            <th scope="col">{{ _('Pesa di più') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for r in p.rischi %}
                             <tr>
-                                <th scope="row" class="fw-normal">{{ r.etichetta }}</th>
-                                <td><span class="badge-risk stato-{{ r.livello.stato }}">{{ r.livello.etichetta }}</span></td>
+                                <th scope="row" class="fw-normal">{{ r.etichetta|traduci }}</th>
+                                <td><span class="badge-risk stato-{{ r.livello.stato }}">{{ r.livello.etichetta|traduci }}</span></td>
                                 <td class="text-end">{{ r.punti|numero(1) if r.punti is not none else '–' }}</td>
                                 <td class="small">{{ r.principale or '–' }}</td>
                             </tr>
