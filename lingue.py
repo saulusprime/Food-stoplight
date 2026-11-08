@@ -114,6 +114,7 @@ CATEGORIE = (
     N_("Grassi e Oli"),
     N_("Dolci e Snack"),
     N_("Bevande"),
+    N_("Piatti e ricette"),
     N_("Altri Alimenti"),
     N_("Senza categoria"),
 )

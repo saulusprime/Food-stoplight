@@ -30,7 +30,21 @@ IMPORT_DIR = LAVORO / "import"
 shutil.copy(PROGETTO / "alimenti.db", ORIGINALE)
 shutil.copy(ORIGINALE, DB)
 
+
+def _id_originale(nome: str) -> int:
+    conn = sqlite3.connect(ORIGINALE)
+
+    try:
+        return int(conn.execute("SELECT id FROM alimenti WHERE alimento = ?", (nome,)).fetchone()[0])
+    finally:
+        conn.close()
+
+
+# Alimento CREA usato come esempio nei test (con valori USDA per fruttosio e altri campi)
+ASPARAGI = _id_originale("Asparagi di campo, crudi")
+
 os.environ.update({
+    "USDA_API_KEY": "",
     "APP_ENV": "sviluppo",
     "APP_DEBUG": "false",
     "FLASK_SECRET_KEY": "chiave-di-prova-" + "x" * 32,

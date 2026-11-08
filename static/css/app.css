@@ -1418,6 +1418,43 @@ main:focus {
 }
 
 /* ---------------------------------------------------------------
+   Filtri della home: «Filtra» e «Reset» chiudono l'ultima riga dei
+   filtri, alti quanto le select
+   --------------------------------------------------------------- */
+.filtri {
+    --altezza-filtro: 2.25rem;
+}
+
+.filtri .form-select {
+    height: var(--altezza-filtro);
+    text-overflow: ellipsis;
+}
+
+.filtri-azioni {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.filtri-azioni .btn {
+    display: inline-flex;
+    align-items: center;
+    height: var(--altezza-filtro);
+    padding: 0 1rem;
+    white-space: nowrap;
+}
+
+.filtri-azioni .btn-link {
+    padding-inline: 0.5rem;
+}
+
+/* Su una riga sola la Categoria ha nomi più lunghi dei livelli */
+@media (min-width: 1200px) {
+    .filtri .filtro-categoria {
+        flex-grow: 1.5;
+    }
+}
+
+/* ---------------------------------------------------------------
    Tabella degli alimenti
    Da tablet in su: le colonne secondarie (TEF, fruttosio, fibre,
    rapporto F/F) si nascondono finché non si sceglie «Mostra tutte le
@@ -1740,4 +1777,75 @@ main:focus {
     .navbar-expand-lg .navbar-text {
         margin-left: 0.5rem !important;
     }
+}
+
+/* ---------------------------------------------------------------
+   Rischi calcolati: livello, motivi e fonti (scheda e form)
+   --------------------------------------------------------------- */
+.rischi-motivi {
+    list-style: none;
+    margin: 0 0 0.75rem;
+    padding: 0;
+}
+
+.rischio-motivo {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--asse);
+}
+
+.rischio-motivo:last-child {
+    border-bottom: 0;
+}
+
+.rischio-motivo-testa {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.rischio-motivo-nome {
+    font-weight: 600;
+}
+
+.rischio-motivo-elenco {
+    margin: 0.3rem 0 0;
+    padding-left: 1.1rem;
+    font-size: 0.875rem;
+    color: var(--testo-secondario);
+}
+
+.rischio-motivo-fonti {
+    margin: 0.2rem 0 0;
+    font-size: 0.8rem;
+    color: var(--testo-secondario);
+}
+
+/* Provenienza dei dati nella scheda */
+.fonti-alimento ul {
+    padding-left: 1.1rem;
+}
+
+/* Form: compila da una fonte */
+.compila-fonte .form-text a {
+    color: inherit;
+}
+
+/* Guida: fonti delle regole e riferimenti */
+.guida-fonti {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.85rem;
+    color: var(--testo-secondario);
+}
+
+.guida-riferimenti li {
+    margin-bottom: 0.3rem;
+}
+
+/* Scheda: i badge lunghi (es. NOVA 1 · Non trasformati...) vanno a capo nella loro colonna */
+.scheda-indicatori .badge-risk {
+    white-space: normal;
+    max-width: 100%;
 }

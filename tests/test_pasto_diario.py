@@ -5,7 +5,7 @@ from datetime import date, timedelta
 
 import pytest
 
-from tests.aiuti import DIARIO_DB, id_di, messaggi, solo_testo, sql
+from tests.aiuti import ASPARAGI, DB, DIARIO_DB, id_di, messaggi, solo_testo, sql
 
 
 def pasto_di(cliente):
@@ -23,7 +23,6 @@ def voci_diario():
 
 
 
-ASPARAGI = 787
 
 
 def test_pasto_aggiunta_ricerca_e_somma(client):
@@ -39,15 +38,24 @@ def test_pasto_aggiunta_ricerca_e_somma(client):
 
 
 @pytest.mark.parametrize(("dati", "messaggio"), [
-    ({"cerca": "Trota", "grammi": "100"}, "Ci sono"),
     ({"cerca": "Non esiste", "grammi": "100"}, "Nessun alimento"),
     ({"alimento_id": "999999", "grammi": "100"}, "non trovato"),
-    ({"alimento_id": "787", "grammi": "abc"}, "Grammi non validi"),
-    ({"alimento_id": "787", "grammi": "5000"}, "Grammi non validi"),
+    ({"alimento_id": str(ASPARAGI), "grammi": "abc"}, "Grammi non validi"),
+    ({"alimento_id": str(ASPARAGI), "grammi": "5000"}, "Grammi non validi"),
 ])
 def test_pasto_errori(client, dati, messaggio):
     client.post("/pasto/aggiungi", data=dati)
     assert any(messaggio in m for m in messaggi(client))
+    assert pasto_di(client) == []
+
+
+def test_pasto_nome_ambiguo(client):
+    conn = sqlite3.connect(DB)
+    conn.execute("INSERT INTO alimenti (alimento, categoria) VALUES ('Trota', 'Pesce'), ('Trota', 'Test')")
+    conn.commit()
+    conn.close()
+    client.post("/pasto/aggiungi", data={"cerca": "Trota", "grammi": "100"})
+    assert any("Ci sono" in m for m in messaggi(client))
     assert pasto_di(client) == []
 
 
@@ -81,7 +89,7 @@ def test_diario_aggiunta_e_totali(visitatore):
     visitatore.post("/diario/aggiungi", data={"data": oggi, "pasto": "merenda", "alimento_id": ASPARAGI, "grammi": "10"})
     assert any("Scegli il pasto" in m for m in messaggi(visitatore))
     contenuto = solo_testo(visitatore.get("/diario").data)
-    assert "Pranzo · 40 Kcal" in contenuto        # 20 Kcal per 100 g
+    assert "Pranzo · 66 Kcal" in contenuto        # 33 Kcal per 100 g
     assert "Ultimi 7 giorni" in contenuto
 
 
@@ -95,8 +103,8 @@ def test_diario_salva_pasto(visitatore):
 
 def test_diario_valori_congelati_e_alimento_eliminato(admin, visitatore):
     visitatore.post("/diario/aggiungi", data={"pasto": "pranzo", "alimento_id": ASPARAGI, "grammi": "100"})
-    admin.post(f"/modifica/{ASPARAGI}", data={"alimento": "Asparagus, raw", "kcal": "999"})
-    assert "Pranzo · 20 Kcal" in solo_testo(visitatore.get("/diario").data)
+    admin.post(f"/modifica/{ASPARAGI}", data={"alimento": "Asparagi di campo, crudi", "kcal": "999"})
+    assert "Pranzo · 33 Kcal" in solo_testo(visitatore.get("/diario").data)
     admin.post(f"/elimina/{ASPARAGI}")
     assert "(non più nel database)" in solo_testo(visitatore.get("/diario").data)
 
@@ -117,5 +125,5 @@ def test_diario_isolato_tra_utenti(visitatore, altro_visitatore):
 def test_diario_date(visitatore):
     ieri = (date.today() - timedelta(days=1)).isoformat()
     visitatore.post("/diario/aggiungi", data={"data": ieri, "pasto": "cena", "alimento_id": ASPARAGI, "grammi": "100"})
-    assert "Cena · 20 Kcal" in solo_testo(visitatore.get(f"/diario?data={ieri}").data)
+    assert "Cena · 33 Kcal" in solo_testo(visitatore.get(f"/diario?data={ieri}").data)
     assert visitatore.get("/diario?data=2026-13-40").status_code == 200

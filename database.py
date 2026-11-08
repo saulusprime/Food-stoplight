@@ -131,6 +131,39 @@ def _alimenti_2_rimuovi_fonti_storiche(conn: sqlite3.Connection) -> None:
         conn.execute(f"ALTER TABLE alimenti DROP COLUMN {colonna}")
 
 
+def _alimenti_3_fonti_e_zuccheri(conn: sqlite3.Connection) -> None:
+    """
+    Codici delle fonti (CREA, codice a barre di Open Food Facts), porzione
+    tipica, zuccheri semplici e alcol per i rischi calcolati, campi presi da
+    USDA (quelli che la sincronizzazione aggiorna) e storico delle sincronizzazioni.
+    """
+    for nome, tipo in (
+        ("codice_crea", "TEXT"),
+        ("codice_barre", "TEXT"),
+        ("porzione", "REAL"),
+        ("glucosio", "REAL"),
+        ("lattosio", "REAL"),
+        ("alcol", "REAL"),
+        ("campi_usda", "TEXT"),
+    ):
+        conn.execute(f"ALTER TABLE alimenti ADD COLUMN {nome} {tipo}")
+
+    conn.execute("CREATE INDEX IF NOT EXISTS alimenti_codice_crea ON alimenti (codice_crea)")
+    conn.execute("CREATE INDEX IF NOT EXISTS alimenti_fdc_id ON alimenti (fdc_id)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS sincronizzazioni (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fonte TEXT NOT NULL,
+            iniziata_il TEXT NOT NULL,
+            finita_il TEXT,
+            esito TEXT NOT NULL DEFAULT 'in corso'
+                CHECK (esito IN ('in corso', 'riuscita', 'fallita')),
+            aggiornati INTEGER NOT NULL DEFAULT 0,
+            messaggio TEXT
+        )
+    """)
+
+
 # ---------------------------------------------------------------
 # UTENTI E DIARIO
 # ---------------------------------------------------------------
@@ -172,6 +205,8 @@ MIGRAZIONI: dict[str, list[Migrazione]] = {
     "alimenti": [
         (1, "Schema di base (energia, rischi, nutrienti, FODMAP, NOVA, fonte)", _alimenti_1_schema_di_base),
         (2, "Rimuove fonte_kcal e fonte_tef (sostituite da fonte_nutrienti)", _alimenti_2_rimuovi_fonti_storiche),
+        (3, "Codici CREA e a barre, porzione, glucosio, lattosio, alcol, sincronizzazioni",
+         _alimenti_3_fonti_e_zuccheri),
     ],
     "utenti": [
         (1, "Schema di base", _utenti_1_schema_di_base),

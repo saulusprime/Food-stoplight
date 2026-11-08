@@ -111,10 +111,13 @@ def tef_da_macronutrienti(
     return arrotonda(tef_kcal, 2), arrotonda(percentuale, 2)
 
 
-def rapporto_fruttosio_fibre(fruttosio: float | None, fibre: float | None) -> float:
+def rapporto_fruttosio_fibre(fruttosio: float | None, fibre: float | None) -> float | None:
     """
-    Fruttosio diviso fibre, 0 se le fibre sono 0 o mancano.
+    Fruttosio diviso fibre, 0 se le fibre sono 0 o mancano, None se il fruttosio non è noto.
     """
+    if fruttosio is None:
+        return None
+
     if not fibre or fibre <= 0:
         return 0.0
 

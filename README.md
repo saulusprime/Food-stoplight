@@ -1,13 +1,16 @@
 # 🥗 Food-stoplight
 
-**Food-stoplight** è una web app per consultare e gestire un database nutrizionale di oltre 1000 alimenti, con un sistema "a semaforo" a quattro livelli (🟢 Trascurabile / 🟡 Basso / 🟠 Medio / 🔴 Alto) che classifica ogni alimento in base a cinque profili di rischio per la salute.
+**Food-stoplight** è una web app per consultare e gestire un database nutrizionale di 900 alimenti italiani (Tabelle di composizione del CREA), con un sistema "a semaforo" a quattro livelli (🟢 Trascurabile / 🟡 Basso / 🟠 Medio / 🔴 Alto) che classifica ogni alimento in base a cinque profili di rischio per la salute.
 
 Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su **Bootstrap Italia**.
 
 ## ✨ Funzionalità
 
 - **Tabella interattiva** di tutti gli alimenti con ordinamento su ogni colonna e filtri combinabili per categoria e livelli di rischio.
-- **Sistema a semaforo** per cinque indicatori di rischio:
+- **Dati reali e tracciabili**: i 900 alimenti delle Tabelle di composizione degli alimenti del CREA (2019), con i valori che il CREA non pubblica (soprattutto fruttosio e glucosio) presi dall'alimento corrispondente di USDA FoodData Central; ogni scheda dice da dove viene ogni dato.
+- **Compila da una fonte**: nel form un alimento si riempie da un codice CREA, da un codice a barre (Open Food Facts) o da un FDC ID USDA.
+- **Sincronizzazione periodica con USDA**: l'app aggiorna da sola i valori presi da USDA (con una chiave personale), con backup prima e storico nella pagina Importa.
+- **Sistema a semaforo** per cinque indicatori di rischio, **calcolati dai valori nutrizionali** con regole documentate e riferimenti bibliografici (Reg. CE 1924/2006, semaforo FSA, OMS, EFSA, LARN, IARC, WCRF, tabelle internazionali dell'indice glicemico, soglie FODMAP):
   - 🩸 Rischio Diabete
   - 🫀 Rischio Colesterolo
   - 🌾 Rischio Malassorbimento (fruttosio/FODMAP)
@@ -28,7 +31,7 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
   - backup automatico del database prima di ogni import
 - **Export** della tabella filtrata e ordinata in **CSV**, **Excel** (livelli colorati, foglio con filtri e legenda) e **PDF**; **PDF della scheda alimento** con punteggio, valori e radar.
 - **Backup e ripristino** del database dall'interfaccia: download, backup sul server, ripristino da file o da un backup salvato (con verifica del file e copia di sicurezza del database attuale).
-- **Riepilogo grafico** in home page, aggiornato in base ai filtri: alimenti per categoria, distribuzione dei livelli per ciascun rischio, punteggio medio e classifiche "top alimenti". Ogni grafico ha la sua vista tabellare.
+- **Riepilogo grafico** in home page, aggiornato in base ai filtri: alimenti per categoria, distribuzione dei livelli per ciascun rischio e classifiche "top alimenti". Ogni grafico ha la sua vista tabellare.
 - **Punteggio complessivo 0–100** per alimento, ordinabile in tabella: 100 = tutti i rischi trascurabili, 0 = tutti alti.
 - **Medaglie** 🛡️ più protettivi · 🍃 miglior rapporto fruttosio/fibre · 🪶 meno calorici, assegnate ai primi 10 di ciascuna classifica.
 - **Scheda alimento** con punteggio, valori nutrizionali e grafico radar del profilo di rischio.
@@ -58,15 +61,22 @@ Food-stoplight/
 ├── esportazione.py     # Export CSV, Excel e PDF (tabella e scheda alimento)
 ├── backup.py           # Backup, verifica e ripristino del database alimenti
 ├── nutrienti.py        # Campi nutrizionali, carico glicemico, porzioni, profilo dei pasti, alternative
-├── usda.py             # Macro e micronutrienti da USDA FoodData Central
+├── crea.py             # Lettura delle schede delle Tabelle di composizione del CREA
+├── usda.py             # Valori da USDA FoodData Central per FDC ID
+├── openfoodfacts.py    # Prodotti confezionati per codice a barre (Open Food Facts)
+├── fonti.py            # Alimenti dalle fonti: CREA + USDA, Open Food Facts, USDA; import e sincronizzazione
+├── classificazioni.py  # Bevande, carni rosse e lavorate, zuccheri liberi, NOVA, FODMAP, indice glicemico
+├── rischi.py           # Regole dei cinque rischi, con motivi e riferimenti bibliografici
+├── sincronizzazione.py # Sincronizzazione periodica con USDA (automatica nell'app, storico, blocco)
+├── dati/               # Abbinamenti CREA -> USDA e indice glicemico (Atkinson 2008) per codice CREA
 ├── lingue.py           # Scelta della lingua (italiano, inglese) e traduzione dei valori mostrati
 ├── pwa.py              # App installabile: manifest, service worker, pagina offline
 ├── babel.cfg, translations/   # Estrazione dei testi e traduzione inglese (messages.po / .mo)
 ├── config.py           # Configurazione da variabili d'ambiente / .env (sviluppo e produzione)
 ├── .env.example        # Modello del file .env
 ├── update.py           # Aggiornamento del database da CSV/Excel da riga di comando (stesse regole dell'import web)
-├── autogen.py          # Generatore del dataset: dati reali USDA FoodData Central + alimenti integrativi
-├── alimenti.db         # Database SQLite precaricato (~1000 alimenti)
+├── autogen.py          # Vecchio generatore del dataset sintetico (non più usato per alimenti.db)
+├── alimenti.db         # Database SQLite precaricato (900 alimenti CREA)
 ├── utenti.db           # Utenti e password (creato al primo avvio, escluso da git)
 ├── diario.db           # Diario alimentare degli utenti (creato al primo avvio, escluso da git)
 ├── instance/           # Backup del database e file in attesa di import (creata all'uso, esclusa da git)
@@ -130,7 +140,7 @@ python app.py
 
 L'app sarà disponibile su **http://127.0.0.1:5000** (indirizzo e porta configurabili, vedi sotto).
 
-Al primo avvio i database mancanti vengono creati e quelli esistenti portati allo schema attuale (vedi *Migrazioni*). Il repository include `alimenti.db` già popolato con ~1000 alimenti.
+Al primo avvio i database mancanti vengono creati e quelli esistenti portati allo schema attuale (vedi *Migrazioni*). Il repository include `alimenti.db` già popolato con i 900 alimenti del CREA.
 
 ## ⚙️ Configurazione
 
@@ -145,7 +155,8 @@ La configurazione si legge dalle variabili d'ambiente oppure dal file `.env` nel
 | `ACCESSO_PUBBLICO` | `true` | `false`: serve il login anche solo per consultare la tabella |
 | `SESSION_COOKIE_SECURE` | attivo in produzione | Cookie di sessione inviati solo su HTTPS |
 | `DATABASE_PATH` / `UTENTI_DB_PATH` / `DIARIO_DB_PATH` | `alimenti.db` / `utenti.db` / `diario.db` | Percorsi dei database (relativi alla cartella del progetto) |
-| `USDA_API_KEY` | `DEMO_KEY` | Chiave USDA FoodData Central per `flask --app app usda-nutrienti` |
+| `USDA_API_KEY` | (vuota) | Chiave personale USDA FoodData Central: serve per la sincronizzazione; senza, le ricerche dal form usano `DEMO_KEY` |
+| `USDA_SINCRONIZZA_GIORNI` | `30` | Ogni quanti giorni l'app sincronizza da sola i valori USDA (`0` = mai; solo con `USDA_API_KEY`) |
 | `BACKUP_DIR` | `instance/backup` | Cartella dei backup del database alimenti (si conservano gli ultimi 20) |
 | `MAX_UPLOAD_MB` | `10` | Dimensione massima dei file importati e dei backup da ripristinare |
 | `IMPORT_DIR` | `instance/import` | File caricati in attesa di conferma dell'import (eliminati dopo un'ora) |
@@ -205,15 +216,23 @@ Il sito si installa come app (Chrome, Edge, Safari su iPhone con «Aggiungi alla
 
 All'uscita dall'account le pagine salvate vengono cancellate, perché possono contenere il nome dell'utente e i pulsanti di amministrazione. A ogni deploy che cambia CSS, JavaScript, icone o traduzioni il service worker si aggiorna da solo. L'app installabile richiede HTTPS (in locale va bene `http://localhost`).
 
-## 🥦 Dati nutrizionali da USDA
+## 🥦 Fonti dei dati
+
+- **CREA** – [Tabelle di composizione degli alimenti](https://www.alimentinutrizione.it/tabelle-nutrizionali), aggiornamento 2019: nomi, categorie, porzione tipica e valori nutrizionali dei 900 alimenti. Il sito non ha API né file da scaricare: si leggono le schede, una al secondo. I dati si riproducono citando la fonte, come chiede il CREA (ogni alimento ha fonte, codice e link alla scheda).
+- **USDA FoodData Central** (dominio pubblico) – i valori che il CREA non pubblica, soprattutto fruttosio e glucosio, dall'alimento corrispondente: gli abbinamenti, scelti alimento per alimento, sono in `dati/crea_usda.csv` (441 alimenti). Fruttosio, glucosio e lattosio mantengono la proporzione sugli zuccheri dell'alimento USDA, applicata agli zuccheri del CREA. Negli alimenti di origine animale il fruttosio è 0; nel latte e nei latticini non zuccherati gli zuccheri sono lattosio.
+- **Open Food Facts** (licenza ODbL) – prodotti confezionati per codice a barre, dal form.
+- **Indice glicemico** – tabella 1 di Atkinson et al., *Diabetes Care* 2008, assegnata agli alimenti CREA corrispondenti (`dati/indice_glicemico.csv`, con la voce della tabella usata).
+- **NOVA, FODMAP, rischi** – regole documentate in `classificazioni.py` e `rischi.py`, spiegate nella pagina Guida con i riferimenti.
 
 ```bash
-flask --app app usda-nutrienti --prova      # mostra cosa cambierebbe
-flask --app app usda-nutrienti              # compila i campi vuoti (backup automatico prima)
-flask --app app usda-nutrienti --pagine 2 --sovrascrivi
+flask --app app crea-importa 007000 007120          # importa o aggiorna alcuni alimenti CREA
+flask --app app crea-importa --tutti --cache instance/crea   # tutto l'indice (circa 15 minuti)
+flask --app app crea-importa --tutti --sostituisci   # elimina prima gli alimenti senza codice CREA
+flask --app app usda-sincronizza                    # aggiorna subito i valori USDA (serve USDA_API_KEY)
+flask --app app ricalcola-rischi                    # ricalcola i livelli dopo aver cambiato le regole
 ```
 
-Il comando scarica l'elenco USDA usato da `autogen.py` (dataset Foundation e SR Legacy) e abbina gli alimenti per nome esatto, salvando fonte, link alla scheda USDA e FDC ID. Senza `USDA_API_KEY` usa la chiave pubblica `DEMO_KEY`, limitata a poche richieste l'ora; la chiave personale è gratuita: <https://fdc.nal.usda.gov/api-key-signup>.
+Ogni comando fa un backup del database prima di scrivere. La sincronizzazione automatica parte nell'app stessa ogni `USDA_SINCRONIZZA_GIORNI` giorni (su Render un cron job separato non vedrebbe il disco dei dati); un file di blocco accanto al database evita che due processi la eseguano insieme. Lo stato e il pulsante «Sincronizza ora» sono nella pagina Importa. La chiave personale è gratuita: <https://fdc.nal.usda.gov/api-key-signup>.
 
 ## 🔌 API REST
 
@@ -293,9 +312,9 @@ python update.py --esporta-mancanti da_completare.csv   # CSV reimportabile con 
 python update.py --db altro.db --csv dati.csv
 ```
 
-### `autogen.py` — generazione del dataset
+### `autogen.py` — generazione del dataset (obsoleto)
 
-Genera il file `1000_foods_complete.csv` combinando:
+Non serve più per `alimenti.db`, che ora contiene gli alimenti reali del CREA (vedi *Fonti dei dati*). Generava il file `1000_foods_complete.csv` combinando:
 
 1. **Dati reali** dall'API [USDA FoodData Central](https://fdc.nal.usda.gov/) (dataset Foundation e SR Legacy)
 2. **Alimenti integrativi** generati con distribuzioni nutrizionali realistiche per categoria
@@ -310,12 +329,12 @@ python autogen.py --output dataset.csv --seed 42 --per-categoria 115
 - **TEF (Thermic Effect of Food)**: quando manca, si stima dai macronutrienti come media dei coefficienti pesata sull'energia di ciascuno — proteine 25%, carboidrati 10%, grassi 5% (gli stessi in web app, import, `update.py` e `autogen.py`). Se mancano le Kcal si stimano dai macronutrienti (4 / 4 / 9 Kcal per grammo).
 - **Kcal Nette** = Kcal totali − TEF (Kcal).
 - **Rapporto Fruttosio/Fibre** = fruttosio ÷ fibre (0 se le fibre sono 0): indicatore utile per la valutazione del malassorbimento del fruttosio; più è basso, meglio è, perché le fibre ne favoriscono la tolleranza.
-- **Indicatori di rischio**: assegnati tramite punteggi basati su soglie di zuccheri, grassi saturi, colesterolo, fibre e fruttosio, con riferimento alle indicazioni OMS/WCRF per il rischio tumorale. Valori accettati: Trascurabile, Basso, Medio, Alto (sono riconosciuti anche Protettivo e Neutro come Trascurabile, Elevato e Aumentato come Alto).
+- **Indicatori di rischio**: calcolati dai valori nutrizionali a ogni salvataggio, import e sincronizzazione (`rischi.py`), mai scritti a mano. Per i nutrienti da limitare la scala è comune, per 100 g (bevande per 100 ml): Trascurabile fino alla soglia «senza» del Reg. CE 1924/2006, Basso fino a «a basso contenuto» (verde FSA), Medio nell'ambra e Alto nel rosso del semaforo FSA. Diabete: carico glicemico della porzione e zuccheri liberi, un livello in meno con molte fibre. Colesterolo: grassi saturi, e colesterolo della porzione oltre il limite giornaliero dei LARN. Malassorbimento: fruttosio in eccesso sul glucosio nella porzione rispetto alla soglia FODMAP (Varney 2017). Metabolico: densità energetica (WCRF) e zuccheri liberi. Tumorale: alcol e carni lavorate (IARC gruppo 1), carne rossa, sale, ultra-trasformati, bevande zuccherate; fibre protettive. Regole e riferimenti completi nella Guida.
 - **Punteggio complessivo** = 100 × (1 − media dei punti ÷ 3), con Trascurabile = 0, Basso = 1, Medio = 2, Alto = 3 punti, calcolato sui rischi disponibili. Il colore del punteggio corrisponde al livello medio: oltre 83 Trascurabile, 51–83 Basso, 17–50 Medio, fino a 16 Alto.
 - **Medaglie**: primi 10 dell'intero database per punteggio (a parità, più fibre), per rapporto fruttosio/fibre (solo alimenti con almeno 1 g di fruttosio) e per Kcal (esclusi i valori a 0, che indicano dati mancanti).
-- **Origine dei dati**: dei 1004 alimenti, 199 vengono da USDA FoodData Central con macro e micronutrienti reali; gli altri 805 sono stati generati da `autogen.py` con valori casuali verosimili per categoria (per questo ci sono omonimi, es. «Trota», con valori diversi) e non hanno macro né micronutrienti. Indice glicemico, FODMAP e NOVA non hanno una fonte aperta e vanno inseriti dal form o con l'import.
+- **Origine dei dati**: vedi *Fonti dei dati*. Dove una fonte non dà un valore il campo resta vuoto e il rischio che ne dipende «Non classificato»: oggi soprattutto grassi saturi di alcune carni e pesci, fruttosio di ricette, biscotti e prodotti da forno.
 - **Dati nutrizionali**: valori per 100 g; un campo vuoto significa «non disponibile», 0 è un valore misurato.
-- **Carico glicemico** = indice glicemico × carboidrati disponibili (carboidrati − fibre) della porzione ÷ 100. Soglie: indice basso fino a 55, medio 56–69, alto da 70; carico per porzione basso fino a 10, medio 11–19, alto da 20.
+- **Carico glicemico** = indice glicemico × carboidrati disponibili della porzione ÷ 100. I carboidrati sono quelli disponibili (senza fibre), come nelle etichette europee e nel CREA; da USDA si sottraggono le fibre. Soglie: indice basso fino a 55, medio 56–69, alto da 70; carico per porzione basso fino a 10, medio 11–19, alto da 20.
 - **FODMAP**: livello Basso / Medio / Alto per fruttani, GOS, lattosio, fruttosio in eccesso e polioli, come il semaforo delle tabelle Monash; il complessivo è il più alto dei cinque.
 - **NOVA**: 1 non trasformati o minimamente trasformati, 2 ingredienti culinari trasformati, 3 alimenti trasformati, 4 ultra-trasformati.
 - **Profilo di rischio di pasti e giornate**: per ogni rischio, media dei punti dei livelli (0–3) pesata sulle Kcal che ogni alimento apporta (su grammi se nessun alimento ha Kcal); il punteggio segue la stessa formula di quello degli alimenti.
@@ -333,7 +352,7 @@ python autogen.py --output dataset.csv --seed 42 --per-categoria 115
 | Frontend | Jinja2, Bootstrap Italia 2.18.3, service worker (app installabile) |
 | Lingue | Flask-Babel (italiano, inglese) |
 | Import / Export | openpyxl (Excel), fpdf2 (PDF) |
-| Dati | USDA FoodData Central API (requests) |
+| Dati | CREA (Tabelle di composizione degli alimenti), USDA FoodData Central, Open Food Facts (requests) |
 | Qualità | pytest, ruff, mypy, GitHub Actions |
 | Deploy | Docker, Render |
 

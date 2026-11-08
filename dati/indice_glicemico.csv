@@ -1,0 +1,84 @@
+codice_crea,alimento_crea,indice_glicemico,voce_tabella
+000530,Pane bianco,75,White wheat bread
+000560,Pane formato rosetta,75,White wheat bread
+000580,Panini al latte,75,White wheat bread
+000590,Panini all'olio,75,White wheat bread
+000550,Pane di tipo integrale,74,Whole wheat/whole meal bread
+000600,Pane azzimo,70,Unleavened wheat bread
+000100,"Riso, brillato",73,"White rice, boiled"
+000105,"Riso, brillato, cotto, bollito",73,"White rice, boiled"
+000110,"Riso, integrale",68,"Brown rice, boiled"
+000115,"Riso, integrale, cotto, bollito",68,"Brown rice, boiled"
+000090,Orzo perlato,28,Barley
+000095,"Orzo perlato, cotto, bollito",28,Barley
+000800,Pasta di semola,49,"Spaghetti, white"
+000805,"Pasta di semola, cotta, bollita",49,"Spaghetti, white"
+000850,"Pasta di semola, integrale",48,"Spaghetti, whole meal"
+000855,"Pasta di semola, integrale, cotta, bollita",48,"Spaghetti, whole meal"
+000045,"Couscous, crudo",65,Couscous
+000046,"Couscous, cotto",65,Couscous
+000070,"Mais, dolce, in scatola, sgocciolato",52,Sweet corn
+003020,Corn flakes,81,Cornflakes
+003030,Fiocchi d'avena,55,"Porridge, rolled oats"
+003040,Muesli,57,Muesli
+007110,"Mele, fresche, senza buccia",36,"Apple, raw"
+007120,"Mele, fresche, con buccia",36,"Apple, raw"
+007130,"Mele, fresche, annurche",36,"Apple, raw"
+007140,"Mele, fresche, deliziose",36,"Apple, raw"
+007150,"Mele, fresche, golden",36,"Apple, raw"
+007160,"Mele, fresche, granny smith",36,"Apple, raw"
+007170,"Mele, fresche, imperatore",36,"Apple, raw"
+007180,"Mele, fresche, renette",36,"Apple, raw"
+008000,"Arance, fresche",43,"Orange, raw"
+008001,"Arance bionde, fresche",43,"Orange, raw"
+008002,"Arance Valencia, fresche",43,"Orange, raw"
+008003,"Arance Washington Navel, fresche",43,"Orange, raw"
+008004,"Arance rosse, fresche",43,"Orange, raw"
+008005,"Arance Moro, fresche",43,"Orange, raw"
+008006,"Arance Sanguinello, fresche",43,"Orange, raw"
+008007,"Arance Tarocco, fresche",43,"Orange, raw"
+007510,"Banane, fresche",51,"Banana, raw"
+007460,"Ananas, fresco",59,"Pineapple, raw"
+007590,"Mango, fresco",51,"Mango, raw"
+007040,"Cocomero, fresco",76,"Watermelon, raw"
+007630,"Datteri, secchi",42,"Dates, raw"
+007310,"Pesche, sciroppate",43,"Peaches, canned"
+204500,Marmellata,49,Strawberry jam/jelly
+008010,"Arance succo, fresco",50,Orange juice
+008011,"Arance bionde succo, fresco",50,Orange juice
+008012,"Arance rosse succo, fresco",50,Orange juice
+006505,"Patate, con buccia, cotte, bollite",78,"Potato, boiled"
+006515,"Patate, senza buccia, cotte, bollite",78,"Potato, boiled"
+006585,"Patate novelle, cotte, bollite",78,"Potato, boiled"
+006517,"Patate, fritte",63,"Potato, french fries"
+119080,"Patatine, fritte, fast food",63,"Potato, french fries"
+005155,"Carote, cotte, bollite",39,"Carrots, boiled"
+905010,"Minestrone, cotto",48,Vegetable soup
+135010,"Latte di vacca, pastorizzato, intero",39,"Milk, full fat"
+135810,"Latte di vacca, UHT, intero",39,"Milk, full fat"
+135030,"Latte di vacca, pastorizzato, scremato",37,"Milk, skim"
+206040,"Gelato confezionato, fior di latte, in vaschetta",51,Ice cream
+206070,"Gelato confezionato, panna, in vaschetta",51,Ice cream
+206100,"Gelato confezionato, vaniglia, in vaschetta",51,Ice cream
+206010,"Gelato confezionato, cacao, in vaschetta",51,Ice cream
+150500,"Yogurt da latte intero, alla frutta",41,"Yogurt, fruit"
+150025,"Yogurt greco, da latte magro, alla frutta",41,"Yogurt, fruit"
+509010,"Soia, bevanda",34,Soy milk
+004000,"Ceci, secchi",28,Chickpeas
+004005,"Ceci, secchi, cotti, bolliti",28,Chickpeas
+004010,"Ceci, in scatola, scolati",28,Chickpeas
+004100,Fagioli,24,Kidney beans
+004105,"Fagioli, cotti, bolliti",24,Kidney beans
+004500,"Lenticchie, secche",32,Lentils
+004505,"Lenticchie, secche, cotte, bollite",32,Lentils
+004510,"Lenticchie, in scatola, scolate",32,Lentils
+004900,"Soia, secca",16,Soya beans
+203010,"Cioccolato, al latte",40,Chocolate
+203020,"Cioccolato, fondente",40,Chocolate
+203030,"Cioccolato, al latte con nocciole",40,Chocolate
+501200,Pop corn,65,Popcorn
+006570,"Patatine, fritte, confezionate in busta",56,Potato crisps
+401010,Aranciata,59,Soft drink/soda
+401100,Bevanda tipo cola,59,Soft drink/soda
+201500,"Zucchero, saccarosio",65,Sucrose
+210010,Miele,61,Honey

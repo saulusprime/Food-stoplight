@@ -28,7 +28,11 @@ from openpyxl.utils.exceptions import InvalidFileException
 
 import analisi
 import calcoli
+import crea
 import nutrienti
+import openfoodfacts
+import rischi
+import usda
 from calcoli import arrotonda, leggi_numero  # noqa: F401  (usati anche da altri moduli)
 from lingue import N_, traduci
 
@@ -54,7 +58,11 @@ CAMPI = (
     *nutrienti.CAMPI_NULLABILI,
 )
 
-CAMPI_NULLABILI = set(nutrienti.CAMPI_NULLABILI)
+# Il fruttosio può mancare (None = non disponibile), e con lui il rapporto F/F
+CAMPI_NULLABILI = set(nutrienti.CAMPI_NULLABILI) | {"fruttosio", "rapporto"}
+
+# Campi energia e fibre: vuoti valgono 0
+CAMPI_ZERO = tuple(c for c in CAMPI_NUMERICI if c != "fruttosio")
 
 # Etichette dei campi (in italiano: l'export le usa così; l'interfaccia le traduce)
 ETICHETTE = {
@@ -148,6 +156,18 @@ def campo_colonna(intestazione: object) -> str | None:
 
     if "fdc" in norm:
         return "fdc_id"
+
+    if "usda" in norm and "campi" in norm:
+        return "campi_usda"
+
+    if "crea" in norm.split():
+        return "codice_crea"
+
+    if "barre" in norm or norm in ("ean", "barcode", "codice ean"):
+        return "codice_barre"
+
+    if "porzione" in norm:
+        return "porzione"
 
     if "url" in norm or "link" in norm:
         return "url_fonte"
@@ -257,6 +277,9 @@ _NUTRIENTI_RE = (
     (re.compile(r"\b(grassi|lipidi)\b"), "grassi"),
     (re.compile(r"\bprotein"), "proteine"),
     (re.compile(r"\bzuccher"), "zuccheri"),
+    (re.compile(r"\bglucosio\b"), "glucosio"),
+    (re.compile(r"\blattosio\b"), "lattosio"),
+    (re.compile(r"\balcol"), "alcol"),
     (re.compile(r"\bcarboidrat"), "carboidrati"),
     (re.compile(r"\bcolesterolo\b"), "colesterolo"),
     (re.compile(r"\bvit(amina)? a\b"), "vitamina_a"),
@@ -674,6 +697,41 @@ def _normalizza_nutrienti(
         else:
             avvisi.append(gettext("FDC ID: «%(testo)s» non valido, ignorato", testo=testo))
 
+    testo = grezzo("porzione")
+
+    if not assente(testo):
+        valore, valido = leggi_numero(testo)
+
+        if valido and valore is not None and nutrienti.GRAMMI_MIN <= valore <= nutrienti.GRAMMI_MAX:
+            valori["porzione"] = valore
+            forniti.append("porzione")
+        else:
+            avvisi.append(gettext("Porzione: «%(testo)s» non valida, ignorata", testo=testo))
+
+    testo = grezzo("codice_crea").upper()
+
+    if not assente(testo):
+        if crea.CODICE_RE.match(testo):
+            valori["codice_crea"] = testo
+            forniti.append("codice_crea")
+        else:
+            avvisi.append(gettext("Codice CREA: «%(testo)s» non valido, ignorato", testo=testo))
+
+    testo = grezzo("codice_barre")
+
+    if not assente(testo):
+        if openfoodfacts.CODICE_RE.match(testo):
+            valori["codice_barre"] = testo
+            forniti.append("codice_barre")
+        else:
+            avvisi.append(gettext("Codice a barre: «%(testo)s» non valido, ignorato", testo=testo))
+
+    testo = grezzo("campi_usda")
+
+    if not assente(testo):
+        valori["campi_usda"] = ",".join(usda.leggi_campi(testo)) or None
+        forniti.append("campi_usda")
+
 
 def leggi_file(nome_file: str, raw: bytes) -> dict[str, Any]:
     """
@@ -737,8 +795,9 @@ def leggi_file(nome_file: str, raw: bytes) -> dict[str, Any]:
 VUOTO = {
     "alimento": "",
     "categoria": "",
-    **dict.fromkeys(CAMPI_NUMERICI, 0.0),
-    "rapporto": 0.0,
+    **dict.fromkeys(CAMPI_ZERO, 0.0),
+    "fruttosio": None,
+    "rapporto": None,
     **dict.fromkeys(analisi.CAMPI_RISCHIO, ""),
     **dict.fromkeys(nutrienti.CAMPI_NULLABILI),
 }
@@ -753,6 +812,8 @@ def completa_derivati(
     TEF (Kcal) <-> TEF (%), Kcal nette, rapporto fruttosio/fibre.
     Un campo derivato si ricalcola solo se è cambiato qualcosa da cui dipende,
     così una riga identica al database resta invariata.
+    I livelli di rischio si ricalcolano sempre dai dati (rischi.py): quelli
+    scritti nel file si ignorano.
     """
     if not nuovo:
         # Contano solo i valori che cambiano davvero: TEF e Kcal nette ricopiati
@@ -762,13 +823,16 @@ def completa_derivati(
     v = dict(base)
     v.update(valori)
 
-    for campo in (*CAMPI_NUMERICI, "rapporto"):
+    for campo in CAMPI_ZERO:
         v[campo] = float(v.get(campo) or 0)
 
-    for campo in (*CAMPI_TESTO, *analisi.CAMPI_RISCHIO):
+    v["fruttosio"] = None if v.get("fruttosio") in (None, "") else float(v["fruttosio"])
+
+    for campo in CAMPI_TESTO:
         v[campo] = v.get(campo) or ""
 
     calcoli.completa_energia(v, forniti, nuovo)
+    rischi.assegna(v)
 
     return v
 

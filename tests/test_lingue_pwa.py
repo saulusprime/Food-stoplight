@@ -13,7 +13,7 @@ from babel.messages.pofile import read_po
 
 import importazione
 import pwa
-from tests.aiuti import PROGETTO, id_di, messaggi, solo_testo
+from tests.aiuti import ASPARAGI, PROGETTO, id_di, messaggi, solo_testo
 
 CATALOGO = PROGETTO / "translations" / "en" / "LC_MESSAGES"
 
@@ -138,8 +138,8 @@ DATI_FORM = {
 
 def test_scheda_in_inglese(admin):
     admin.post("/nuovo", data=DATI_FORM)
-    contenuto = solo_testo(in_inglese(admin).get(f"/alimento/{id_di('Prova nutrienti')}?grammi=150").data)
-    assert "Values per 150 g" in contenuto
+    contenuto = solo_testo(in_inglese(admin).get(f"/alimento/{id_di('Prova nutrienti')}?grammi=125").data)
+    assert "Values per 125 g" in contenuto
     assert "22.5 · High" in contenuto            # punto decimale e livello tradotto
     assert "Fruit ·" in contenuto                # categoria del database tradotta
     assert "Diabetes" in contenuto and "Low" in contenuto
@@ -172,8 +172,8 @@ def test_export_e_api_restano_in_italiano(client):
     righe = list(csv.reader(io.StringIO(client.get("/esporta/csv").data.decode("utf-8-sig")), delimiter=";"))
     assert righe[0][:3] == ["ID", "Alimento", "Categoria"]
 
-    dati = client.get("/api/alimenti/787").get_json()
-    assert dati["livello_medio"] == "Trascurabile"
+    dati = client.get(f"/api/alimenti/{ASPARAGI}").get_json()
+    assert dati["livello_medio"] == "Basso"
 
     assert client.get("/api/inesistente").get_json()["errore"] == "Risorsa non trovata."
 
@@ -240,13 +240,13 @@ def test_notifiche(admin):
 
 
 def test_conferme_con_finestra(admin, visitatore):
-    assert 'data-conferma="Eliminare «Asparagus, raw» dal database?' in admin.get("/").data.decode()
-    assert "data-conferma=" in admin.get("/alimento/787").data.decode()
+    assert 'data-conferma="Eliminare «Asparagi di campo, crudi» dal database?' in admin.get("/").data.decode()
+    assert "data-conferma=" in admin.get(f"/alimento/{ASPARAGI}").data.decode()
 
-    visitatore.post("/diario/aggiungi", data={"pasto": "pranzo", "alimento_id": 787, "grammi": "100"})
+    visitatore.post("/diario/aggiungi", data={"pasto": "pranzo", "alimento_id": ASPARAGI, "grammi": "100"})
     assert "dal diario di questo giorno?" in visitatore.get("/diario").data.decode()
 
-    visitatore.post("/pasto/aggiungi", data={"alimento_id": 787, "grammi": "100"})
+    visitatore.post("/pasto/aggiungi", data={"alimento_id": ASPARAGI, "grammi": "100"})
     assert 'data-conferma="Togliere 1 alimento dal pasto?"' in visitatore.get("/pasto").data.decode()
 
 

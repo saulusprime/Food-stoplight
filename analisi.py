@@ -271,11 +271,6 @@ def legenda_rischi(distribuzione: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [liv for liv in (*LIVELLI, NON_CLASSIFICATO) if liv["chiave"] in presenti]
 
 
-def punteggio_medio(alimenti: list[Alimento]) -> int | None:
-    valori = [a["punteggio"] for a in alimenti if a.get("punteggio") is not None]
-    return round(sum(valori) / len(valori)) if valori else None
-
-
 def radar(
     alimento: Alimento,
     raggio: float = 110,

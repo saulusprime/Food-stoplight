@@ -6,6 +6,12 @@
     <span class="badge-risk stato-{{ stato }}">{{ etichetta }}</span>
 {%- endmacro %}
 
+{# Riferimento bibliografico breve con link (rischi.RIFERIMENTI) #}
+{% macro rif(chiave) -%}
+    {%- set r = riferimenti_rischi[chiave] -%}
+    <a href="{{ r.url }}" target="_blank" rel="noopener noreferrer" title="{{ r.citazione }}">{{ r.breve }}</a>
+{%- endmacro %}
+
 {% block content %}
 <div class="pagina-guida">
 
@@ -84,24 +90,89 @@
                 <div class="card-body">
                     <h2 id="titolo-rischi-guida">{{ _('I cinque rischi') }}</h2>
                     <p>
-                        {% trans %}Quando i livelli sono calcolati dai valori nutrizionali, ogni criterio superato aggiunge punti (valori per 100 g): 0 punti Trascurabile, 1 Basso, 2 Medio, 3 o più Alto. Per gli alimenti inseriti a mano o importati vale il livello indicato nella fonte.{% endtrans %}
+                        {% trans %}I livelli non si scrivono a mano: si calcolano dai valori nutrizionali a ogni salvataggio, import o sincronizzazione, con le regole qui sotto. Nella scheda di ogni alimento ci sono i motivi del livello e le fonti. Se mancano i dati necessari il rischio resta «Non classificato».{% endtrans %}
                     </p>
+                    <p>
+                        {% trans %}Per i nutrienti da limitare la scala è la stessa per tutti, per 100 g (per le bevande 100 ml): Trascurabile fino alla soglia «senza» delle indicazioni nutrizionali europee, Basso fino alla soglia «a basso contenuto» (il verde del semaforo britannico FSA), Medio nell'ambra, Alto nel rosso.{% endtrans %}
+                    </p>
+                    <div class="table-responsive">
+                        <table class="table table-sm guida-tabella">
+                            <caption>{{ _('Soglie per 100 g (bevande per 100 ml)') }}</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col"></th>
+                                    <th scope="col">{{ chip('good', _('Trascurabile')) }}</th>
+                                    <th scope="col">{{ chip('warning', _('Basso')) }}</th>
+                                    <th scope="col">{{ chip('serious', _('Medio')) }}</th>
+                                    <th scope="col">{{ chip('critical', _('Alto')) }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row">{{ _('Zuccheri liberi') }}</th>
+                                    <td>{{ _('fino a 0,5 g') }}</td>
+                                    <td>{{ _('fino a 5 g (2,5)') }}</td>
+                                    <td>{{ _('fino a 22,5 g (11,25)') }}</td>
+                                    <td>{{ _('oltre 22,5 g (11,25)') }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">{{ _('Grassi saturi') }}</th>
+                                    <td>{{ _('fino a 0,1 g') }}</td>
+                                    <td>{{ _('fino a 1,5 g (0,75)') }}</td>
+                                    <td>{{ _('fino a 5 g (2,5)') }}</td>
+                                    <td>{{ _('oltre 5 g (2,5)') }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">{{ _('Densità energetica') }}</th>
+                                    <td>{{ _('fino a 125 kcal') }}</td>
+                                    <td>{{ _('fino a 225 kcal') }}</td>
+                                    <td>{{ _('fino a 275 kcal') }}</td>
+                                    <td>{{ _('oltre 275 kcal') }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">{{ _('Carico glicemico della porzione') }}</th>
+                                    <td>{{ _('fino a 5') }}</td>
+                                    <td>{{ _('fino a 10') }}</td>
+                                    <td>{{ _('da 11 a 19') }}</td>
+                                    <td>{{ _('da 20') }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <dl class="guida-rischi">
                         <dt>{{ _('Diabete') }}</dt>
-                        <dd>{% trans %}Zuccheri: oltre 10 g +1, oltre 15 g +2. Fibre: sotto 2 g +1, oltre 5 g −1.{% endtrans %}</dd>
+                        <dd>
+                            {% trans %}Il più alto tra il livello del carico glicemico della porzione tipica e quello degli zuccheri liberi. Senza indice glicemico si usa una stima prudente: il carico massimo possibile, pari ai carboidrati disponibili della porzione. Con almeno 6 g di fibre per 100 g («ad alto contenuto di fibre») il livello scende di uno.{% endtrans %}
+                            <span class="guida-fonti">{{ _('Fonti:') }} {{ rif('carico_glicemico') }}, {{ rif('atkinson2008') }}, {{ rif('oms_zuccheri') }}, {{ rif('reynolds2019') }}.</span>
+                        </dd>
 
                         <dt>{{ _('Colesterolo') }}</dt>
-                        <dd>{% trans %}Grassi saturi oltre 5 g +2. Colesterolo: oltre 50 mg +1, oltre 100 mg +2.{% endtrans %}</dd>
+                        <dd>
+                            {% trans %}Livello dei grassi saturi, il principale fattore alimentare del colesterolo LDL. Se una porzione da sola porta 300 mg di colesterolo o più, il limite giornaliero indicato dai LARN, il livello è almeno Medio.{% endtrans %}
+                            <span class="guida-fonti">{{ _('Fonti:') }} {{ rif('efsa_grassi') }}, {{ rif('ue1924') }}, {{ rif('fsa') }}, {{ rif('larn2014') }}.</span>
+                        </dd>
 
                         <dt>{{ _('Malassorbimento') }}</dt>
-                        <dd>{% trans %}Malassorbimento del fruttosio. Fruttosio oltre 3 g +1; oltre 5 g con meno di 2 g di fibre +2.{% endtrans %}</dd>
+                        <dd>
+                            {% trans %}Malassorbimento del fruttosio, valutato sul fruttosio in eccesso sul glucosio nella porzione tipica, con la soglia dei FODMAP di Varney et al. (0,15 g per porzione): Trascurabile se in tutta la porzione il fruttosio non arriva a 0,15 g; Basso se il glucosio lo bilancia o l'eccesso resta entro la soglia; Medio se la supera ma con mezza porzione si resta sotto (fino a 0,30 g); Alto oltre. Senza dati misurati vale l'elenco degli alimenti ricchi di fruttosio in eccesso.{% endtrans %}
+                            <span class="guida-fonti">{{ _('Fonti:') }} {{ rif('varney2017') }}, {{ rif('sultan2022') }}.</span>
+                        </dd>
 
                         <dt>{{ _('Metabolico') }}</dt>
-                        <dd>{% trans %}Oltre 250 Kcal con più di 10 g di zuccheri +2. Grassi saturi oltre 5 g +1.{% endtrans %}</dd>
+                        <dd>
+                            {% trans %}Sovrappeso e sindrome metabolica: densità energetica (fino a 125 kcal per 100 g è l'obiettivo medio della dieta indicato dal WCRF, oltre 225-275 un alimento è denso di energia); Alto anche con più di 22,5 g di zuccheri liberi. Per le bevande la densità non vale: contano gli zuccheri liberi.{% endtrans %}
+                            <span class="guida-fonti">{{ _('Fonti:') }} {{ rif('wcrf2007') }}, {{ rif('wcrf2018') }}, {{ rif('oms_zuccheri') }}, {{ rif('fsa') }}.</span>
+                        </dd>
 
                         <dt>{{ _('Tumorale') }}</dt>
-                        <dd>{% trans %}Grassi saturi: oltre 4 g +1, oltre 7 g +2. Zuccheri oltre 15 g +1. Soglie ispirate alle raccomandazioni di OMS e WCRF.{% endtrans %}</dd>
+                        <dd>
+                            {% trans %}Alto per bevande e alimenti con alcol (da 1 g per 100 g) e per le carni lavorate, entrambi cancerogeni del gruppo 1 IARC. Medio per la carne rossa (gruppo 2A), per più di 1,5 g di sale per 100 g, per gli alimenti ultra-trasformati (NOVA 4) e per le bevande zuccherate. Senza questi fattori: Trascurabile con almeno 3 g di fibre per 100 g, altrimenti Basso.{% endtrans %}
+                            <span class="guida-fonti">{{ _('Fonti:') }} {{ rif('iarc_alcol') }}, {{ rif('iarc_carni') }}, {{ rif('wcrf2018') }}, {{ rif('fiolet2018') }}.</span>
+                        </dd>
                     </dl>
+                    <p class="small text-muted mb-0">
+                        {% trans %}Zuccheri liberi (definizione OMS): quelli aggiunti più quelli di miele, sciroppi e succhi; non quelli della frutta e della verdura intere né quelli del latte. La porzione tipica è quella delle tabelle CREA o dell'etichetta, altrimenti 100 g.{% endtrans %}
+                    </p>
                 </div>
             </section>
 
@@ -237,8 +308,12 @@
                             <li>{{ etichetta|traduci }}</li>
                         {% endfor %}
                     </ul>
-                    <p class="mb-0">
+                    <p>
                         {% for liv in livelli_fodmap %}{{ chip(liv.stato, liv.etichetta|traduci) }} {% endfor %}
+                    </p>
+                    <p class="mb-0">
+                        {% trans %}Negli alimenti importati dalle fonti: lattosio e fruttosio in eccesso si classificano dai valori misurati, con le soglie per porzione di Varney et al. (lattosio oltre 1 g, fruttosio in eccesso sul glucosio oltre 0,15 g, oligosaccaridi oltre 0,3 g); fruttani, GOS e polioli dall'elenco degli alimenti di base ricchi di ciascun FODMAP nelle diete occidentale e mediterranea (Sultan et al.). Carne, pesce e alimenti senza carboidrati non ne contengono. Le altre categorie restano non classificate: i dati completi della Monash University non sono pubblici.{% endtrans %}
+                        <span class="guida-fonti">{{ _('Fonti:') }} {{ rif('varney2017') }}, {{ rif('sultan2022') }}.</span>
                     </p>
                 </div>
             </section>
@@ -252,18 +327,30 @@
                             <li>{{ chip(gruppo.stato, 'NOVA ' ~ gruppo.gruppo) }} {{ gruppo.etichetta|traduci }}</li>
                         {% endfor %}
                     </ul>
+                    <p class="mb-0">
+                        {% trans %}Per gli alimenti generici delle tabelle CREA il gruppo si assegna con regole su nome e categoria, secondo le definizioni di Monteiro et al. (es. frutta fresca 1, olio e zucchero 2, formaggi e salumi 3, merendine e bibite 4); le ricette non hanno un gruppo. Per i prodotti confezionati vale il gruppo calcolato da Open Food Facts dagli ingredienti.{% endtrans %}
+                        <span class="guida-fonti">{{ _('Fonte:') }} {{ rif('monteiro2019') }}.</span>
+                    </p>
                 </div>
             </section>
 
             <section class="card guida-sezione" id="fonti" aria-labelledby="titolo-fonti">
                 <div class="card-body">
                     <h2 id="titolo-fonti">{{ _('Fonti e limiti') }}</h2>
-                    <ul class="mb-0">
-                        <li>{% trans %}I macro e micronutrienti con fonte USDA vengono da FoodData Central, la banca dati del Dipartimento dell'Agricoltura degli Stati Uniti.{% endtrans %}</li>
-                        <li>{% trans %}La scheda di ogni alimento indica la fonte dei valori; dove manca, i valori sono stime o dati dimostrativi da verificare.{% endtrans %}</li>
-                        <li>{% trans %}Le soglie dei rischi sono indicative e non sono ancora state riviste con riferimenti bibliografici puntuali.{% endtrans %}</li>
+                    <ul>
+                        <li>{% trans url='https://www.alimentinutrizione.it/tabelle-nutrizionali' %}Valori nutrizionali: <a href="{{ url }}" target="_blank" rel="noopener noreferrer">Tabelle di composizione degli alimenti del CREA</a> (Centro di ricerca Alimenti e Nutrizione, aggiornamento 2019), riprodotte citando la fonte come chiede il CREA. I grassi saturi in grammi sono stimati dalla percentuale degli acidi grassi con i fattori di conversione FAO/INFOODS.{% endtrans %}</li>
+                        <li>{% trans url='https://fdc.nal.usda.gov' %}I valori che il CREA non pubblica, soprattutto fruttosio e glucosio, vengono dall'alimento corrispondente di <a href="{{ url }}" target="_blank" rel="noopener noreferrer">USDA FoodData Central</a> (dominio pubblico), scelto alimento per alimento: la scheda indica quali.{% endtrans %}</li>
+                        <li>{% trans url='https://world.openfoodfacts.org' %}I prodotti confezionati cercati per codice a barre vengono da <a href="{{ url }}" target="_blank" rel="noopener noreferrer">Open Food Facts</a> (licenza ODbL).{% endtrans %}</li>
+                        <li>{% trans %}Indice glicemico: valori della tabella 1 di Atkinson et al. (2008), assegnati solo agli alimenti che corrispondono a una voce della tabella.{% endtrans %} {{ rif('atkinson2008') }}</li>
+                        <li>{% trans %}Le regole dei rischi valutano un alimento alla volta, per 100 g o per la porzione tipica: non tengono conto della dieta nel suo insieme, delle quantità consumate né delle condizioni personali.{% endtrans %}</li>
                         <li>{% trans %}Tutti i valori si riferiscono a 100 g di alimento, salvo dove è indicata una porzione.{% endtrans %}</li>
                     </ul>
+                    <h3 class="h6">{{ _('Riferimenti') }}</h3>
+                    <ol class="guida-riferimenti small mb-0">
+                        {% for chiave, r in riferimenti_rischi.items() %}
+                            <li><a href="{{ r.url }}" target="_blank" rel="noopener noreferrer">{{ r.breve }}</a>: {{ r.citazione }}</li>
+                        {% endfor %}
+                    </ol>
                 </div>
             </section>
 

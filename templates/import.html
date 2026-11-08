@@ -73,7 +73,8 @@
                     <li>{% trans %}<strong>Alimento</strong> (anche «Nome»), Categoria{% endtrans %}</li>
                     <li>{{ _('Kcal, TEF (Kcal), TEF (%%), Kcal Nette') }}</li>
                     <li>{{ _('Fruttosio, Fibre: il rapporto F/F viene sempre ricalcolato') }}</li>
-                    <li>{{ _('Rischio Diabete, Colesterolo, Malassorbimento, Metabolico, Tumorale') }}</li>
+                    <li>{{ _('Macro e micronutrienti, indice glicemico, NOVA, FODMAP, porzione, fonte e codici (CREA, a barre, FDC ID)') }}</li>
+                    <li>{{ _('Le colonne dei rischi si ignorano: i livelli si ricalcolano dai valori nutrizionali') }}</li>
                     <li>{{ _('ID: per aggiornare proprio quella riga (presente nei file esportati)') }}</li>
                 </ul>
                 <p class="small text-muted mt-2 mb-0">
@@ -90,9 +91,7 @@
 
                 <ul class="mb-0">
                     <li>{{ _("Numeri con virgola o punto decimale, anche con «%%» o l'unità («5,9 g»).") }}</li>
-                    <li>
-                        {{ _('Livelli: Trascurabile, Basso, Medio, Alto, anche preceduti da emoji («🔴 Alto»). Protettivo e Neutro valgono Trascurabile, Elevato e Aumentato valgono Alto.') }}
-                    </li>
+                    <li>{{ _('FODMAP: Basso, Medio, Alto (anche verde, giallo, rosso); NOVA: da 1 a 4.') }}</li>
                     <li>{{ _('Celle vuote, «-», «N/A», «nd»: valore assente.') }}</li>
                     <li>
                         {% trans %}Per modificare i dati in Excel: <strong>esporta</strong> dalla tabella, modifica il file e reimportalo con «Aggiorna o aggiungi».{% endtrans %}
@@ -109,10 +108,66 @@
     </div>
 
     <div class="card-body">
-        <pre class="mb-0 small">Alimento;Categoria;Kcal;TEF (%);Fruttosio (g/100g);Fibre (g/100g);Rischio Diabete;Rischio Colesterolo;Rischio Malassorbimento;Rischio Metabolico;Rischio Tumorale
-Mela;Frutta;52;10;5,9;2,4;Basso;Trascurabile;Medio;Basso;Trascurabile
-Pane integrale;Cereali;250;10;1,0;6,5;Basso;Trascurabile;Basso;Basso;Trascurabile
-Miele;Dolcificanti;304;5;40,9;0,2;Alto;Trascurabile;Alto;Alto;Trascurabile</pre>
+        <pre class="mb-0 small">Alimento;Categoria;Kcal;Fruttosio (g/100g);Glucosio (g);Fibre (g/100g);Carboidrati (g);Zuccheri (g);Grassi saturi (g);Porzione tipica (g)
+Mela;Frutta;52;5,9;2,4;2,4;11,4;10,4;0;150
+Pane integrale;Cereali;250;1,0;0,8;6,5;41;3;0,6;50
+Miele;Dolci e Snack;304;40,9;35,8;0,2;82;82;0;20</pre>
+    </div>
+</section>
+
+<section class="card card-form mt-3" id="sincronizzazione" aria-labelledby="titolo-sincronizzazione">
+    <div class="card-header" id="titolo-sincronizzazione">
+        {{ _('Sincronizzazione con USDA FoodData Central') }}
+    </div>
+
+    <div class="card-body">
+        <p>
+            {% trans n=da_sincronizzare %}Aggiorna i valori presi da USDA dei {{ n }} alimenti con un FDC ID (per gli alimenti CREA, solo quelli che il CREA non pubblica, come il fruttosio), poi ricalcola i rischi. Prima di scrivere si fa un backup.{% endtrans %}
+        </p>
+
+        {% if not sincro.chiave %}
+            <p class="text-muted">
+                {% trans url='https://fdc.nal.usda.gov/api-key-signup' %}Serve una chiave USDA personale e gratuita nella variabile USDA_API_KEY (<a href="{{ url }}" target="_blank" rel="noopener noreferrer">richiedila qui</a>); DEMO_KEY non basta.{% endtrans %}
+            </p>
+        {% elif sincro.automatica %}
+            <p>
+                {% trans giorni=sincro.giorni %}Automatica ogni {{ giorni }} giorni.{% endtrans %}
+                {% if sincro.prossima %}{{ _('Prossima: %(quando)s.', quando=sincro.prossima|data_ora) }}{% endif %}
+            </p>
+        {% else %}
+            <p class="text-muted">{{ _('Sincronizzazione automatica spenta (USDA_SINCRONIZZA_GIORNI=0).') }}</p>
+        {% endif %}
+
+        {% if sincro.ultime %}
+            <table class="table table-sm">
+                <caption class="visually-hidden">{{ _('Ultime sincronizzazioni') }}</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">{{ _('Iniziata') }}</th>
+                        <th scope="col">{{ _('Esito') }}</th>
+                        <th scope="col" class="text-end">{{ _('Aggiornati') }}</th>
+                        <th scope="col">{{ _('Dettagli') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in sincro.ultime %}
+                        <tr>
+                            <td>{{ s.iniziata_il }}</td>
+                            <td>{{ s.esito|traduci }}</td>
+                            <td class="text-end">{{ s.aggiornati }}</td>
+                            <td class="small text-muted">{{ s.messaggio or '' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('sincronizza') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-primary"{% if not sincro.chiave or sincro.in_corso %} disabled{% endif %}>
+                {{ _('Sincronizzazione in corso…') if sincro.in_corso else _('Sincronizza ora') }}
+            </button>
+        </form>
     </div>
 </section>
 

@@ -29,7 +29,9 @@ MOTIVI = {
     "manuale": N_("Manuale"),
     "import": N_("Prima di un import"),
     "ripristino": N_("Prima di un ripristino"),
-    "usda": N_("Prima dei nutrienti USDA"),
+    "usda": N_("Prima della sincronizzazione USDA"),
+    "crea": N_("Prima dell'import dal CREA"),
+    "rischi": N_("Prima del ricalcolo dei rischi"),
     "migrazione": N_("Prima di una migrazione dello schema"),
 }
 

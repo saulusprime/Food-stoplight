@@ -71,6 +71,10 @@ COLONNE = (
     ("fonte_nutrienti", "Fonte nutrienti", None),
     ("url_fonte", "URL fonte", None),
     ("fdc_id", "FDC ID", "0"),
+    ("codice_crea", "Codice CREA", None),
+    ("codice_barre", "Codice a barre", None),
+    ("campi_usda", "Campi da USDA", None),
+    ("porzione", "Porzione tipica (g)", "0"),
     ("note", "Note", None),
     ("aggiornato_il", "Aggiornato il", None),
 )

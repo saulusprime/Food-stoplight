@@ -9,6 +9,10 @@ per porzione, per pasto e per giornata.
 
 Convenzione: nei nuovi campi None significa "dato non disponibile",
 0 è un valore misurato.
+
+I carboidrati sono quelli disponibili (senza le fibre), come nelle
+etichette europee e nelle tabelle CREA; da USDA, che li calcola per
+differenza comprese le fibre, si sottraggono le fibre.
 """
 
 from __future__ import annotations
@@ -33,9 +37,12 @@ MACRO = (
     ("proteine", N_("Proteine"), "g", 1, "203"),
     ("carboidrati", N_("Carboidrati"), "g", 1, "205"),
     ("zuccheri", N_("di cui zuccheri"), "g", 1, "269"),
+    ("glucosio", N_("di cui glucosio"), "g", 2, "211"),
+    ("lattosio", N_("di cui lattosio"), "g", 2, "213"),
     ("grassi", N_("Grassi"), "g", 1, "204"),
     ("grassi_saturi", N_("di cui saturi"), "g", 1, "606"),
     ("colesterolo", N_("Colesterolo"), "mg", 0, "601"),
+    ("alcol", N_("Alcol"), "g", 1, "221"),
 )
 
 MICRO = (
@@ -90,12 +97,17 @@ NOVA = {
     4: {"gruppo": 4, "etichetta": N_("Ultra-trasformati"), "stato": "critical"},
 }
 
-CAMPI_FONTE = ("fonte_nutrienti", "url_fonte", "fdc_id")
+CAMPI_FONTE = ("fonte_nutrienti", "url_fonte", "fdc_id", "codice_crea", "codice_barre", "campi_usda")
+
+# Porzione tipica quando la fonte non ne indica una
+PORZIONE_PREDEFINITA = 100.0
 
 
 # Tutti i nuovi campi (None = non disponibile)
-CAMPI_NUMERICI_NULLABILI = (*CAMPI_NUTRIENTI, "indice_glicemico", "nova", "fdc_id")
-CAMPI_TESTO_NULLABILI = (*CAMPI_FODMAP, "fonte_nutrienti", "url_fonte", "note")
+CAMPI_NUMERICI_NULLABILI = (*CAMPI_NUTRIENTI, "indice_glicemico", "nova", "fdc_id", "porzione")
+CAMPI_TESTO_NULLABILI = (
+    *CAMPI_FODMAP, "fonte_nutrienti", "url_fonte", "codice_crea", "codice_barre", "campi_usda", "note",
+)
 CAMPI_NULLABILI = (*CAMPI_NUMERICI_NULLABILI, *CAMPI_TESTO_NULLABILI)
 
 # Valori per 100 g che cambiano con la porzione
@@ -104,6 +116,8 @@ CAMPI_PER_PORZIONE = ("kcal", "tef_kcal", "kcal_nette", "fruttosio", "fibre", *C
 ETICHETTE = {
     **{n[0]: n[1] for n in NUTRIENTI},
     "zuccheri": N_("Zuccheri"),
+    "glucosio": N_("Glucosio"),
+    "lattosio": N_("Lattosio"),
     "grassi_saturi": N_("Grassi saturi"),
     "indice_glicemico": N_("Indice glicemico"),
     "nova": N_("NOVA"),
@@ -115,6 +129,10 @@ ETICHETTE = {
     "fonte_nutrienti": N_("Fonte nutrienti"),
     "url_fonte": N_("URL fonte"),
     "fdc_id": N_("FDC ID"),
+    "codice_crea": N_("Codice CREA"),
+    "codice_barre": N_("Codice a barre"),
+    "campi_usda": N_("Campi da USDA"),
+    "porzione": N_("Porzione tipica (g)"),
     "note": N_("Note"),
 }
 
@@ -208,15 +226,19 @@ def livello_carico_glicemico(carico: float | None) -> dict[str, str] | None:
 
 def carboidrati_disponibili(item: Alimento) -> float | None:
     """
-    Carboidrati meno fibre (i carboidrati USDA sono calcolati per differenza
-    e comprendono le fibre); None se i carboidrati non sono noti.
+    Carboidrati disponibili (senza fibre: sono già così nel campo carboidrati);
+    None se non sono noti.
     """
     carboidrati = item.get("carboidrati")
+    return None if carboidrati is None else max(float(carboidrati), 0.0)
 
-    if carboidrati is None:
-        return None
 
-    return max(carboidrati - (item.get("fibre") or 0), 0.0)
+def porzione(item: Alimento) -> float:
+    """
+    Porzione tipica in grammi (dalla fonte), altrimenti 100 g.
+    """
+    grammi = item.get("porzione")
+    return float(grammi) if grammi and grammi > 0 else PORZIONE_PREDEFINITA
 
 
 def carico_glicemico(item: Alimento, grammi: float = 100) -> float | None:

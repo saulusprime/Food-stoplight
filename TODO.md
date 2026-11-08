@@ -19,13 +19,10 @@ Le attività completate sono in [ASIS.md](ASIS.md).
 
 ## 🌐 Integrazione dati
 
-- [ ] Sincronizzazione periodica con **USDA FoodData Central** (chiave API configurabile, non demo)
-- [ ] Integrazione con database CREA (Tabelle di composizione degli alimenti italiane)
-- [ ] Integrazione con Open Food Facts (ricerca per codice a barre)
-- [ ] Campi fonte/URL visibili nella web app per la tracciabilità dei dati (già nello schema di `update.py`)
-- [ ] Sostituire gli 805 alimenti sintetici generati da `autogen.py` (valori casuali, omonimi) con dati reali USDA o CREA
-- [ ] Popolare indice glicemico, FODMAP e NOVA da una fonte documentata (tabelle internazionali IG, Monash, Open Food Facts per NOVA)
-- [ ] Revisione scientifica dei punteggi di rischio con riferimenti bibliografici espliciti
+- [ ] Grassi saturi per le 91 carni e pesci che il CREA pubblica senza percentuale degli acidi grassi (abbinamento USDA come per il fruttosio)
+- [ ] Fruttosio per ricette, biscotti e prodotti da forno (oggi «non disponibile»: malassorbimento non classificato)
+- [ ] Indice glicemico oltre le 62 voci della tabella di Atkinson 2008 (tabelle complete 2021, previo accesso ai dati)
+- [ ] Revisione delle regole dei rischi da parte di un nutrizionista o di un medico
 
 ## 🏗️ Architettura e qualità del codice
 

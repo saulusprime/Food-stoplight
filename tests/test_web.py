@@ -3,17 +3,18 @@
 import csv
 import io
 import os
+import sqlite3
 
 import pytest
 from openpyxl import load_workbook
 
-from tests.aiuti import BACKUP_DIR, carica, conta, id_di, messaggi, piano_in_attesa, solo_testo, sql
+from tests.aiuti import ASPARAGI, BACKUP_DIR, DB, carica, conta, id_di, messaggi, piano_in_attesa, solo_testo, sql
 
 # ---------------------------------------------------------------
 # Accesso, ruoli e sicurezza
 # ---------------------------------------------------------------
 
-PAGINE_ADMIN = ["/nuovo", "/modifica/787", "/importa", "/backup", "/backup/scarica"]
+PAGINE_ADMIN = ["/nuovo", f"/modifica/{ASPARAGI}", "/importa", "/backup", "/backup/scarica"]
 
 
 @pytest.mark.parametrize("url", PAGINE_ADMIN)
@@ -28,7 +29,7 @@ def test_visitatore_riceve_403(visitatore, url):
     assert visitatore.get(url).status_code == 403
 
 
-@pytest.mark.parametrize("url", ["/", "/alimento/787", "/pasto", "/esporta/csv", "/alimento/787/pdf"])
+@pytest.mark.parametrize("url", ["/", f"/alimento/{ASPARAGI}", "/pasto", "/esporta/csv", f"/alimento/{ASPARAGI}/pdf"])
 def test_consultazione_pubblica(client, url):
     assert client.get(url).status_code == 200
 
@@ -63,7 +64,7 @@ def test_intestazioni_di_sicurezza(client):
 @pytest.mark.usefixtures("csrf_attivo")
 @pytest.mark.parametrize(("url", "dati"), [
     ("/nuovo", {"alimento": "Senza token"}),
-    ("/elimina/787", {}),
+    (f"/elimina/{ASPARAGI}", {}),
     ("/importa/conferma", {"modalita": "aggiorna"}),
     ("/backup/crea", {}),
     ("/pasto/svuota", {}),
@@ -96,7 +97,10 @@ def test_nuovo_alimento_completo(admin):
         7.5, 0.0, None, 3, "Valori da etichetta")
     # TEF stimato dai macronutrienti, Kcal nette e rapporto calcolati
     assert riga["tef_kcal"] > 0 and riga["kcal_nette"] == pytest.approx(200 - riga["tef_kcal"])
-    assert riga["rapporto"] == 0.0
+    # Fruttosio non indicato: non disponibile, e così il rapporto F/F
+    assert (riga["fruttosio"], riga["rapporto"]) == (None, None)
+    # Il livello scritto nel form si ignora: carico glicemico 60 × 30 g ÷ 100 = 18 -> Medio
+    assert riga["rischio_diabete"] == "Medio"
 
 
 def test_nuovo_kcal_stimate_dai_macronutrienti(admin):
@@ -135,9 +139,9 @@ def test_modifica_e_svuota_campo(admin):
 
 def test_elimina(admin):
     prima = conta()
-    assert admin.post("/elimina/787").status_code == 302
+    assert admin.post(f"/elimina/{ASPARAGI}").status_code == 302
     assert conta() == prima - 1
-    assert admin.post("/elimina/787").status_code == 404
+    assert admin.post(f"/elimina/{ASPARAGI}").status_code == 404
 
 
 # ---------------------------------------------------------------
@@ -146,7 +150,7 @@ def test_elimina(admin):
 
 def test_home_filtri_e_ordinamento(client):
     html = client.get("/?categoria=Frutta&sort=kcal&dir=desc").data.decode()
-    assert "filtri attivi" in html
+    assert "Esporta con i filtri:" in html
     assert 'href="/esporta/csv?categoria=Frutta&amp;sort=kcal&amp;dir=desc"' in html
 
 
@@ -155,15 +159,23 @@ def test_scheda_porzione_e_indicatori(admin, client):
     id_prova = id_di("Prova nutrienti")
     contenuto = solo_testo(client.get(f"/alimento/{id_prova}?grammi=150").data)
     assert "Valori per 150 g" in contenuto
-    assert "22,5 · Alto" in contenuto           # carico glicemico della porzione
+    assert "27 · Alto" in contenuto           # carico glicemico della porzione
     assert "NOVA 3 · Alimenti trasformati" in contenuto
     assert "Valori da etichetta" in contenuto
     assert "Valori per 100 g" in solo_testo(client.get(f"/alimento/{id_prova}?grammi=-5").data)
 
 
-def test_scheda_usda_e_sintetica(client):
-    assert "Potassio (mg) 202" in solo_testo(client.get("/alimento/787").data)
-    assert "Vitamine e sali minerali non disponibili" in solo_testo(client.get("/alimento/1119").data)
+def test_scheda_crea_e_senza_micronutrienti(client):
+    contenuto = solo_testo(client.get(f"/alimento/{ASPARAGI}").data)
+    assert "Potassio (mg) 260" in contenuto
+    assert "CREA, Tabelle di composizione degli alimenti 2019, alimento 005040" in contenuto
+    assert "Da USDA FoodData Central" in contenuto and "FDC 168389" in contenuto
+    assert "Perché questi livelli" in contenuto
+    conn = sqlite3.connect(DB)
+    nuovo_id = conn.execute("INSERT INTO alimenti (alimento, categoria) VALUES ('Solo nome', 'Test')").lastrowid
+    conn.commit()
+    conn.close()
+    assert "Vitamine e sali minerali non disponibili" in solo_testo(client.get(f"/alimento/{nuovo_id}").data)
     assert client.get("/alimento/999999").status_code == 404
 
 
@@ -183,7 +195,7 @@ def test_export_excel_e_pdf(client):
     cartella = load_workbook(io.BytesIO(client.get("/esporta/xlsx?rischio_diabete=Alto").data))
     assert cartella["Alimenti"].max_row - 1 == conta("SELECT COUNT(*) FROM alimenti WHERE rischio_diabete = 'Alto'")
     assert client.get("/esporta/pdf").data.startswith(b"%PDF")
-    assert client.get("/alimento/787/pdf").data.startswith(b"%PDF")
+    assert client.get(f"/alimento/{ASPARAGI}/pdf").data.startswith(b"%PDF")
     assert client.get("/esporta/doc").status_code == 404
 
 
@@ -210,7 +222,7 @@ def test_import_anteprima_e_conferma(admin):
 def test_import_sostituisci_richiede_conferma(admin):
     carica(admin, "due.csv", b"Alimento;Kcal\nUno;1\nDue;2\n")
     admin.post("/importa/conferma", data={"modalita": "sostituisci"})
-    assert conta() > 1000
+    assert conta() == 900
     admin.post("/importa/conferma", data={"modalita": "sostituisci", "conferma_sostituisci": "1"})
     assert conta() == 2
 
@@ -218,7 +230,7 @@ def test_import_sostituisci_richiede_conferma(admin):
 def test_import_sostituisci_senza_righe_valide(admin):
     carica(admin, "vuoto.csv", b"Alimento;Kcal\n;5\n")
     admin.post("/importa/conferma", data={"modalita": "sostituisci", "conferma_sostituisci": "1"})
-    assert conta() > 1000
+    assert conta() == 900
 
 
 def test_import_annulla_e_token_manomesso(admin):
@@ -249,9 +261,9 @@ def test_backup_scarica_crea_ripristina(admin):
     nome = os.listdir(BACKUP_DIR)[0]
     assert nome in admin.get("/backup").data.decode()
 
-    admin.post("/elimina/787")
+    admin.post(f"/elimina/{ASPARAGI}")
     admin.post(f"/backup/ripristina/{nome}")
-    assert conta("SELECT COUNT(*) FROM alimenti WHERE id = 787") == 1
+    assert conta("SELECT COUNT(*) FROM alimenti WHERE id = ?", (ASPARAGI,)) == 1
 
     carica(admin, "x.db", b"non un database", url="/backup/ripristina", conferma="1")
     assert any("non è un database SQLite" in m for m in messaggi(admin))

@@ -8,7 +8,7 @@ import pytest
 import autogen
 import update
 import usda
-from tests.aiuti import DB, DIARIO_DB, LAVORO, conta, sql
+from tests.aiuti import ASPARAGI, DB, DIARIO_DB, LAVORO, conta, sql
 
 # ---------------------------------------------------------------
 # API
@@ -22,8 +22,8 @@ def test_api_indice(client):
 
 
 def test_api_elenco_filtri_ricerca_paginazione(client):
-    dati = client.get("/api/alimenti?q=apple&sort=kcal&dir=desc&limit=2").get_json()
-    assert dati["totale"] == conta("SELECT COUNT(*) FROM alimenti WHERE instr(LOWER(alimento), 'apple') > 0")
+    dati = client.get("/api/alimenti?q=mele&sort=kcal&dir=desc&limit=2").get_json()
+    assert dati["totale"] == conta("SELECT COUNT(*) FROM alimenti WHERE instr(LOWER(alimento), 'mele') > 0")
     assert len(dati["risultati"]) == 2
     kcal = [a["kcal"] for a in dati["risultati"]]
     assert kcal == sorted(kcal, reverse=True)
@@ -34,10 +34,12 @@ def test_api_elenco_filtri_ricerca_paginazione(client):
 
 
 def test_api_alimento(client):
-    dati = client.get("/api/alimenti/787").get_json()
-    assert dati["alimento"] == "Asparagus, raw"
-    assert (dati["potassio"], dati["punteggio"], dati["livello_medio"]) == (202.0, 100, "Trascurabile")
-    assert dati["url"].endswith("/alimento/787")
+    dati = client.get(f"/api/alimenti/{ASPARAGI}").get_json()
+    assert dati["alimento"] == "Asparagi di campo, crudi"
+    assert (dati["potassio"], dati["codice_crea"], dati["porzione"]) == (260.0, "005040", 200.0)
+    # Rischi calcolati: Basso, Trascurabile, Alto, Trascurabile, Basso -> media 1 punto
+    assert (dati["punteggio"], dati["livello_medio"]) == (67, "Basso")
+    assert dati["url"].endswith(f"/alimento/{ASPARAGI}")
     assert "fonte_kcal" not in dati
 
 
@@ -75,7 +77,7 @@ def test_api_accesso_privato(app, client, visitatore):
 
 
 def test_salute(client):
-    assert client.get("/salute").get_json() == {"stato": "ok", "schema_alimenti": 2, "schema_aggiornato": True}
+    assert client.get("/salute").get_json() == {"stato": "ok", "schema_alimenti": 3, "schema_aggiornato": True}
 
 
 # ---------------------------------------------------------------
@@ -95,7 +97,7 @@ def test_crea_utente_e_elenco(cli):
 
 
 def test_elimina_utente_cancella_il_suo_diario(cli, visitatore):
-    visitatore.post("/diario/aggiungi", data={"pasto": "pranzo", "alimento_id": 787, "grammi": "100"})
+    visitatore.post("/diario/aggiungi", data={"pasto": "pranzo", "alimento_id": ASPARAGI, "grammi": "100"})
     risultato = cli.invoke(args=["elimina-utente", "anna_t"], input="y\n")
     assert risultato.exit_code == 0 and "voci di diario" in risultato.output
     conn = sqlite3.connect(DIARIO_DB)
@@ -104,21 +106,37 @@ def test_elimina_utente_cancella_il_suo_diario(cli, visitatore):
 
 
 def test_db_stato(cli):
-    assert "alimenti  versione 2 di 2" in cli.invoke(args=["db-stato"]).output
+    assert "alimenti  versione 3 di 3" in cli.invoke(args=["db-stato"]).output
 
 
-def test_usda_nutrienti_senza_rete(cli, monkeypatch):
-    finto = [{"fdcId": 999, "description": "Asparagus, raw", "dataType": "SR Legacy", "foodNutrients": [
-        {"number": "203", "amount": 2.5, "unitName": "G"},
-        {"number": "601", "amount": 0.01, "unitName": "G"},
-    ]}]
+def test_usda_sincronizza_senza_rete(cli, monkeypatch):
+    riga = sql("SELECT fdc_id, zuccheri, fruttosio FROM alimenti WHERE id = ?", (ASPARAGI,))[0]
+    # USDA con il doppio degli zuccheri: fruttosio e glucosio si riportano agli zuccheri CREA
+    finto = {riga["fdc_id"]: {"fdcId": riga["fdc_id"], "dataType": "SR Legacy", "foodNutrients": [
+        {"number": "269", "amount": riga["zuccheri"] * 2, "unitName": "G"},
+        {"number": "212", "amount": 3.0, "unitName": "G"},
+        {"number": "211", "amount": 0.4, "unitName": "G"},
+        {"number": "203", "amount": 99, "unitName": "G"},
+    ]}}
     monkeypatch.setattr(usda, "scarica", lambda *a, **k: finto)
 
-    assert "Nessuna modifica scritta" in cli.invoke(args=["usda-nutrienti", "--prova"]).output
-    risultato = cli.invoke(args=["usda-nutrienti", "--sovrascrivi"])
+    senza_chiave = cli.invoke(args=["usda-sincronizza", "--api-key", "DEMO_KEY"])
+    assert senza_chiave.exit_code != 0 and "chiave USDA personale" in senza_chiave.output
+
+    risultato = cli.invoke(args=["usda-sincronizza", "--api-key", "chiave-di-prova"])
     assert risultato.exit_code == 0, risultato.output
-    riga = sql("SELECT proteine, colesterolo, fdc_id FROM alimenti WHERE alimento = 'Asparagus, raw'")[0]
-    assert (riga["proteine"], riga["colesterolo"], riga["fdc_id"]) == (2.5, 10.0, 999)
+    # Lo stesso alimento USDA completa più alimenti CREA (asparagi di bosco, di campo, di serra)
+    stesso_fdc = conta("SELECT COUNT(*) FROM alimenti WHERE fdc_id = ?", (riga["fdc_id"],))
+    assert f"{stesso_fdc} alimenti aggiornati" in risultato.output
+
+    dopo = sql("SELECT fruttosio, glucosio, proteine, rischio_malassorbimento FROM alimenti WHERE id = ?", (ASPARAGI,))[0]
+    # Fruttosio e glucosio dimezzati; le proteine vengono dal CREA e non cambiano
+    assert (dopo["fruttosio"], dopo["glucosio"]) == (1.5, 0.2)
+    assert dopo["proteine"] != 99
+    assert dopo["rischio_malassorbimento"] == "Alto"
+
+    storico = sql("SELECT esito, aggiornati FROM sincronizzazioni ORDER BY id DESC LIMIT 1")[0]
+    assert (storico["esito"], storico["aggiornati"]) == ("riuscita", stesso_fdc)
 
 
 def test_usda_valori_e_conversioni():

@@ -10,7 +10,7 @@ from openpyxl import Workbook, load_workbook
 
 import esportazione
 import importazione
-from tests.aiuti import DB, applicazione
+from tests.aiuti import ASPARAGI, DB, applicazione, sql
 
 
 def piano(contenuto, nome="prova.csv", modalita="aggiorna"):
@@ -137,11 +137,16 @@ def test_aggiornamento_per_id_e_derivati(app):
 
 
 def test_modalita_aggiungi_e_doppioni():
-    _, _, sommario = piano(b"Alimento;Categoria;Kcal\nBurro;Latticini e Uova;717\nNuovissimo;Test;1\n", modalita="aggiungi")
+    _, _, sommario = piano(b"Alimento;Categoria;Kcal\nBurro;Grassi e Oli;717\nNuovissimo;Test;1\n", modalita="aggiungi")
     assert (sommario["nuovo"], sommario["doppioni"]) == (2, 1)
 
 
 def test_file_senza_categoria_ambiguo():
+    # Due alimenti con lo stesso nome in categorie diverse
+    conn = sqlite3.connect(DB)
+    conn.execute("INSERT INTO alimenti (alimento, categoria) VALUES ('Trota', 'Pesce'), ('Trota', 'Test')")
+    conn.commit()
+    conn.close()
     _, voci, sommario = piano(b"Alimento;Kcal\nTrota;100\n")
     assert sommario["saltato"] == 1
     assert "aggiungi la colonna Categoria" in voci[0]["avvisi"][-1]
@@ -155,9 +160,8 @@ def test_righe_ripetute_unite():
 
 
 def test_vuoto_e_zero_nei_nutrienti_sono_diversi(app):
-    with app.test_request_context():
-        sintetico = applicazione.get_alimento(1119)
-    contenuto = f"ID;Alimento;Categoria;Vitamina C (mg)\n1119;{sintetico['alimento']};{sintetico['categoria']};0\n"
+    senza = sql("SELECT id, alimento, categoria FROM alimenti WHERE vitamina_c IS NULL ORDER BY id LIMIT 1")[0]
+    contenuto = f"ID;Alimento;Categoria;Vitamina C (mg)\n{senza['id']};{senza['alimento']};{senza['categoria']};0\n"
     _, voci, _ = piano(contenuto.encode())
     assert voci[0]["modificati"] == ["vitamina_c"]
 
@@ -169,7 +173,7 @@ def test_applica_sostituisci():
     voci = importazione.pianifica(conn, letto, "sostituisci")
     eliminati = importazione.applica(conn, voci, "sostituisci", "2026-01-01 00:00:00")
     conn.commit()
-    assert eliminati > 1000
+    assert eliminati == 900
     assert conn.execute("SELECT COUNT(*) FROM alimenti").fetchone()[0] == 2
     conn.close()
 
@@ -202,7 +206,7 @@ def test_xlsx_testo_non_diventa_formula_e_livelli_colorati():
 def test_pdf_tabella_e_scheda(app):
     with app.test_request_context():
         alimenti = applicazione.get_alimenti()
-        asparagi = applicazione.get_alimento(applicazione.archivio.ids_per_nome("Asparagus, raw")[0])
+        asparagi = applicazione.get_alimento(ASPARAGI)
     info = {"filtri": [], "ordinamento": "Alimento (crescente)", "data": datetime.now(),
             "totale": len(alimenti)}
     assert esportazione.pdf_tabella(alimenti, info).startswith(b"%PDF")

@@ -63,7 +63,7 @@ Commit `4008fd4` — 7 novembre 2026 — deploy preparato (Docker, `render.yaml`
 
 ## 📱 Esperienza utente
 
-7 novembre 2026 — interfaccia tradotta in inglese (export, API e riga di comando restano in italiano); offline la tabella completa, la guida e le schede già aperte
+Commit `7e7a61f` — 7 novembre 2026 — interfaccia tradotta in inglese (export, API e riga di comando restano in italiano); offline la tabella completa, la guida e le schede già aperte
 
 - [x] Ottimizzazione mobile della tabella (colonne prioritarie, schede compatte)
 - [x] PWA installabile con consultazione offline
@@ -71,3 +71,15 @@ Commit `4008fd4` — 7 novembre 2026 — deploy preparato (Docker, `render.yaml`
 - [x] Legenda esplicativa dei livelli di rischio e della metodologia TEF nell'interfaccia
 - [x] Conferma di eliminazione con modale (invece del solo submit)
 - [x] Toast di notifica non invasivi al posto degli alert
+
+## 🌐 Integrazione dati
+
+7 novembre 2026 — 900 alimenti reali del CREA al posto dei 1004 precedenti (805 sintetici e 199 USDA in inglese); fruttosio e altri valori mancanti da USDA per 441 alimenti; rischi calcolati con regole documentate. Restano non classificati, per dati mancanti nelle fonti, soprattutto il colesterolo di 91 carni e pesci e il malassorbimento di ricette, biscotti e prodotti da forno
+
+- [x] Sincronizzazione periodica con **USDA FoodData Central** (chiave API configurabile, non demo)
+- [x] Integrazione con database CREA (Tabelle di composizione degli alimenti italiane)
+- [x] Integrazione con Open Food Facts (ricerca per codice a barre)
+- [x] Campi fonte/URL visibili nella web app per la tracciabilità dei dati (già nello schema di `update.py`)
+- [x] Sostituire gli 805 alimenti sintetici generati da `autogen.py` (valori casuali, omonimi) con dati reali USDA o CREA
+- [x] Popolare indice glicemico, FODMAP e NOVA da una fonte documentata (tabelle internazionali IG, Monash, Open Food Facts per NOVA)
+- [x] Revisione scientifica dei punteggi di rischio con riferimenti bibliografici espliciti

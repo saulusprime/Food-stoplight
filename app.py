@@ -11,6 +11,7 @@ import unicodedata
 from collections.abc import Callable, Mapping
 from datetime import date, datetime, timedelta
 from functools import wraps
+from pathlib import Path
 from typing import Any, TypeVar, cast
 from urllib.parse import urlsplit
 
@@ -53,12 +54,18 @@ import api
 import archivio
 import backup
 import calcoli
+import classificazioni
+import crea
 import database
 import esportazione
+import fonti
 import importazione
 import lingue
 import nutrienti
+import openfoodfacts
 import pwa
+import rischi
+import sincronizzazione
 import usda
 from archivio import Alimento
 from config import carica_config
@@ -81,6 +88,9 @@ app.jinja_env.globals.update(
     livello_punteggio=analisi.livello_punteggio,
     LIVELLI_RISCHIO=analisi.LIVELLI,
     LINGUE=lingue.LINGUE,
+    rischi_elenco=analisi.RISCHI,
+    valuta_rischi=rischi.valuta,
+    riferimenti_rischi=rischi.RIFERIMENTI,
 )
 
 # Etichette, livelli e categorie scritti in italiano nei dati
@@ -270,9 +280,9 @@ def leggi_filtri() -> tuple[archivio.Filtri, str, str]:
 # FORM / CRUD HELPERS
 # ---------------------------------------------------------------
 
-CAMPI_TESTO_FORM = ("alimento", "categoria", *analisi.CAMPI_RISCHIO)
+CAMPI_TESTO_FORM = ("alimento", "categoria")
 
-# Campi energia e fruttosio/fibre: vuoti valgono 0 (o vengono calcolati)
+# Campi energia e fibre: vuoti valgono 0 (o vengono calcolati); il fruttosio vuoto è "non disponibile"
 CAMPI_ENERGIA_FORM = (
     ("kcal", N_("Kcal"), None),
     ("tef_percent", N_("TEF (%)"), 100.0),
@@ -291,6 +301,7 @@ def parse_form() -> tuple[dict[str, Any], list[str]]:
     I campi derivati lasciati vuoti si calcolano come nell'import (calcoli.completa_energia):
     Kcal e TEF dai macronutrienti, TEF (Kcal) <-> TEF (%), Kcal nette, rapporto F/F.
     I dati nutrizionali lasciati vuoti restano "non disponibili" (NULL).
+    I livelli di rischio non si scrivono: si calcolano dai dati (rischi.py).
     """
     form = request.form
     errori: list[str] = []
@@ -323,7 +334,7 @@ def parse_form() -> tuple[dict[str, Any], list[str]]:
 
     for campo, etichetta, massimo in CAMPI_ENERGIA_FORM:
         valore = numero(campo, etichetta, 0, massimo)
-        valori[campo] = 0.0 if valore is None else valore
+        valori[campo] = (None if campo == "fruttosio" else 0.0) if valore is None else valore
 
     for campo, etichetta, *_dettagli in nutrienti.NUTRIENTI:
         valori[campo] = numero(campo, etichetta)
@@ -367,8 +378,23 @@ def parse_form() -> tuple[dict[str, Any], list[str]]:
     if len(note) > NOTE_MAX:
         errori.append(_("Note: al massimo %(n)d caratteri.", n=NOTE_MAX))
 
+    porzione = numero("porzione", N_("Porzione tipica (g)"), nutrienti.GRAMMI_MIN, nutrienti.GRAMMI_MAX)
+    valori["porzione"] = porzione
+
+    for campo in ("codice_crea", "codice_barre"):
+        valori[campo] = (form.get(campo) or "").strip() or None
+
+    if valori["codice_crea"] and not crea.CODICE_RE.match(valori["codice_crea"]):
+        errori.append(_("Codice CREA: servono 6 caratteri, cifre o lettere maiuscole (es. 007000)."))
+
+    if valori["codice_barre"] and not openfoodfacts.CODICE_RE.match(valori["codice_barre"]):
+        errori.append(_("Codice a barre: servono da 8 a 14 cifre."))
+
+    valori["campi_usda"] = ",".join(usda.leggi_campi(form.get("campi_usda"))) or None
+
     if not errori:
         calcoli.completa_energia(valori, forniti, nuovo=True)
+        rischi.assegna(valori)
 
     return valori, errori
 
@@ -464,6 +490,18 @@ def solo_admin(view: Vista) -> Vista:
 ENDPOINT_SEMPRE_ACCESSIBILI = (
     "login", "static", "salute", "cambia_lingua", "pwa.manifest", "pwa.service_worker", "pwa.offline",
 )
+
+
+@app.before_request
+def avvia_sincronizzazione_automatica() -> None:
+    """
+    Avvia una volta per processo il controllo periodico della sincronizzazione
+    USDA (solo con una chiave personale e USDA_SINCRONIZZA_GIORNI > 0).
+    """
+    if not app.testing:
+        sincronizzazione.avvia_automatica(
+            DB_PATH, app.config["BACKUP_DIR"], app.config["USDA_API_KEY"], app.config["USDA_SINCRONIZZA_GIORNI"]
+        )
 
 
 @app.before_request
@@ -590,8 +628,6 @@ def index() -> ResponseReturnValue:
 
     alimenti = get_alimenti(filtri, sort, direction)
 
-    total_alimenti, con_dati_tef = get_stats()
-
     opzioni = get_filter_options()
 
     filtri_attivi = any(filtri.values())
@@ -613,7 +649,6 @@ def index() -> ResponseReturnValue:
         grafico_categorie=analisi.distribuzione_categorie(alimenti),
         grafico_rischi=distribuzione_rischi,
         legenda_rischi=analisi.legenda_rischi(distribuzione_rischi),
-        punteggio_medio=analisi.punteggio_medio(alimenti),
         classifiche=[
             (medaglia, analisi.classifica(alimenti, medaglia, 5))
             for medaglia in analisi.MEDAGLIE
@@ -632,8 +667,6 @@ def index() -> ResponseReturnValue:
         filter_tumorale=filter_tumorale,
         sort=sort,
         dir=direction,
-        total_alimenti=total_alimenti,
-        con_dati_tef=con_dati_tef,
         visualizzati=len(alimenti),
         category_options=opzioni["categoria"],
         diabete_options=opzioni["rischio_diabete"],
@@ -674,7 +707,36 @@ def scheda(alimento_id: int) -> ResponseReturnValue:
         fodmap=nutrienti.fodmap_complessivo(item),
         nova=nutrienti.gruppo_nova(item),
         alternative=nutrienti.alternative(item, tutti),
+        valutazione=rischi.valuta(item),
+        riferimenti=rischi.RIFERIMENTI,
+        fonti_dati=fonti_alimento(item),
     )
+
+
+def fonti_alimento(item: Alimento) -> dict[str, Any]:
+    """
+    Da dove vengono i dati di un alimento, per la scheda: CREA, USDA (e quali
+    campi), Open Food Facts, indice glicemico dalla tabella di Atkinson 2008.
+    """
+    campi_usda = usda.leggi_campi(item.get("campi_usda"))
+    indice = classificazioni.indice_glicemico(item)
+
+    return {
+        "crea": crea.URL_SCHEDA.format(codice=item["codice_crea"]) if item.get("codice_crea") else None,
+        "usda": usda.url_scheda(item["fdc_id"]) if item.get("fdc_id") else None,
+        "campi_usda": [lingue.traduci(ETICHETTE_CAMPI.get(c, c)) for c in campi_usda],
+        "usda_tutti": bool(item.get("fdc_id")) and not campi_usda and not item.get("codice_crea"),
+        "off": openfoodfacts.URL_SCHEDA.format(codice=item["codice_barre"]) if item.get("codice_barre") else None,
+        "indice_glicemico": indice[1] if indice and indice[0] == item.get("indice_glicemico") else None,
+    }
+
+
+ETICHETTE_CAMPI = {
+    **importazione.ETICHETTE,
+    "fruttosio": N_("Fruttosio"),
+    "fibre": N_("Fibre"),
+    "kcal": N_("Kcal"),
+}
 
 
 @app.route("/nuovo", methods=["GET", "POST"])
@@ -702,7 +764,7 @@ def nuovo() -> ResponseReturnValue:
         flash(_("Alimento aggiunto correttamente."), "success")
         return redirect(url_for("scheda", alimento_id=nuovo_id))
 
-    return render_template("form.html", **pagina, item=None, opzioni=get_form_options())
+    return render_template("form.html", **pagina, item=da_fonte(None), opzioni=get_form_options())
 
 
 @app.route("/modifica/<int:alimento_id>", methods=["GET", "POST"])
@@ -735,7 +797,39 @@ def modifica(alimento_id: int) -> ResponseReturnValue:
         flash(_("Alimento aggiornato correttamente."), "success")
         return redirect(url_for("scheda", alimento_id=alimento_id))
 
-    return render_template("form.html", **pagina, item=item, opzioni=get_form_options())
+    return render_template("form.html", **pagina, item=da_fonte(item), opzioni=get_form_options())
+
+
+FONTI_FORM = {
+    "crea": N_("CREA (codice alimento)"),
+    "off": N_("Open Food Facts (codice a barre)"),
+    "usda": N_("USDA (FDC ID)"),
+}
+
+
+def da_fonte(item: Alimento | None) -> Alimento | None:
+    """
+    Con ?fonte=...&codice=... nel form: valori presi dalla fonte (sopra quelli
+    dell'alimento in modifica), da controllare e salvare.
+    """
+    fonte = request.args.get("fonte")
+    codice = (request.args.get("codice") or "").strip()
+
+    if fonte not in FONTI_FORM or not codice:
+        return item
+
+    try:
+        trovato = fonti.cerca(fonte, codice, app.config["USDA_API_KEY"])
+    except fonti.ErroreFonte as exc:
+        flash(_("Dati non presi dalla fonte: %(errore)s", errore=str(exc)), "danger")
+        return item
+
+    flash(_("Valori presi da %(fonte)s: controllali e salva.", fonte=lingue.traduci(FONTI_FORM[fonte])), "info")
+
+    if item is None:
+        return trovato
+
+    return {**item, **{c: v for c, v in trovato.items() if v is not None and v != ""}}
 
 
 @app.route("/elimina/<int:alimento_id>", methods=["POST"])
@@ -937,7 +1031,35 @@ def importa() -> ResponseReturnValue:
         in_attesa=carica_import(),
         max_mb=app.config["MAX_UPLOAD_MB"],
         max_righe=importazione.MAX_RIGHE,
+        sincro=sincronizzazione.stato(
+            DB_PATH, app.config["USDA_API_KEY"], app.config["USDA_SINCRONIZZA_GIORNI"]
+        ),
+        da_sincronizzare=conta_da_sincronizzare(),
     )
+
+
+def conta_da_sincronizzare() -> int:
+    conn = get_db()
+
+    try:
+        return int(conn.execute("SELECT COUNT(*) FROM alimenti WHERE fdc_id IS NOT NULL").fetchone()[0])
+    finally:
+        conn.close()
+
+
+@app.route("/sincronizza", methods=["POST"])
+@solo_admin
+def sincronizza() -> ResponseReturnValue:
+    chiave = app.config["USDA_API_KEY"]
+
+    if not usda.chiave_valida(chiave):
+        flash(_("Per sincronizzare serve una chiave USDA personale (USDA_API_KEY)."), "danger")
+    elif sincronizzazione.avvia_in_background(DB_PATH, app.config["BACKUP_DIR"], chiave):
+        flash(_("Sincronizzazione con USDA avviata: ricarica la pagina tra qualche minuto per l'esito."), "info")
+    else:
+        flash(_("C'è già una sincronizzazione in corso."), "warning")
+
+    return redirect(url_for("importa") + "#sincronizzazione")
 
 
 def campi_anteprima(letto: dict[str, Any]) -> list[str]:
@@ -1780,44 +1902,93 @@ def elimina_utente_cmd(username: str) -> None:
     click.echo(f"Utente '{username}' eliminato" + (f", con {voci} voci di diario." if voci else "."))
 
 
-@app.cli.command("usda-nutrienti")
-@click.option("--api-key", envvar="USDA_API_KEY", default="DEMO_KEY", show_default=True,
-              help="Chiave USDA FoodData Central (variabile USDA_API_KEY).")
-@click.option("--pagine", default=1, show_default=True, type=click.IntRange(1, 20),
-              help="Pagine da 200 alimenti dell'elenco USDA.")
-@click.option("--sovrascrivi", is_flag=True, help="Sostituisce anche i valori già presenti.")
-@click.option("--prova", is_flag=True, help="Mostra cosa cambierebbe senza scrivere.")
-def usda_nutrienti_cmd(api_key: str, pagine: int, sovrascrivi: bool, prova: bool) -> None:
-    """Compila macro e micronutrienti degli alimenti USDA (abbinati per nome)."""
+def adesso_testo() -> str:
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+@app.cli.command("crea-importa")
+@click.argument("codici", nargs=-1)
+@click.option("--tutti", is_flag=True, help="Tutti gli alimenti dell'indice CREA.")
+@click.option("--sostituisci", is_flag=True,
+              help="Elimina prima gli alimenti senza codice CREA (sintetici, USDA, inseriti a mano).")
+@click.option("--cache", "cartella_cache", type=click.Path(file_okay=False),
+              help="Cartella in cui salvare le pagine CREA scaricate (e riusarle).")
+@click.option("--api-key", envvar="USDA_API_KEY", default=usda.CHIAVE_DEMO, show_default=True,
+              help="Chiave USDA per i valori che il CREA non pubblica (variabile USDA_API_KEY).")
+@click.option("--prova", is_flag=True, help="Legge e calcola tutto senza scrivere.")
+def crea_importa_cmd(codici: tuple[str, ...], tutti: bool, sostituisci: bool, cartella_cache: str | None,
+                     api_key: str, prova: bool) -> None:
+    """Importa o aggiorna alimenti dalle tabelle CREA (codici, oppure --tutti)."""
+    if not codici and not tutti:
+        raise click.UsageError("indica uno o più codici CREA oppure --tutti")
+
     try:
-        alimenti_usda = usda.scarica(api_key, pagine)
-    except usda.ErroreUsda as exc:
+        elenco = list(crea.scarica_indice()) if tutti else [c.upper() for c in codici]
+    except crea.ErroreCrea as exc:
         raise click.ClickException(str(exc)) from None
 
+    click.echo(f"Alimenti CREA da leggere: {len(elenco)} (una pagina al secondo).")
+    cache_pagine = Path(cartella_cache) if cartella_cache else None
     conn = get_db()
 
     try:
-        piano = usda.pianifica(conn, alimenti_usda, sovrascrivi)
-        campi = sum(len(voce["valori"]) for voce in piano)
+        nome_backup = None if prova else backup.crea(DB_PATH, app.config["BACKUP_DIR"], "crea")
+        esito = fonti.importa_crea(conn, elenco, adesso_testo(), api_key, cache_pagine, sostituisci,
+                                   avanzamento=click.echo)
+
+        for errore in esito["errori"][:20]:
+            click.echo(f"  ! {errore}")
+
         click.echo(
-            f"Scaricati {len(alimenti_usda)} alimenti USDA: {len(piano)} da aggiornare "
-            f"nel database ({campi} valori)."
+            f"Letti {esito['letti']}: nuovi {esito['nuovi']}, aggiornati {esito['aggiornati']}, "
+            f"invariati {esito['invariati']}, eliminati {esito['eliminati']}."
         )
 
-        for voce in piano[:5]:
-            click.echo(f"  - {voce['alimento']} (FDC {voce['fdc_id']}): {len(voce['valori'])} valori")
-
-        if prova or not piano:
-            click.echo("Nessuna modifica scritta." if prova else "Niente da aggiornare.")
+        if prova:
+            conn.rollback()
+            click.echo("Prova: nessuna modifica scritta.")
             return
 
-        nome_backup = backup.crea(DB_PATH, app.config["BACKUP_DIR"], "usda")
-        usda.applica(conn, piano, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         conn.commit()
     finally:
         conn.close()
 
-    click.echo(f"Aggiornati {len(piano)} alimenti. Backup del database precedente: {nome_backup}.")
+    click.echo(f"Import completato. Backup del database precedente: {nome_backup}.")
+
+
+@app.cli.command("usda-sincronizza")
+@click.option("--api-key", envvar="USDA_API_KEY", default="", help="Chiave USDA personale (variabile USDA_API_KEY).")
+def usda_sincronizza_cmd(api_key: str) -> None:
+    """Aggiorna da USDA i valori presi da USDA (serve una chiave personale)."""
+    if not usda.chiave_valida(api_key):
+        raise click.ClickException(
+            "Serve una chiave USDA personale (USDA_API_KEY), non DEMO_KEY: https://fdc.nal.usda.gov/api-key-signup"
+        )
+
+    try:
+        esito = sincronizzazione.esegui(DB_PATH, app.config["BACKUP_DIR"], api_key)
+    except sincronizzazione.GiaInCorso:
+        raise click.ClickException("Un'altra sincronizzazione è in corso.") from None
+
+    if esito["esito"] != "riuscita":
+        raise click.ClickException(f"Sincronizzazione non riuscita: {esito['messaggio']}")
+
+    click.echo(f"Sincronizzazione riuscita: {esito['aggiornati']} alimenti aggiornati. Backup: {esito['backup']}.")
+
+
+@app.cli.command("ricalcola-rischi")
+def ricalcola_rischi_cmd() -> None:
+    """Ricalcola i livelli di rischio di tutti gli alimenti con le regole attuali."""
+    conn = get_db()
+
+    try:
+        nome_backup = backup.crea(DB_PATH, app.config["BACKUP_DIR"], "rischi")
+        cambiati = fonti.ricalcola_rischi(conn, adesso_testo())
+        conn.commit()
+    finally:
+        conn.close()
+
+    click.echo(f"Livelli ricalcolati: {cambiati} alimenti cambiati. Backup: {nome_backup}.")
 
 
 # ---------------------------------------------------------------

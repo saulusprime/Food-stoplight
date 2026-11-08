@@ -37,3 +37,6 @@ services:
         sync: false
       - key: USDA_API_KEY
         sync: false
+      # Sincronizzazione automatica dei valori USDA (giorni; 0 = mai)
+      - key: USDA_SINCRONIZZA_GIORNI
+        value: "30"

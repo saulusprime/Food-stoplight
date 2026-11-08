@@ -194,19 +194,36 @@
                     <p class="small text-muted mb-0">{{ _('Vitamine e sali minerali non disponibili per questo alimento.') }}</p>
                 {% endif %}
 
-                <p class="small text-muted mt-2 mb-3">
-                    {% if item.fonte_nutrienti or item.url_fonte %}
-                        {{ _('Fonte dei nutrienti:') }}
-                        {% if item.url_fonte %}
-                            <a href="{{ item.url_fonte }}" target="_blank" rel="noopener noreferrer">{{ item.fonte_nutrienti or item.url_fonte }}</a>{% if item.fdc_id %} (FDC {{ item.fdc_id }}){% endif %}.
-                        {% else %}
-                            {{ item.fonte_nutrienti }}{% if item.fdc_id %} (FDC {{ item.fdc_id }}){% endif %}.
+                <div class="small text-muted mt-2 mb-3 fonti-alimento">
+                    <p class="mb-1"><strong>{{ _('Da dove vengono i dati') }}</strong></p>
+                    <ul class="mb-1">
+                        {% if fonti_dati.crea %}
+                            <li>{% trans url=fonti_dati.crea, codice=item.codice_crea %}Valori nutrizionali: CREA, Tabelle di composizione degli alimenti 2019, <a href="{{ url }}" target="_blank" rel="noopener noreferrer">alimento {{ codice }}</a>.{% endtrans %}</li>
                         {% endif %}
-                    {% else %}
-                        {{ _('I valori indicati con «–» non sono disponibili.') }}
-                    {% endif %}
+                        {% if fonti_dati.usda and fonti_dati.campi_usda %}
+                            <li>{% trans url=fonti_dati.usda, fdc=item.fdc_id, campi=fonti_dati.campi_usda|join(', ') %}Da USDA FoodData Central (<a href="{{ url }}" target="_blank" rel="noopener noreferrer">FDC {{ fdc }}</a>), perché il CREA non li pubblica: {{ campi }}.{% endtrans %}</li>
+                        {% elif fonti_dati.usda_tutti %}
+                            <li>{% trans url=fonti_dati.usda, fdc=item.fdc_id %}Valori nutrizionali: USDA FoodData Central, <a href="{{ url }}" target="_blank" rel="noopener noreferrer">FDC {{ fdc }}</a>.{% endtrans %}</li>
+                        {% endif %}
+                        {% if fonti_dati.off %}
+                            <li>{% trans url=fonti_dati.off %}Valori dell'etichetta e gruppo NOVA: <a href="{{ url }}" target="_blank" rel="noopener noreferrer">Open Food Facts</a> (licenza ODbL).{% endtrans %}</li>
+                        {% endif %}
+                        {% if not (fonti_dati.crea or fonti_dati.usda or fonti_dati.off) %}
+                            {% if item.url_fonte %}
+                                <li><a href="{{ item.url_fonte }}" target="_blank" rel="noopener noreferrer">{{ item.fonte_nutrienti or item.url_fonte }}</a></li>
+                            {% elif item.fonte_nutrienti %}
+                                <li>{{ item.fonte_nutrienti }}</li>
+                            {% else %}
+                                <li>{{ _('Fonte non indicata.') }}</li>
+                            {% endif %}
+                        {% endif %}
+                        {% if item.porzione %}
+                            <li>{% trans grammi=item.porzione|numero %}Porzione tipica: {{ grammi }} g.{% endtrans %}</li>
+                        {% endif %}
+                    </ul>
+                    {{ _('I valori indicati con «–» non sono disponibili.') }}
                     <a href="{{ url_for('guida') }}#tef">{{ _('Come si calcolano TEF e Kcal nette') }}</a>
-                </p>
+                </div>
 
                 {% if item.note %}
                     <p class="small mb-3 nota-alimento"><strong>{{ _('Note:') }}</strong> {{ item.note }}</p>
@@ -240,29 +257,12 @@
                     {% include "_radar.html" %}
                 {% endwith %}
 
-                <table class="table table-sm mt-3 mb-0">
-                    <caption class="visually-hidden">{{ _('Livelli di rischio') }}</caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">{{ _('Rischio') }}</th>
-                            <th scope="col" class="text-end">{{ _('Livello') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for etichetta, valore in rischi %}
-                            <tr>
-                                <th scope="row" class="fw-normal">{{ etichetta|traduci }}</th>
-                                <td class="text-end">
-                                    {% if valore %}
-                                        <span class="badge-risk stato-{{ stato_rischio(valore) }}">{{ valore|traduci }}</span>
-                                    {% else %}
-                                        <span class="text-muted">{{ _('Non classificato') }}</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <h3 class="h6 mt-3">{{ _('Perché questi livelli') }}</h3>
+                {% include "_rischi_motivi.html" %}
+                <p class="small text-muted mb-0">
+                    {{ _('Livelli calcolati dai valori nutrizionali con regole documentate.') }}
+                    <a href="{{ url_for('guida') }}#rischi">{{ _('Le regole nella guida') }}</a>
+                </p>
             </div>
         </section>
 
@@ -278,6 +278,11 @@
                             {% if item.indice_glicemico is not none %}
                                 {% set liv_ig = nutrienti.livello_indice_glicemico(item.indice_glicemico) %}
                                 <span class="badge-risk stato-{{ liv_ig.stato }}">{{ item.indice_glicemico|numero }} · {{ liv_ig.etichetta|traduci }}</span>
+                                {% if fonti_dati.indice_glicemico %}
+                                    <small class="text-muted d-block">
+                                        {% trans voce=fonti_dati.indice_glicemico %}Tabelle internazionali (Atkinson 2008), voce «{{ voce }}»{% endtrans %}
+                                    </small>
+                                {% endif %}
                             {% else %}
                                 <span class="text-muted">{{ _('Non disponibile') }}</span>
                             {% endif %}
@@ -350,6 +355,7 @@
 
                 <p class="small text-muted mt-2 mb-0">
                     {{ _('Indice glicemico: basso fino a 55, medio 56–69, alto da 70. Carico glicemico per porzione: basso fino a 10, medio 11–19, alto da 20.') }}
+                    {% if item.codice_crea %}{{ _('NOVA e FODMAP classificati con regole documentate, dove le fonti lo permettono.') }}{% endif %}
                     <a href="{{ url_for('guida') }}#glicemico">{{ _('Dettagli nella guida') }}</a>
                 </p>
             </div>

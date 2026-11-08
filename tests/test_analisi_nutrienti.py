@@ -78,7 +78,8 @@ def test_radar_livelli_e_punti_medi():
 
 
 def test_carico_glicemico_e_livelli():
-    cibo = {"carboidrati": 30, "fibre": 5, "indice_glicemico": 60}
+    # Carboidrati disponibili: le fibre non si sottraggono più
+    cibo = {"carboidrati": 25, "fibre": 5, "indice_glicemico": 60}
     assert nutrienti.carico_glicemico(cibo) == 15.0
     assert nutrienti.carico_glicemico(cibo, 150) == 22.5
     assert nutrienti.carico_glicemico({"carboidrati": 10}) is None

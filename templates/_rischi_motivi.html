@@ -1,0 +1,31 @@
+{#
+    Livelli di rischio calcolati, con motivi e riferimenti.
+    Parametro: valutazione (rischi.valuta); riferimenti dal globale riferimenti_rischi
+#}
+<ul class="rischi-motivi">
+    {% for campo, etichetta in rischi_elenco %}
+        {% set esito = valutazione[campo] %}
+        <li class="rischio-motivo">
+            <div class="rischio-motivo-testa">
+                <span class="rischio-motivo-nome">{{ etichetta|traduci }}</span>
+                <span class="badge-risk stato-{{ esito.livello.stato }}">{{ esito.livello.etichetta|traduci }}</span>
+            </div>
+            {% if esito.motivi %}
+                <ul class="rischio-motivo-elenco">
+                    {% for motivo in esito.motivi %}<li>{{ motivo }}</li>{% endfor %}
+                </ul>
+            {% else %}
+                <p class="rischio-motivo-elenco text-muted mb-0">{{ _('Dati insufficienti per classificare questo rischio.') }}</p>
+            {% endif %}
+            {% if esito.fonti %}
+                <p class="rischio-motivo-fonti">
+                    {{ _('Fonti:') }}
+                    {% for chiave in esito.fonti %}
+                        {%- set rif = riferimenti_rischi[chiave] -%}
+                        <a href="{{ rif.url }}" target="_blank" rel="noopener noreferrer" title="{{ rif.citazione }}">{{ rif.breve }}</a>{{ ', ' if not loop.last }}
+                    {%- endfor %}
+                </p>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>

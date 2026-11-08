@@ -48,8 +48,10 @@
 {%- endmacro %}
 
 
-{% macro filtro(nome, etichetta, opzioni, tutti) %}
-    <div class="col-6 col-md-2">
+{# Griglia: telefono 2 colonne (Categoria a tutta larghezza), tablet 4,
+   desktop largo una riga sola; i pulsanti chiudono l'ultima riga #}
+{% macro filtro(nome, etichetta, opzioni, tutti, colonne='col-6') %}
+    <div class="{{ colonne }} col-md-3 col-xl">
         <label class="form-label" for="filtro-{{ nome }}">{{ etichetta }}</label>
 
         <select
@@ -76,19 +78,19 @@
 <h1 class="visually-hidden">{{ _('Database alimenti') }}</h1>
 
 
-<form method="get" action="{{ url_for('index') }}" class="row g-2 mb-3">
+<form method="get" action="{{ url_for('index') }}" class="row g-2 mb-3 align-items-end filtri">
 
     <input type="hidden" name="sort" value="{{ request.args.get('sort', 'alimento') }}">
     <input type="hidden" name="dir" value="{{ request.args.get('dir', 'asc') }}">
 
-    {{ filtro('categoria', _('Categoria'), category_options, _('Tutte le categorie')) }}
+    {{ filtro('categoria', _('Categoria'), category_options, _('Tutte le categorie'), 'col-12 filtro-categoria') }}
     {{ filtro('rischio_diabete', _('Diabete'), diabete_options, _('Tutti')) }}
     {{ filtro('rischio_colesterolo', _('Colesterolo'), colesterolo_options, _('Tutti')) }}
     {{ filtro('rischio_malassorbimento', _('Malassorbimento'), malassorbimento_options, _('Tutti')) }}
     {{ filtro('rischio_metabolico', _('Metabolico'), metabolic_options, _('Tutti')) }}
     {{ filtro('rischio_tumorale', _('Tumorale'), tumorale_options, _('Tutti')) }}
 
-    <div class="col-12 d-flex justify-content-end gap-2">
+    <div class="col-6 col-md-auto filtri-azioni">
         <button type="submit" class="btn btn-outline-secondary">
             {{ _('Filtra') }}
         </button>
@@ -102,41 +104,8 @@
 
 
 {# ----------------------------------------------------------------
-   Riepilogo, grafici e classifiche: seguono i filtri qui sopra
+   Grafici e classifiche: seguono i filtri qui sopra
    ---------------------------------------------------------------- #}
-
-<div class="row g-3 mb-3">
-    <div class="col-6">
-        <div class="card grafico-card h-100">
-            <div class="card-body py-3">
-                <p class="stat-label">{{ _('Alimenti visualizzati') }}</p>
-                <p class="stat-valore">{{ visualizzati }}</p>
-                <p class="stat-nota">
-                    {{ _('su %(totale)d nel database', totale=total_alimenti) }}{% if filtri_attivi %} · {{ _('filtri attivi') }}{% endif %}
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-6">
-        <div class="card grafico-card h-100">
-            <div class="card-body py-3">
-                <p class="stat-label">{{ _('Punteggio medio') }}</p>
-                {% if punteggio_medio is not none %}
-                    {% set liv_medio = livello_punteggio(punteggio_medio) %}
-                    <p class="stat-valore">
-                        {{ punteggio_medio }}<span class="stat-scala">/100</span>
-                    </p>
-                    <p class="stat-nota">
-                        <span class="badge-risk stato-{{ liv_medio.stato }}">{{ liv_medio.etichetta|traduci }}</span>
-                    </p>
-                {% else %}
-                    <p class="stat-valore">–</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
 
 {% if alimenti %}
 <div class="row g-3 mb-3 align-items-start">

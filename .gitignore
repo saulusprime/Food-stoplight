@@ -38,3 +38,6 @@ instance/
 
 # Template delle traduzioni (si rigenera con pybabel extract, vedi lingue.py)
 messages.pot
+
+# Blocco della sincronizzazione USDA (accanto al database)
+*.sincronizzazione.lock

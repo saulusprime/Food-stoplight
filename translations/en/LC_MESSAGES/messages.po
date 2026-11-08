@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Food-stoplight 1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 19:25+0100\n"
+"POT-Creation-Date: 2026-11-07 22:19+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -212,6 +212,16 @@ msgstr "Update the food's data."
 msgid "Aggiorna i grammi"
 msgstr "Update the grams"
 
+#, python-format
+msgid ""
+"Aggiorna i valori presi da USDA dei %(n)s alimenti con un FDC ID (per gli"
+" alimenti CREA, solo quelli che il CREA non pubblica, come il fruttosio),"
+" poi ricalcola i rischi. Prima di scrivere si fa un backup."
+msgstr ""
+"Updates the values taken from USDA for the %(n)s foods with an FDC ID "
+"(for CREA foods, only those CREA doesn't publish, such as fructose), then"
+" recalculates the risks. A backup is made before writing."
+
 msgid "Aggiorna o aggiungi"
 msgstr "Update or add"
 
@@ -241,6 +251,9 @@ msgstr "Added to the diary: %(nome)s, %(grammi)s g."
 msgid "Aggiunto al pasto: %(nome)s, %(grammi)s g."
 msgstr "Added to the meal: %(nome)s, %(grammi)s g."
 
+msgid "Alcol"
+msgstr "Alcohol"
+
 msgid "Alimenti"
 msgstr "Foods"
 
@@ -252,9 +265,6 @@ msgstr "Foods by category"
 
 msgid "Alimenti trasformati"
 msgstr "Processed foods"
-
-msgid "Alimenti visualizzati"
-msgstr "Foods shown"
 
 msgid "Alimento"
 msgstr "Food"
@@ -272,6 +282,19 @@ msgstr "Food deleted: %(nome)s."
 msgid "Alimento non trovato."
 msgstr "Food not found."
 
+msgid ""
+"Alimento ricco di fruttosio in eccesso secondo la letteratura (quantità "
+"non disponibile)."
+msgstr ""
+"Food rich in excess fructose according to the literature (amount not "
+"available)."
+
+msgid "Alimento ricco di fruttosio in eccesso secondo la letteratura."
+msgstr "Food rich in excess fructose according to the literature."
+
+msgid "Alimento ultra-trasformato (NOVA 4)."
+msgstr "Ultra-processed food (NOVA 4)."
+
 msgid "Alimento vuoto"
 msgstr "Empty food name"
 
@@ -280,6 +303,20 @@ msgstr "Alternatives with a better profile"
 
 msgid "Alto"
 msgstr "High"
+
+msgid ""
+"Alto per bevande e alimenti con alcol (da 1 g per 100 g) e per le carni "
+"lavorate, entrambi cancerogeni del gruppo 1 IARC. Medio per la carne "
+"rossa (gruppo 2A), per più di 1,5 g di sale per 100 g, per gli alimenti "
+"ultra-trasformati (NOVA 4) e per le bevande zuccherate. Senza questi "
+"fattori: Trascurabile con almeno 3 g di fibre per 100 g, altrimenti "
+"Basso."
+msgstr ""
+"High for drinks and foods with alcohol (from 1 g per 100 g) and for "
+"processed meats, both IARC group 1 carcinogens. Medium for red meat "
+"(group 2A), for more than 1.5 g of salt per 100 g, for ultra-processed "
+"foods (NOVA 4) and for sugary drinks. Without these factors: Negligible "
+"with at least 3 g of fiber per 100 g, otherwise Low."
 
 msgid "Altri Alimenti"
 msgstr "Other foods"
@@ -305,6 +342,10 @@ msgstr "Open the menu"
 msgid "Attenzione:"
 msgstr "Warning:"
 
+#, python-format
+msgid "Automatica ogni %(giorni)s giorni."
+msgstr "Automatic every %(giorni)s days."
+
 msgid "Avvisi"
 msgstr "Warnings"
 
@@ -327,8 +368,23 @@ msgstr "Backups on the server"
 msgid "Basso"
 msgstr "Low"
 
+#, python-format
+msgid "Bevanda con %(grammi)s g di zuccheri liberi per 100 ml."
+msgstr "Drink with %(grammi)s g of free sugars per 100 ml."
+
+msgid ""
+"Bevanda zuccherata: favorisce l'aumento di peso, fattore di rischio di "
+"diversi tumori."
+msgstr "Sugary drink: it promotes weight gain, a risk factor for several cancers."
+
 msgid "Bevande"
 msgstr "Beverages"
+
+msgid "C'è già una sincronizzazione in corso."
+msgstr "A sync is already in progress."
+
+msgid "CREA (codice alimento)"
+msgstr "CREA (food code)"
 
 #, python-format
 msgid "CSV non leggibile alla riga %(riga)d: %(errore)s."
@@ -343,11 +399,24 @@ msgstr "Calculated when saving: fructose ÷ fiber."
 msgid "Calcolatore della porzione"
 msgstr "Portion calculator"
 
+msgid "Campi da USDA"
+msgstr "Fields from USDA"
+
 msgid "Campo"
 msgstr "Field"
 
 msgid "Carboidrati"
 msgstr "Carbohydrates"
+
+#, python-format
+msgid ""
+"Carboidrati della porzione (%(grammi)s g): %(carboidrati)s g, quindi "
+"carico glicemico al massimo %(carboidrati)s anche senza conoscere "
+"l'indice glicemico."
+msgstr ""
+"Carbohydrates in the serving (%(grammi)s g): %(carboidrati)s g, so the "
+"glycemic load is at most %(carboidrati)s even without knowing the "
+"glycemic index."
 
 msgid ""
 "Carboidrati fermentabili che possono dare disturbi a chi soffre di colon "
@@ -381,8 +450,22 @@ msgstr "Glycemic load (portion)"
 msgid "Carico glicemico della porzione"
 msgstr "Glycemic load of the portion"
 
+#, python-format
+msgid ""
+"Carico glicemico della porzione (%(grammi)s g): %(carico)s, con indice "
+"glicemico %(ig)s."
+msgstr ""
+"Glycemic load of the serving (%(grammi)s g): %(carico)s, with glycemic "
+"index %(ig)s."
+
 msgid "Carne"
 msgstr "Meat"
+
+msgid "Carne lavorata: cancerogeno del gruppo 1 IARC."
+msgstr "Processed meat: IARC group 1 carcinogen."
+
+msgid "Carne rossa: probabile cancerogeno (gruppo 2A IARC)."
+msgstr "Red meat: probably carcinogenic (IARC group 2A)."
 
 msgid "Categoria"
 msgstr "Category"
@@ -403,11 +486,42 @@ msgstr "Close the notification"
 msgid "Ci sono %(n)d alimenti «%(testo)s»: scegline uno dall'elenco."
 msgstr "There are %(n)d foods named “%(testo)s”: choose one from the list."
 
+msgid "Codice"
+msgstr "Code"
+
+msgid "Codice CREA"
+msgstr "CREA code"
+
+msgid "Codice CREA: servono 6 caratteri, cifre o lettere maiuscole (es. 007000)."
+msgstr "CREA code: 6 characters needed, digits or capital letters (e.g. 007000)."
+
+#, python-format
+msgid "Codice CREA: «%(testo)s» non valido, ignorato"
+msgstr "CREA code: “%(testo)s” is not valid, ignored"
+
+msgid "Codice a barre"
+msgstr "Barcode"
+
+msgid "Codice a barre: servono da 8 a 14 cifre."
+msgstr "Barcode: 8 to 14 digits needed."
+
+#, python-format
+msgid "Codice a barre: «%(testo)s» non valido, ignorato"
+msgstr "Barcode: “%(testo)s” is not valid, ignored"
+
 msgid "Colazione"
 msgstr "Breakfast"
 
 msgid "Colesterolo"
 msgstr "Cholesterol"
+
+#, python-format
+msgid ""
+"Colesterolo: %(mg)s mg nella porzione, quanto il limite giornaliero di "
+"300 mg."
+msgstr ""
+"Cholesterol: %(mg)s mg in the serving, as much as the daily limit of 300 "
+"mg."
 
 msgid "Colonna"
 msgstr "Column"
@@ -431,11 +545,28 @@ msgstr ""
 msgid "Come leggere la tabella"
 msgstr "How to read the table"
 
+msgid "Come si calcolano"
+msgstr "How they are calculated"
+
 msgid "Come si calcolano TEF e Kcal nette"
 msgstr "How TEF and net Kcal are calculated"
 
+msgid "Compila"
+msgstr "Fill in"
+
+msgid "Compila da una fonte"
+msgstr "Fill in from a source"
+
+msgid ""
+"Compila i valori e salva: i livelli compariranno nella scheda "
+"dell'alimento."
+msgstr "Fill in the values and save: the levels will appear on the food page."
+
 msgid "Componi un pasto"
 msgstr "Build a meal"
+
+msgid "Con un FDC ID la sincronizzazione aggiorna i valori presi da USDA."
+msgstr "With an FDC ID, the sync updates the values taken from USDA."
 
 msgid "Conferma"
 msgstr "Confirm"
@@ -450,20 +581,34 @@ msgid_plural "Conferma: aggiungi %(num)d alimenti"
 msgstr[0] "Confirm: add %(num)d food"
 msgstr[1] "Confirm: add %(num)d foods"
 
+#, python-format
+msgid "Contiene alcol (%(grammi)s g per 100 g): cancerogeno del gruppo 1 IARC."
+msgstr "Contains alcohol (%(grammi)s g per 100 g): IARC group 1 carcinogen."
+
 msgid "Copia del database"
 msgstr "Database copy"
 
 msgid "Cosa hai mangiato"
 msgstr "What you ate"
 
-msgid "Cosa significano"
-msgstr "What they mean"
-
 msgid "Cosa succederà"
 msgstr "What will happen"
 
 msgid "Crescente"
 msgstr "Ascending"
+
+#, python-format
+msgid ""
+"Da USDA FoodData Central (<a href=\"%(url)s\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">FDC %(fdc)s</a>), perché il CREA non li "
+"pubblica: %(campi)s."
+msgstr ""
+"From USDA FoodData Central (<a href=\"%(url)s\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">FDC %(fdc)s</a>), because CREA doesn't "
+"publish them: %(campi)s."
+
+msgid "Da dove vengono i dati"
+msgstr "Where the data comes from"
 
 msgid "Data"
 msgstr "Date"
@@ -501,11 +646,28 @@ msgstr[1] ""
 msgid "Dati generali"
 msgstr "General data"
 
+msgid "Dati insufficienti per classificare questo rischio."
+msgstr "Not enough data to classify this risk."
+
+#, python-format
+msgid "Dati non presi dalla fonte: %(errore)s"
+msgstr "Data not taken from the source: %(errore)s"
+
 msgid "Dato mancante o valore non riconosciuto: non entra nel punteggio."
 msgstr "Missing data or unrecognized value: not counted in the score."
 
 msgid "Decrescente"
 msgstr "Descending"
+
+msgid "Densità energetica"
+msgstr "Energy density"
+
+#, python-format
+msgid "Densità energetica: %(kcal)s kcal per 100 g."
+msgstr "Energy density: %(kcal)s kcal per 100 g."
+
+msgid "Dettagli"
+msgstr "Details"
 
 msgid "Dettagli nella guida"
 msgstr "Details in the guide"
@@ -610,6 +772,16 @@ msgstr "Error:"
 msgid "Esci"
 msgstr "Sign out"
 
+#, python-format
+msgid ""
+"Esempi: 007000 (CREA, il codice è nella <a href=\"%(crea)s\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">scheda dell'alimento</a>), "
+"8076800195057 (codice a barre), 171697 (USDA)."
+msgstr ""
+"Examples: 007000 (CREA, the code is on the <a href=\"%(crea)s\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">food page</a>), "
+"8076800195057 (barcode), 171697 (USDA)."
+
 msgid "Esempio di CSV con separatore punto e virgola"
 msgstr "Example CSV with semicolon separator"
 
@@ -672,6 +844,9 @@ msgstr "FODMAP by category"
 msgid "FODMAP polioli"
 msgstr "FODMAP polyols"
 
+msgid "FODMAP: Basso, Medio, Alto (anche verde, giallo, rosso); NOVA: da 1 a 4."
+msgstr "FODMAP: Low, Medium, High (also green, yellow, red); NOVA: from 1 to 4."
+
 msgid "Fatto:"
 msgstr "Done:"
 
@@ -722,14 +897,28 @@ msgstr "Source"
 msgid "Fonte dei dati nutrizionali"
 msgstr "Source of the nutritional data"
 
-msgid "Fonte dei nutrienti:"
-msgstr "Nutrient source:"
+#, python-format
+msgid ""
+"Fonte di fibre (%(grammi)s g per 100 g), protettive per il tumore del "
+"colon-retto."
+msgstr ""
+"Source of fiber (%(grammi)s g per 100 g), protective against colorectal "
+"cancer."
+
+msgid "Fonte non indicata."
+msgstr "Source not given."
 
 msgid "Fonte nutrienti"
 msgstr "Nutrient source"
 
+msgid "Fonte:"
+msgstr "Source:"
+
 msgid "Fonti e limiti"
 msgstr "Sources and limits"
+
+msgid "Fonti:"
+msgstr "Sources:"
 
 msgid "Food Stoplight – Database Alimenti"
 msgstr "Food Stoplight – Food Database"
@@ -745,6 +934,14 @@ msgstr "Fructans"
 
 msgid "Fruttosio"
 msgstr "Fructose"
+
+#, python-format
+msgid ""
+"Fruttosio (%(fruttosio)s g nella porzione) bilanciato dal glucosio: si "
+"assorbe insieme."
+msgstr ""
+"Fructose (%(fruttosio)s g in the serving) balanced by glucose: they are "
+"absorbed together."
 
 msgid "Fruttosio (g)"
 msgstr "Fructose (g)"
@@ -765,6 +962,39 @@ msgstr "Fructose and fiber"
 msgid "Fruttosio in eccesso"
 msgstr "Excess fructose"
 
+#, python-format
+msgid ""
+"Fruttosio in eccesso sul glucosio: %(eccesso)s g nella porzione "
+"(%(grammi)s g), oltre il doppio della soglia di 0,15 g."
+msgstr ""
+"Fructose in excess of glucose: %(eccesso)s g in the serving (%(grammi)s "
+"g), more than twice the 0.15 g threshold."
+
+#, python-format
+msgid ""
+"Fruttosio in eccesso sul glucosio: %(eccesso)s g nella porzione "
+"(%(grammi)s g), oltre la soglia di 0,15 g; con mezza porzione si resta "
+"sotto."
+msgstr ""
+"Fructose in excess of glucose: %(eccesso)s g in the serving (%(grammi)s "
+"g), above the 0.15 g threshold; a half serving stays below it."
+
+#, python-format
+msgid ""
+"Fruttosio in eccesso sul glucosio: %(eccesso)s g nella porzione "
+"(%(grammi)s g), sotto la soglia di 0,15 g."
+msgstr ""
+"Fructose in excess of glucose: %(eccesso)s g in the serving (%(grammi)s "
+"g), below the 0.15 g threshold."
+
+#, python-format
+msgid ""
+"Fruttosio nella porzione (%(grammi)s g): %(fruttosio)s g, sotto la soglia"
+" di 0,15 g."
+msgstr ""
+"Fructose in the serving (%(grammi)s g): %(fruttosio)s g, below the 0.15 g"
+" threshold."
+
 msgid "Fruttosio, Fibre: il rapporto F/F viene sempre ricalcolato"
 msgstr "Fruttosio, Fibre: the F/F ratio is always recalculated"
 
@@ -780,6 +1010,9 @@ msgstr "Already in the database (ID %(id)d): it will be duplicated"
 
 msgid "Gli utenti e le password (utenti.db) non fanno parte dei backup."
 msgstr "Users and passwords (utenti.db) are not part of the backups."
+
+msgid "Glucosio"
+msgstr "Glucose"
 
 msgid "Grado di processazione (NOVA)"
 msgstr "Processing level (NOVA)"
@@ -807,15 +1040,9 @@ msgstr "Fats and oils"
 msgid "Grassi saturi"
 msgstr "Saturated fat"
 
-msgid "Grassi saturi oltre 5 g +2. Colesterolo: oltre 50 mg +1, oltre 100 mg +2."
-msgstr "Saturated fat over 5 g +2. Cholesterol: over 50 mg +1, over 100 mg +2."
-
-msgid ""
-"Grassi saturi: oltre 4 g +1, oltre 7 g +2. Zuccheri oltre 15 g +1. Soglie"
-" ispirate alle raccomandazioni di OMS e WCRF."
-msgstr ""
-"Saturated fat: over 4 g +1, over 7 g +2. Sugars over 15 g +1. Thresholds "
-"inspired by WHO and WCRF recommendations."
+#, python-format
+msgid "Grassi saturi: %(grammi)s g per 100 %(unita)s."
+msgstr "Saturated fat: %(grammi)s g per 100 %(unita)s."
 
 msgid "Guida"
 msgstr "Guide"
@@ -837,11 +1064,32 @@ msgstr ""
 "doctor or a dietitian."
 
 msgid ""
-"I macro e micronutrienti con fonte USDA vengono da FoodData Central, la "
-"banca dati del Dipartimento dell'Agricoltura degli Stati Uniti."
+"I livelli non si scrivono a mano: si calcolano dai valori nutrizionali a "
+"ogni salvataggio, import o sincronizzazione, con le regole qui sotto. "
+"Nella scheda di ogni alimento ci sono i motivi del livello e le fonti. Se"
+" mancano i dati necessari il rischio resta «Non classificato»."
 msgstr ""
-"Macro and micronutrients with USDA as source come from FoodData Central, "
-"the database of the United States Department of Agriculture."
+"Levels aren't entered by hand: they are calculated from the nutrition "
+"values at every save, import or sync, with the rules below. Each food "
+"page shows the reasons for the level and the sources. If the necessary "
+"data is missing, the risk stays “Not classified”."
+
+msgid ""
+"I livelli si calcolano dai valori nutrizionali quando salvi: non si "
+"scrivono a mano."
+msgstr ""
+"Levels are calculated from the nutrition values when you save: they "
+"aren't entered by hand."
+
+#, python-format
+msgid ""
+"I prodotti confezionati cercati per codice a barre vengono da <a "
+"href=\"%(url)s\" target=\"_blank\" rel=\"noopener noreferrer\">Open Food "
+"Facts</a> (licenza ODbL)."
+msgstr ""
+"Packaged products looked up by barcode come from <a href=\"%(url)s\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">Open Food Facts</a> (ODbL "
+"license)."
 
 msgid ""
 "I valori calcolati (TEF, Kcal nette, rapporto F/F) sono già inclusi; "
@@ -849,6 +1097,18 @@ msgid ""
 msgstr ""
 "Calculated values (TEF, net Kcal, F/F ratio) are already included; in "
 "updated rows the cells that change are highlighted."
+
+#, python-format
+msgid ""
+"I valori che il CREA non pubblica, soprattutto fruttosio e glucosio, "
+"vengono dall'alimento corrispondente di <a href=\"%(url)s\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">USDA FoodData Central</a> "
+"(dominio pubblico), scelto alimento per alimento: la scheda indica quali."
+msgstr ""
+"The values CREA doesn't publish, mainly fructose and glucose, come from "
+"the matching food in <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener"
+" noreferrer\">USDA FoodData Central</a> (public domain), chosen food by "
+"food: the food page says which ones."
 
 msgid "I valori indicati con «–» non sono disponibili."
 msgstr "Values shown as “–” are not available."
@@ -981,6 +1241,19 @@ msgid ""
 msgstr "The meal is empty: add foods above or with “Add to meal” on a food's page."
 
 msgid ""
+"Il più alto tra il livello del carico glicemico della porzione tipica e "
+"quello degli zuccheri liberi. Senza indice glicemico si usa una stima "
+"prudente: il carico massimo possibile, pari ai carboidrati disponibili "
+"della porzione. Con almeno 6 g di fibre per 100 g («ad alto contenuto di "
+"fibre») il livello scende di uno."
+msgstr ""
+"The higher of the glycemic load level of the typical serving and the free"
+" sugars level. Without a glycemic index a cautious estimate is used: the "
+"highest possible load, equal to the available carbohydrates in the "
+"serving. With at least 6 g of fiber per 100 g (“high fiber”) the level "
+"drops by one."
+
+msgid ""
 "Il profilo di rischio di un pasto o di una giornata pesa ogni alimento "
 "sulle Kcal che apporta: 10 g di burro contano più di 300 g di insalata. "
 "Se nessun alimento ha Kcal si pesa sui grammi. Per questo nel radar di un"
@@ -1034,6 +1307,14 @@ msgstr "Glycemic index"
 msgid "Indice glicemico (0–100)"
 msgstr "Glycemic index (0–100)"
 
+#, python-format
+msgid ""
+"Indice glicemico non disponibile: stima prudente con il carico massimo "
+"possibile della porzione (%(grammi)s g), %(carboidrati)s."
+msgstr ""
+"Glycemic index not available: cautious estimate with the highest possible"
+" load of the serving (%(grammi)s g), %(carboidrati)s."
+
 msgid "Indice glicemico, FODMAP e processazione"
 msgstr "Glycemic index, FODMAP and processing"
 
@@ -1047,6 +1328,13 @@ msgstr ""
 "Glycemic index: low up to 55, medium 56–69, high from 70. Glycemic load "
 "per portion: low up to 10, medium 11–19, high from 20."
 
+msgid ""
+"Indice glicemico: valori della tabella 1 di Atkinson et al. (2008), "
+"assegnati solo agli alimenti che corrispondono a una voce della tabella."
+msgstr ""
+"Glycemic index: values from table 1 of Atkinson et al. (2008), assigned "
+"only to the foods that match an entry of the table."
+
 #, python-format
 msgid "Indice glicemico: «%(testo)s» fuori scala (0-100), ignorato"
 msgstr "Glycemic index: “%(testo)s” out of range (0-100), ignored"
@@ -1059,6 +1347,9 @@ msgstr "Information:"
 
 msgid "Ingredienti culinari trasformati"
 msgstr "Processed culinary ingredients"
+
+msgid "Iniziata"
+msgstr "Started"
 
 msgid "Inserisci un nuovo alimento nel database."
 msgstr "Add a new food to the database."
@@ -1141,13 +1432,6 @@ msgstr ""
 "The NOVA classification divides foods into four groups according to how "
 "much they are industrially processed."
 
-msgid ""
-"La scheda di ogni alimento indica la fonte dei valori; dove manca, i "
-"valori sono stime o dati dimostrativi da verificare."
-msgstr ""
-"Each food's page shows the source of its values; where it is missing, the"
-" values are estimates or sample data to be checked."
-
 msgid "La tabella «alimenti» non ha le colonne attese."
 msgstr "The “alimenti” table does not have the expected columns."
 
@@ -1156,6 +1440,13 @@ msgstr "Dairy and eggs"
 
 msgid "Lattosio"
 msgstr "Lactose"
+
+msgid ""
+"Le colonne dei rischi si ignorano: i livelli si ricalcolano dai valori "
+"nutrizionali"
+msgstr ""
+"Risk columns are ignored: levels are recalculated from the nutrition "
+"values"
 
 #, python-format
 msgid ""
@@ -1173,18 +1464,23 @@ msgid "Le prime %(n)d"
 msgstr "The first %(n)d"
 
 msgid ""
+"Le regole dei rischi valutano un alimento alla volta, per 100 g o per la "
+"porzione tipica: non tengono conto della dieta nel suo insieme, delle "
+"quantità consumate né delle condizioni personali."
+msgstr ""
+"The risk rules assess one food at a time, per 100 g or per typical "
+"serving: they don't take into account the diet as a whole, the amounts "
+"eaten or personal conditions."
+
+msgid "Le regole nella guida"
+msgstr "The rules in the guide"
+
+msgid ""
 "Le righe già presenti (stesso ID, oppure stesso nome e categoria) vengono"
 " aggiornate con i valori non vuoti del file; le altre vengono aggiunte."
 msgstr ""
 "Rows already present (same ID, or same name and category) are updated "
 "with the non-empty values of the file; the others are added."
-
-msgid ""
-"Le soglie dei rischi sono indicative e non sono ancora state riviste con "
-"riferimenti bibliografici puntuali."
-msgstr ""
-"The risk thresholds are indicative and have not yet been reviewed against"
-" specific bibliographic references."
 
 msgid "Legenda dei livelli"
 msgstr "Level legend"
@@ -1192,30 +1488,26 @@ msgstr "Level legend"
 msgid "Legumi/Frutta Secca"
 msgstr "Legumes/Nuts"
 
+msgid "Livelli calcolati dai valori nutrizionali con regole documentate."
+msgstr "Levels calculated from the nutrition values with documented rules."
+
 msgid "Livelli di rischio"
 msgstr "Risk levels"
 
 msgid "Livelli medi di rischio"
 msgstr "Average risk levels"
 
-msgid ""
-"Livelli: Trascurabile, Basso, Medio, Alto (si salvano in italiano, come "
-"nel resto del database)."
-msgstr ""
-"Levels: Trascurabile, Basso, Medio, Alto (negligible, low, medium, high: "
-"they are saved in Italian, like the rest of the database)."
-
-msgid ""
-"Livelli: Trascurabile, Basso, Medio, Alto, anche preceduti da emoji («🔴 "
-"Alto»). Protettivo e Neutro valgono Trascurabile, Elevato e Aumentato "
-"valgono Alto."
-msgstr ""
-"Levels: Trascurabile, Basso, Medio, Alto (negligible, low, medium, high),"
-" also preceded by an emoji (“🔴 Alto”). Protettivo and Neutro count as "
-"Trascurabile, Elevato and Aumentato count as Alto."
-
 msgid "Livello"
 msgstr "Level"
+
+msgid ""
+"Livello dei grassi saturi, il principale fattore alimentare del "
+"colesterolo LDL. Se una porzione da sola porta 300 mg di colesterolo o "
+"più, il limite giornaliero indicato dai LARN, il livello è almeno Medio."
+msgstr ""
+"Saturated fat level, the main dietary factor for LDL cholesterol. If a "
+"single serving provides 300 mg of cholesterol or more, the daily limit "
+"set by the Italian LARN, the level is at least Medium."
 
 msgid "Livello medio"
 msgstr "Average level"
@@ -1223,6 +1515,13 @@ msgstr "Average level"
 #, python-format
 msgid "Livello medio: %(livello)s"
 msgstr "Average level: %(livello)s"
+
+msgid ""
+"Macro e micronutrienti, indice glicemico, NOVA, FODMAP, porzione, fonte e"
+" codici (CREA, a barre, FDC ID)"
+msgstr ""
+"Macro and micronutrients, glycemic index, NOVA, FODMAP, serving, source "
+"and codes (CREA, barcode, FDC ID)"
 
 msgid "Macronutrienti"
 msgstr "Macronutrients"
@@ -1237,11 +1536,21 @@ msgid "Malassorbimento"
 msgstr "Malabsorption"
 
 msgid ""
-"Malassorbimento del fruttosio. Fruttosio oltre 3 g +1; oltre 5 g con meno"
-" di 2 g di fibre +2."
+"Malassorbimento del fruttosio, valutato sul fruttosio in eccesso sul "
+"glucosio nella porzione tipica, con la soglia dei FODMAP di Varney et al."
+" (0,15 g per porzione): Trascurabile se in tutta la porzione il fruttosio"
+" non arriva a 0,15 g; Basso se il glucosio lo bilancia o l'eccesso resta "
+"entro la soglia; Medio se la supera ma con mezza porzione si resta sotto "
+"(fino a 0,30 g); Alto oltre. Senza dati misurati vale l'elenco degli "
+"alimenti ricchi di fruttosio in eccesso."
 msgstr ""
-"Fructose malabsorption. Fructose over 3 g +1; over 5 g with less than 2 g"
-" of fiber +2."
+"Fructose malabsorption, assessed on the fructose in excess of glucose in "
+"the typical serving, with the FODMAP threshold of Varney et al. (0.15 g "
+"per serving): Negligible if the whole serving has less than 0.15 g of "
+"fructose; Low if glucose balances it or the excess stays within the "
+"threshold; Medium if it exceeds it but a half serving stays below (up to "
+"0.30 g); High beyond that. Without measured data, the list of foods rich "
+"in excess fructose applies."
 
 msgid "Manuale"
 msgstr "Manual"
@@ -1311,12 +1620,38 @@ msgstr "Reason"
 msgid "NOVA"
 msgstr "NOVA"
 
+msgid ""
+"NOVA e FODMAP classificati con regole documentate, dove le fonti lo "
+"permettono."
+msgstr ""
+"NOVA and FODMAP classified with documented rules, where the sources allow"
+" it."
+
 msgid "NOVA: scegli un gruppo da 1 a 4."
 msgstr "NOVA: choose a group from 1 to 4."
 
 #, python-format
 msgid "NOVA: «%(testo)s» non è un gruppo da 1 a 4, ignorato"
 msgstr "NOVA: “%(testo)s” is not a group from 1 to 4, ignored"
+
+msgid ""
+"Negli alimenti importati dalle fonti: lattosio e fruttosio in eccesso si "
+"classificano dai valori misurati, con le soglie per porzione di Varney et"
+" al. (lattosio oltre 1 g, fruttosio in eccesso sul glucosio oltre 0,15 g,"
+" oligosaccaridi oltre 0,3 g); fruttani, GOS e polioli dall'elenco degli "
+"alimenti di base ricchi di ciascun FODMAP nelle diete occidentale e "
+"mediterranea (Sultan et al.). Carne, pesce e alimenti senza carboidrati "
+"non ne contengono. Le altre categorie restano non classificate: i dati "
+"completi della Monash University non sono pubblici."
+msgstr ""
+"For foods imported from the sources: lactose and excess fructose are "
+"classified from the measured values, with the per-serving thresholds of "
+"Varney et al. (lactose over 1 g, fructose in excess of glucose over 0.15 "
+"g, oligosaccharides over 0.3 g); fructans, GOS and polyols from the list "
+"of staple foods rich in each FODMAP in the Western and Mediterranean "
+"diets (Sultan et al.). Meat, fish and foods without carbohydrates contain"
+" none. The other categories stay unclassified: Monash University's full "
+"data isn't public."
 
 msgid "Nel database manca la tabella «alimenti»."
 msgstr "The database lacks the “alimenti” table."
@@ -1359,6 +1694,9 @@ msgstr "No warnings: all values were recognized."
 msgid "Nessun backup salvato finora."
 msgstr "No backups saved yet."
 
+msgid "Nessun fattore di rischio noto tra quelli valutati."
+msgstr "No known risk factor among those assessed."
+
 msgid "Nessun fattore di rischio rilevante."
 msgstr "No relevant risk factor."
 
@@ -1383,6 +1721,9 @@ msgstr ""
 
 msgid "Nessuna: il file coincide con i dati del database."
 msgstr "None: the file matches the data in the database."
+
+msgid "Nessuno zucchero libero."
+msgstr "No free sugars."
 
 msgid "Nome utente"
 msgstr "Username"
@@ -1449,8 +1790,8 @@ msgstr ""
 msgid "Ogni riga diventa un nuovo alimento, anche se esiste già."
 msgstr "Each row becomes a new food, even if it already exists."
 
-msgid "Oltre 250 Kcal con più di 10 g di zuccheri +2. Grassi saturi oltre 5 g +1."
-msgstr "Over 250 Kcal with more than 10 g of sugars +2. Saturated fat over 5 g +1."
+msgid "Open Food Facts (codice a barre)"
+msgstr "Open Food Facts (barcode)"
 
 msgid "Operazione riservata agli amministratori."
 msgstr "Only administrators can do this."
@@ -1482,8 +1823,40 @@ msgstr "Meal"
 msgid "Pasto svuotato."
 msgstr "Meal emptied."
 
-msgid "Per 100 g. Lasciare vuoto se il dato non è disponibile."
-msgstr "Per 100 g. Leave empty if the value is not available."
+msgid ""
+"Per 100 g; carboidrati disponibili, cioè senza le fibre. Lasciare vuoto "
+"se il dato non è disponibile."
+msgstr ""
+"Per 100 g; available carbohydrates, i.e. without fiber. Leave empty if "
+"the value isn't available."
+
+msgid "Per carico glicemico, FODMAP e rischi; vuoto: 100 g."
+msgstr "For glycemic load, FODMAP and risks; empty: 100 g."
+
+msgid ""
+"Per gli alimenti generici delle tabelle CREA il gruppo si assegna con "
+"regole su nome e categoria, secondo le definizioni di Monteiro et al. "
+"(es. frutta fresca 1, olio e zucchero 2, formaggi e salumi 3, merendine e"
+" bibite 4); le ricette non hanno un gruppo. Per i prodotti confezionati "
+"vale il gruppo calcolato da Open Food Facts dagli ingredienti."
+msgstr ""
+"For the generic foods of the CREA tables the group is assigned with rules"
+" on name and category, following the definitions of Monteiro et al. (e.g."
+" fresh fruit 1, oil and sugar 2, cheeses and cured meats 3, packaged "
+"snacks and soft drinks 4); recipes have no group. For packaged products "
+"the group calculated by Open Food Facts from the ingredients applies."
+
+msgid ""
+"Per i nutrienti da limitare la scala è la stessa per tutti, per 100 g "
+"(per le bevande 100 ml): Trascurabile fino alla soglia «senza» delle "
+"indicazioni nutrizionali europee, Basso fino alla soglia «a basso "
+"contenuto» (il verde del semaforo britannico FSA), Medio nell'ambra, Alto"
+" nel rosso."
+msgstr ""
+"For the nutrients to limit, the scale is the same for all, per 100 g (100"
+" ml for drinks): Negligible up to the European “free” claim threshold, "
+"Low up to the “low” claim threshold (green in the UK FSA traffic light), "
+"Medium in the amber band, High in the red."
 
 msgid ""
 "Per modificare i dati in Excel: <strong>esporta</strong> dalla tabella, "
@@ -1495,14 +1868,23 @@ msgstr ""
 msgid "Per ripristinare spunta la casella di conferma."
 msgstr "To restore, tick the confirmation box."
 
+msgid "Per sincronizzare serve una chiave USDA personale (USDA_API_KEY)."
+msgstr "To sync, a personal USDA key is needed (USDA_API_KEY)."
+
 msgid "Per sostituire l'intera tabella spunta la casella di conferma."
 msgstr "To replace the whole table, tick the confirmation box."
+
+msgid "Perché questi livelli"
+msgstr "Why these levels"
 
 msgid "Pesa di più"
 msgstr "Weighs most"
 
 msgid "Pesce"
 msgstr "Fish"
+
+msgid "Piatti e ricette"
+msgstr "Dishes and recipes"
 
 msgid "Più fattori, o un fattore marcato: con moderazione."
 msgstr "Several factors, or one marked factor: in moderation."
@@ -1526,6 +1908,17 @@ msgstr "Polyols (sorbitol, mannitol)"
 msgid "Porzione"
 msgstr "Portion"
 
+msgid "Porzione tipica (g)"
+msgstr "Typical serving (g)"
+
+#, python-format
+msgid "Porzione tipica: %(grammi)s g."
+msgstr "Typical serving: %(grammi)s g."
+
+#, python-format
+msgid "Porzione: «%(testo)s» non valida, ignorata"
+msgstr "Serving: “%(testo)s” is not valid, ignored"
+
 msgid "Porzioni rapide"
 msgstr "Quick portions"
 
@@ -1535,8 +1928,21 @@ msgstr "Potassium"
 msgid "Pranzo"
 msgstr "Lunch"
 
-msgid "Prima dei nutrienti USDA"
-msgstr "Before the USDA nutrients"
+msgid ""
+"Prende nome e valori nutrizionali dal CREA, da Open Food Facts o da USDA;"
+" prima di salvare puoi controllarli e correggerli."
+msgstr ""
+"Takes the name and nutrition values from CREA, Open Food Facts or USDA; "
+"before saving you can check and correct them."
+
+msgid "Prima del ricalcolo dei rischi"
+msgstr "Before recalculating the risks"
+
+msgid "Prima dell'import dal CREA"
+msgstr "Before the CREA import"
+
+msgid "Prima della sincronizzazione USDA"
+msgstr "Before the USDA sync"
 
 msgid "Prima di scrivere viene salvato un backup automatico del database."
 msgstr "An automatic backup of the database is saved before writing."
@@ -1566,6 +1972,10 @@ msgstr "Risk profile of the meal"
 msgid "Profilo di rischio della giornata"
 msgstr "Risk profile of the day"
 
+#, python-format
+msgid "Prossima: %(quando)s."
+msgstr "Next: %(quando)s."
+
 msgid "Proteine"
 msgstr "Protein"
 
@@ -1574,9 +1984,6 @@ msgstr "Score"
 
 msgid "Punteggio complessivo"
 msgstr "Overall score"
-
-msgid "Punteggio medio"
-msgstr "Average score"
 
 msgid "Punteggio più alto; a parità, più fibre."
 msgstr "Highest score; on a tie, more fiber."
@@ -1594,17 +2001,6 @@ msgid ""
 msgstr ""
 "You can also build a meal in <a href=\"%(url)s\">Meal</a> and save it "
 "here in one go."
-
-msgid ""
-"Quando i livelli sono calcolati dai valori nutrizionali, ogni criterio "
-"superato aggiunge punti (valori per 100 g): 0 punti Trascurabile, 1 "
-"Basso, 2 Medio, 3 o più Alto. Per gli alimenti inseriti a mano o "
-"importati vale il livello indicato nella fonte."
-msgstr ""
-"When the levels are calculated from the nutritional values, each "
-"criterion met adds points (values per 100 g): 0 points Negligible, 1 Low,"
-" 2 Medium, 3 or more High. For foods entered by hand or imported, the "
-"level given by the source applies."
 
 msgid ""
 "Questa pagina richiede la connessione. Senza rete puoi consultare la "
@@ -1636,6 +2032,13 @@ msgstr "Reset"
 
 msgid "Ricalcola"
 msgstr "Recalculate"
+
+#, python-format
+msgid "Ricco di fibre (%(grammi)s g per 100 g): un livello in meno."
+msgstr "High in fiber (%(grammi)s g per 100 g): one level lower."
+
+msgid "Riferimenti"
+msgstr "References"
 
 msgid "Riga"
 msgstr "Row"
@@ -1683,26 +2086,6 @@ msgstr "Restore not performed: %(motivo)s"
 msgid "Rischio"
 msgstr "Risk"
 
-msgid "Rischio Colesterolo"
-msgstr "Cholesterol risk"
-
-msgid "Rischio Diabete"
-msgstr "Diabetes risk"
-
-msgid "Rischio Diabete, Colesterolo, Malassorbimento, Metabolico, Tumorale"
-msgstr ""
-"Rischio Diabete, Colesterolo, Malassorbimento, Metabolico, Tumorale (the "
-"five risks)"
-
-msgid "Rischio Malassorbimento"
-msgstr "Malabsorption risk"
-
-msgid "Rischio Metabolico"
-msgstr "Metabolic risk"
-
-msgid "Rischio Tumorale"
-msgstr "Cancer risk"
-
 msgid "Rischio colesterolo"
 msgstr "Cholesterol risk"
 
@@ -1720,6 +2103,14 @@ msgstr "Cancer risk"
 
 msgid "Risorsa non trovata."
 msgstr "Resource not found."
+
+#, python-format
+msgid ""
+"Sale: %(grammi)s g per 100 g, alto (cibi conservati sotto sale e tumore "
+"dello stomaco)."
+msgstr ""
+"Salt: %(grammi)s g per 100 g, high (salt-preserved foods and stomach "
+"cancer)."
 
 msgid "Saltati"
 msgstr "Skipped"
@@ -1797,6 +2188,16 @@ msgid ""
 " nome."
 msgstr "Without the Categoria column, existing foods are recognized by name only."
 
+#, python-format
+msgid ""
+"Serve una chiave USDA personale e gratuita nella variabile USDA_API_KEY "
+"(<a href=\"%(url)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">richiedila qui</a>); DEMO_KEY non basta."
+msgstr ""
+"A free personal USDA key is needed in the USDA_API_KEY variable (<a "
+"href=\"%(url)s\" target=\"_blank\" rel=\"noopener noreferrer\">request it"
+" here</a>); DEMO_KEY isn't enough."
+
 msgid "Servono i carboidrati"
 msgstr "Carbohydrates needed"
 
@@ -1806,11 +2207,31 @@ msgstr "Session expired or invalid request: try again."
 msgid "Significato"
 msgstr "Meaning"
 
+msgid "Sincronizza ora"
+msgstr "Sync now"
+
+msgid "Sincronizzazione automatica spenta (USDA_SINCRONIZZA_GIORNI=0)."
+msgstr "Automatic sync turned off (USDA_SINCRONIZZA_GIORNI=0)."
+
+msgid "Sincronizzazione con USDA FoodData Central"
+msgstr "Sync with USDA FoodData Central"
+
+msgid ""
+"Sincronizzazione con USDA avviata: ricarica la pagina tra qualche minuto "
+"per l'esito."
+msgstr "USDA sync started: reload the page in a few minutes to see the outcome."
+
+msgid "Sincronizzazione in corso…"
+msgstr "Sync in progress…"
+
 msgid "Sintesi dei cinque rischi: 100 = tutti trascurabili, 0 = tutti alti."
 msgstr "Summary of the five risks: 100 = all negligible, 0 = all high."
 
 msgid "Sodio"
 msgstr "Sodium"
+
+msgid "Soglie per 100 g (bevande per 100 ml)"
+msgstr "Thresholds per 100 g (drinks per 100 ml)"
 
 msgid "Solo le colonne principali"
 msgstr "Main columns only"
@@ -1843,6 +2264,17 @@ msgstr "Replace the whole table"
 
 msgid "Sostituisci la tabella"
 msgstr "Replace the table"
+
+msgid ""
+"Sovrappeso e sindrome metabolica: densità energetica (fino a 125 kcal per"
+" 100 g è l'obiettivo medio della dieta indicato dal WCRF, oltre 225-275 "
+"un alimento è denso di energia); Alto anche con più di 22,5 g di zuccheri"
+" liberi. Per le bevande la densità non vale: contano gli zuccheri liberi."
+msgstr ""
+"Overweight and metabolic syndrome: energy density (up to 125 kcal per 100"
+" g is the average diet goal set by WCRF; above 225-275 a food is energy-"
+"dense); also High with more than 22.5 g of free sugars. For drinks "
+"density doesn't apply: free sugars count."
 
 msgid "Spuntino"
 msgstr "Snack"
@@ -1882,6 +2314,10 @@ msgstr "Table"
 
 msgid "Tabella degli alimenti"
 msgstr "Food table"
+
+#, python-format
+msgid "Tabelle internazionali (Atkinson 2008), voce «%(voce)s»"
+msgstr "International tables (Atkinson 2008), entry “%(voce)s”"
 
 msgid "Togli"
 msgstr "Remove"
@@ -1937,6 +2373,12 @@ msgstr "Source URL"
 msgid "URL fonte: «%(testo)s» non è un indirizzo http(s), ignorato"
 msgstr "Source URL: “%(testo)s” is not an http(s) address, ignored"
 
+msgid "USDA (FDC ID)"
+msgstr "USDA (FDC ID)"
+
+msgid "Ultime sincronizzazioni"
+msgstr "Latest syncs"
+
 #, python-format
 msgid "Ultimi %(n)d giorni"
 msgstr "Last %(n)d days"
@@ -1978,8 +2420,54 @@ msgid "Valori accettati"
 msgstr "Accepted values"
 
 #, python-format
+msgid ""
+"Valori dell'etichetta e gruppo NOVA: <a href=\"%(url)s\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">Open Food Facts</a> "
+"(licenza ODbL)."
+msgstr ""
+"Label values and NOVA group: <a href=\"%(url)s\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">Open Food Facts</a> (ODbL license)."
+
+#, python-format
+msgid ""
+"Valori nutrizionali: <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener"
+" noreferrer\">Tabelle di composizione degli alimenti del CREA</a> (Centro"
+" di ricerca Alimenti e Nutrizione, aggiornamento 2019), riprodotte "
+"citando la fonte come chiede il CREA. I grassi saturi in grammi sono "
+"stimati dalla percentuale degli acidi grassi con i fattori di conversione"
+" FAO/INFOODS."
+msgstr ""
+"Nutrition values: <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">Food composition tables of CREA</a> (Italian Council for "
+"Agricultural Research, Food and Nutrition Centre, 2019 update), "
+"reproduced citing the source as CREA asks. Saturated fat in grams is "
+"estimated from the fatty acid percentage with the FAO/INFOODS conversion "
+"factors."
+
+#, python-format
+msgid ""
+"Valori nutrizionali: CREA, Tabelle di composizione degli alimenti 2019, "
+"<a href=\"%(url)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">alimento %(codice)s</a>."
+msgstr ""
+"Nutrition values: CREA, Food composition tables 2019, <a href=\"%(url)s\""
+" target=\"_blank\" rel=\"noopener noreferrer\">food %(codice)s</a>."
+
+#, python-format
+msgid ""
+"Valori nutrizionali: USDA FoodData Central, <a href=\"%(url)s\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">FDC %(fdc)s</a>."
+msgstr ""
+"Nutrition values: USDA FoodData Central, <a href=\"%(url)s\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">FDC %(fdc)s</a>."
+
+#, python-format
 msgid "Valori per %(grammi)s g"
 msgstr "Values per %(grammi)s g"
+
+#, python-format
+msgid "Valori presi da %(fonte)s: controllali e salva."
+msgstr "Values taken from %(fonte)s: check them and save."
 
 msgid "Verdura"
 msgstr "Vegetables"
@@ -2027,8 +2515,27 @@ msgstr "Zinc"
 msgid "Zuccheri"
 msgstr "Sugars"
 
-msgid "Zuccheri: oltre 10 g +1, oltre 15 g +2. Fibre: sotto 2 g +1, oltre 5 g −1."
-msgstr "Sugars: over 10 g +1, over 15 g +2. Fiber: under 2 g +1, over 5 g −1."
+msgid "Zuccheri liberi"
+msgstr "Free sugars"
+
+msgid ""
+"Zuccheri liberi (definizione OMS): quelli aggiunti più quelli di miele, "
+"sciroppi e succhi; non quelli della frutta e della verdura intere né "
+"quelli del latte. La porzione tipica è quella delle tabelle CREA o "
+"dell'etichetta, altrimenti 100 g."
+msgstr ""
+"Free sugars (WHO definition): added sugars plus those in honey, syrups "
+"and juices; not those in whole fruit and vegetables or in milk. The "
+"typical serving is the one from the CREA tables or the label, otherwise "
+"100 g."
+
+#, python-format
+msgid "Zuccheri liberi: %(grammi)s g per 100 %(unita)s."
+msgstr "Free sugars: %(grammi)s g per 100 %(unita)s."
+
+#, python-format
+msgid "Zuccheri liberi: %(grammi)s g per 100 g."
+msgstr "Free sugars: %(grammi)s g per 100 g."
 
 msgid "admin"
 msgstr "admin"
@@ -2073,6 +2580,12 @@ msgstr "to be limited"
 msgid "dd/MM/y HH:mm:ss"
 msgstr "d MMM y, HH:mm:ss"
 
+msgid "di cui glucosio"
+msgstr "of which glucose"
+
+msgid "di cui lattosio"
+msgstr "of which lactose"
+
 msgid "di cui saturi"
 msgstr "of which saturated"
 
@@ -2091,11 +2604,38 @@ msgid ""
 "Kcal."
 msgstr "energy spent to digest the food, in Kcal and as a percentage of the Kcal."
 
-msgid "filtri attivi"
-msgstr "filters on"
+msgid "fallita"
+msgstr "failed"
+
+msgid "fino a 0,1 g"
+msgstr "up to 0.1 g"
+
+msgid "fino a 0,5 g"
+msgstr "up to 0.5 g"
+
+msgid "fino a 1,5 g (0,75)"
+msgstr "up to 1.5 g (0.75)"
 
 msgid "fino a 10"
 msgstr "up to 10"
+
+msgid "fino a 125 kcal"
+msgstr "up to 125 kcal"
+
+msgid "fino a 22,5 g (11,25)"
+msgstr "up to 22.5 g (11.25)"
+
+msgid "fino a 225 kcal"
+msgstr "up to 225 kcal"
+
+msgid "fino a 275 kcal"
+msgstr "up to 275 kcal"
+
+msgid "fino a 5"
+msgstr "up to 5"
+
+msgid "fino a 5 g (2,5)"
+msgstr "up to 5 g (2.5)"
 
 msgid "fino a 55"
 msgstr "up to 55"
@@ -2112,6 +2652,9 @@ msgstr "grams"
 
 msgid "ignorata"
 msgstr "ignored"
+
+msgid "in corso"
+msgstr "in progress"
 
 #, python-format
 msgid "mostrate le prime %(n)d"
@@ -2132,8 +2675,20 @@ msgstr "not readable"
 msgid "oggi"
 msgstr "today"
 
+msgid "oltre 22,5 g (11,25)"
+msgstr "over 22.5 g (11.25)"
+
+msgid "oltre 275 kcal"
+msgstr "over 275 kcal"
+
+msgid "oltre 5 g (2,5)"
+msgstr "over 5 g (2.5)"
+
 msgid "punto e virgola"
 msgstr "semicolon"
+
+msgid "riuscita"
+msgstr "successful"
 
 msgid "senza categoria"
 msgstr "no category"
@@ -2144,10 +2699,6 @@ msgstr "separator: %(nome)s"
 
 msgid "sintesi dei cinque rischi: 100 = tutti trascurabili, 0 = tutti alti."
 msgstr "summary of the five risks: 100 = all negligible, 0 = all high."
-
-#, python-format
-msgid "su %(totale)d nel database"
-msgstr "of %(totale)d in the database"
 
 msgid "tabulazione"
 msgstr "tab"

@@ -142,6 +142,11 @@ def carica_config() -> dict[str, Any]:
         "UTENTI_DB_PATH": env_percorso("UTENTI_DB_PATH", "utenti.db"),
         "DIARIO_DB_PATH": env_percorso("DIARIO_DB_PATH", "diario.db"),
 
+        # USDA FoodData Central: chiave personale (non DEMO_KEY) per la
+        # sincronizzazione automatica ogni USDA_SINCRONIZZA_GIORNI giorni (0 = spenta)
+        "USDA_API_KEY": env_str("USDA_API_KEY", ""),
+        "USDA_SINCRONIZZA_GIORNI": env_int("USDA_SINCRONIZZA_GIORNI", 30),
+
         # Backup automatici e manuali del database alimenti
         "BACKUP_DIR": env_percorso("BACKUP_DIR", os.path.join("instance", "backup")),
 

@@ -83,6 +83,36 @@
     {% endif %}
 </div>
 
+{# Compila da una fonte: GET sulla stessa pagina, i valori trovati riempiono il form #}
+<form method="get" action="{{ action }}" class="card shadow-sm p-4 mb-4 compila-fonte" aria-labelledby="titolo-compila">
+    <h2 class="h5 mb-1" id="titolo-compila">{{ _('Compila da una fonte') }}</h2>
+    <p class="text-muted small mb-3">
+        {% trans %}Prende nome e valori nutrizionali dal CREA, da Open Food Facts o da USDA; prima di salvare puoi controllarli e correggerli.{% endtrans %}
+    </p>
+
+    <div class="row g-2 align-items-end">
+        <div class="col-md-5">
+            <label for="fonte" class="form-label">{{ _('Fonte') }}</label>
+            <select class="form-select" id="fonte" name="fonte">
+                <option value="crea"{% if request.args.get('fonte') == 'crea' %} selected{% endif %}>{{ _('CREA (codice alimento)') }}</option>
+                <option value="off"{% if request.args.get('fonte') == 'off' %} selected{% endif %}>{{ _('Open Food Facts (codice a barre)') }}</option>
+                <option value="usda"{% if request.args.get('fonte') == 'usda' %} selected{% endif %}>{{ _('USDA (FDC ID)') }}</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="codice" class="form-label">{{ _('Codice') }}</label>
+            <input type="text" class="form-control" id="codice" name="codice" required autocomplete="off"
+                   value="{{ request.args.get('codice', '') }}" aria-describedby="codice-aiuto">
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-outline-primary w-100">{{ _('Compila') }}</button>
+        </div>
+    </div>
+    <small id="codice-aiuto" class="form-text text-muted">
+        {% trans crea='https://www.alimentinutrizione.it/tabelle-nutrizionali/ricerca-per-alimento' %}Esempi: 007000 (CREA, il codice è nella <a href="{{ crea }}" target="_blank" rel="noopener noreferrer">scheda dell'alimento</a>), 8076800195057 (codice a barre), 171697 (USDA).{% endtrans %}
+    </small>
+</form>
+
 <form
     method="post"
     action="{{ action }}"
@@ -94,8 +124,10 @@
     <h2 class="h5 mb-3">{{ _('Dati generali') }}</h2>
 
     <div class="row g-3 mb-4">
-        {{ campo('alimento', _('Alimento'), col='col-md-8', obbligatorio=true) }}
-        {{ campo('categoria', _('Categoria'), col='col-md-4', suggerimenti=opzioni.categoria) }}
+        {{ campo('alimento', _('Alimento'), col='col-md-6', obbligatorio=true) }}
+        {{ campo('categoria', _('Categoria'), col='col-md-3', suggerimenti=opzioni.categoria) }}
+        {{ campo('porzione', _('Porzione tipica (g)'), col='col-md-3', tipo='numero',
+                 aiuto=_('Per carico glicemico, FODMAP e rischi; vuoto: 100 g.')) }}
     </div>
 
     <h2 class="h5 mb-3">{{ _('Energia') }}</h2>
@@ -124,7 +156,7 @@
     </div>
 
     <h2 class="h5 mb-1">{{ _('Macronutrienti') }}</h2>
-    <p class="text-muted small mb-3">{{ _('Per 100 g. Lasciare vuoto se il dato non è disponibile.') }}</p>
+    <p class="text-muted small mb-3">{{ _('Per 100 g; carboidrati disponibili, cioè senza le fibre. Lasciare vuoto se il dato non è disponibile.') }}</p>
 
     <div class="row g-3 mb-4">
         {% for nome_campo, etichetta, unita, _decimali, _codice in nutrienti.MACRO %}
@@ -165,9 +197,13 @@
     <h2 class="h5 mb-3">{{ _('Fonte dei dati nutrizionali') }}</h2>
 
     <div class="row g-3 mb-4">
-        {{ campo('fonte_nutrienti', _('Fonte'), col='col-md-4') }}
-        {{ campo('url_fonte', _('URL della fonte'), col='col-md-5', aiuto=_('Indirizzo http:// o https://.')) }}
-        {{ campo('fdc_id', _('FDC ID (USDA)'), col='col-md-3', tipo='numero') }}
+        {{ campo('fonte_nutrienti', _('Fonte'), col='col-md-6') }}
+        {{ campo('url_fonte', _('URL della fonte'), col='col-md-6', aiuto=_('Indirizzo http:// o https://.')) }}
+        {{ campo('codice_crea', _('Codice CREA'), col='col-md-4') }}
+        {{ campo('codice_barre', _('Codice a barre'), col='col-md-4') }}
+        {{ campo('fdc_id', _('FDC ID (USDA)'), col='col-md-4', tipo='numero',
+                 aiuto=_('Con un FDC ID la sincronizzazione aggiorna i valori presi da USDA.')) }}
+        <input type="hidden" name="campi_usda" value="{{ item.campi_usda if item and item.campi_usda else '' }}">
 
         <div class="col-12">
             <label for="note" class="form-label">{{ _('Note') }}</label>
@@ -177,22 +213,17 @@
 
     <h2 class="h5 mb-1">{{ _('Profilo di rischio') }}</h2>
     <p class="text-muted small mb-3">
-        {% trans %}Livelli: Trascurabile, Basso, Medio, Alto (si salvano in italiano, come nel resto del database).{% endtrans %}
-        <a href="{{ url_for('guida') }}#livelli">{{ _('Cosa significano') }}</a>
+        {% trans %}I livelli si calcolano dai valori nutrizionali quando salvi: non si scrivono a mano.{% endtrans %}
+        <a href="{{ url_for('guida') }}#rischi">{{ _('Come si calcolano') }}</a>
     </p>
 
-    <div class="row g-3 mb-4">
-        {{ campo('rischio_diabete', _('Rischio Diabete'), col='col-md-4',
-                 suggerimenti=opzioni.rischio_diabete) }}
-        {{ campo('rischio_colesterolo', _('Rischio Colesterolo'), col='col-md-4',
-                 suggerimenti=opzioni.rischio_colesterolo) }}
-        {{ campo('rischio_malassorbimento', _('Rischio Malassorbimento'), col='col-md-4',
-                 suggerimenti=opzioni.rischio_malassorbimento) }}
-        {{ campo('rischio_metabolico', _('Rischio Metabolico'), col='col-md-4',
-                 suggerimenti=opzioni.rischio_metabolico) }}
-        {{ campo('rischio_tumorale', _('Rischio Tumorale'), col='col-md-4',
-                 suggerimenti=opzioni.rischio_tumorale) }}
-    </div>
+    {% if item %}
+        <div class="mb-4">
+            {% with valutazione=valuta_rischi(item) %}{% include "_rischi_motivi.html" %}{% endwith %}
+        </div>
+    {% else %}
+        <p class="mb-4">{{ _("Compila i valori e salva: i livelli compariranno nella scheda dell'alimento.") }}</p>
+    {% endif %}
 
     <p class="text-muted small mb-3">
         <span class="text-danger">*</span> {{ _('campo obbligatorio.') }}
