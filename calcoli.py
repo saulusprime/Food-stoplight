@@ -1,5 +1,5 @@
 """
-Calcoli condivisi da web app (form e import), update.py e autogen.py:
+Calcoli condivisi da web app (form e import) e update.py:
 lettura dei numeri scritti a mano o nei file, arrotondamento, energia
 dai macronutrienti, effetto termico (TEF), Kcal nette e rapporto
 fruttosio/fibre.
@@ -17,7 +17,6 @@ from typing import Any
 KCAL_PER_GRAMMO = {"proteine": 4.0, "carboidrati": 4.0, "grassi": 9.0}
 
 # Effetto termico: quota dell'energia di ciascun macronutriente spesa per digerirlo
-# (gli stessi coefficienti con cui autogen.py ha calcolato i TEF del database)
 TEF_MACRONUTRIENTI = {"proteine": 0.25, "carboidrati": 0.10, "grassi": 0.05}
 
 MACRONUTRIENTI = tuple(KCAL_PER_GRAMMO)

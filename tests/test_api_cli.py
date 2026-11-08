@@ -1,11 +1,9 @@
-"""API REST in sola lettura, controllo di salute, comandi da riga di comando, update.py e autogen.py."""
+"""API REST in sola lettura, controllo di salute, comandi da riga di comando e update.py."""
 
-import random
 import sqlite3
 
 import pytest
 
-import autogen
 import update
 import usda
 from tests.aiuti import ASPARAGI, DB, DIARIO_DB, LAVORO, conta, sql
@@ -151,7 +149,7 @@ def test_usda_valori_e_conversioni():
 
 
 # ---------------------------------------------------------------
-# update.py e autogen.py
+# update.py
 # ---------------------------------------------------------------
 
 def test_update_importa_e_esporta_mancanti(tmp_path, capsys):
@@ -178,27 +176,6 @@ def test_update_file_non_valido(tmp_path):
     sorgente = tmp_path / "x.csv"
     sorgente.write_text("Foo;Bar\n1;2\n")
     assert update.main(["--db", str(LAVORO / "alimenti.db"), "--csv", str(sorgente)]) == 1
-
-
-def test_autogen_righe_integrative_e_rischi():
-    righe = autogen.righe_integrative(2, random.Random(1))
-    assert len(righe) == 2 * len(autogen.ALIMENTI_BASE)
-    assert len(righe[0]) == len(autogen.INTESTAZIONI)
-    # colesterolo > 100 mg pesa 2 punti (la soglia era irraggiungibile)
-    assert autogen.calcola_rischi(100, 0, 3, 0, 0, 150)[1] == "Medio"
-    assert autogen.categoria_da_descrizione("Apples, raw") == "Frutta"
-
-
-def test_autogen_main_senza_rete(tmp_path, monkeypatch):
-    monkeypatch.setattr(autogen, "scarica_usda", lambda *a, **k: [
-        {"description": "Apples, raw", "foodNutrients": [{"number": "208", "amount": 52}, {"number": "205", "amount": 14}]},
-    ])
-    uscita = tmp_path / "dataset.csv"
-    assert autogen.main(["--output", str(uscita), "--seed", "1", "--per-categoria", "1"]) == 0
-    righe = uscita.read_text().splitlines()
-    assert righe[0].startswith("Alimento,Categoria,Kcal")
-    assert righe[1].startswith("\"Apples, raw\",Frutta,52.0")
-    assert len(righe) == 1 + 1 + len(autogen.ALIMENTI_BASE)
 
 
 def test_crea_admin_iniziale(cli, monkeypatch):

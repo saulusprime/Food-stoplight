@@ -75,7 +75,6 @@ Food-stoplight/
 ├── config.py           # Configurazione da variabili d'ambiente / .env (sviluppo e produzione)
 ├── .env.example        # Modello del file .env
 ├── update.py           # Aggiornamento del database da CSV/Excel da riga di comando (stesse regole dell'import web)
-├── autogen.py          # Vecchio generatore del dataset sintetico (non più usato per alimenti.db)
 ├── alimenti.db         # Database SQLite precaricato (900 alimenti CREA)
 ├── utenti.db           # Utenti e password (creato al primo avvio, escluso da git)
 ├── diario.db           # Diario alimentare degli utenti (creato al primo avvio, escluso da git)
@@ -107,7 +106,7 @@ Food-stoplight/
 ├── .github/workflows/ci.yml   # GitHub Actions: lint, tipi, test e immagine Docker a ogni push
 ├── pyproject.toml      # Configurazione di ruff, mypy e pytest
 ├── requirements.txt, requirements-dev.txt   # Dipendenze dell'app e strumenti di sviluppo
-└── docs/               # Dataset di esempio (CSV/XLSX) e prototipi HTML
+└── docs/               # Fogli di esempio (XLSX) e prototipi HTML
 ```
 
 ## 🚀 Installazione e avvio
@@ -312,21 +311,9 @@ python update.py --esporta-mancanti da_completare.csv   # CSV reimportabile con 
 python update.py --db altro.db --csv dati.csv
 ```
 
-### `autogen.py` — generazione del dataset (obsoleto)
-
-Non serve più per `alimenti.db`, che ora contiene gli alimenti reali del CREA (vedi *Fonti dei dati*). Generava il file `1000_foods_complete.csv` combinando:
-
-1. **Dati reali** dall'API [USDA FoodData Central](https://fdc.nal.usda.gov/) (dataset Foundation e SR Legacy)
-2. **Alimenti integrativi** generati con distribuzioni nutrizionali realistiche per categoria
-
-```bash
-python autogen.py
-python autogen.py --output dataset.csv --seed 42 --per-categoria 115
-```
-
 ## 🧮 Note metodologiche
 
-- **TEF (Thermic Effect of Food)**: quando manca, si stima dai macronutrienti come media dei coefficienti pesata sull'energia di ciascuno — proteine 25%, carboidrati 10%, grassi 5% (gli stessi in web app, import, `update.py` e `autogen.py`). Se mancano le Kcal si stimano dai macronutrienti (4 / 4 / 9 Kcal per grammo).
+- **TEF (Thermic Effect of Food)**: quando manca, si stima dai macronutrienti come media dei coefficienti pesata sull'energia di ciascuno — proteine 25%, carboidrati 10%, grassi 5% (gli stessi in web app, import e `update.py`). Se mancano le Kcal si stimano dai macronutrienti (4 / 4 / 9 Kcal per grammo).
 - **Kcal Nette** = Kcal totali − TEF (Kcal).
 - **Rapporto Fruttosio/Fibre** = fruttosio ÷ fibre (0 se le fibre sono 0): indicatore utile per la valutazione del malassorbimento del fruttosio; più è basso, meglio è, perché le fibre ne favoriscono la tolleranza.
 - **Indicatori di rischio**: calcolati dai valori nutrizionali a ogni salvataggio, import e sincronizzazione (`rischi.py`), mai scritti a mano. Per i nutrienti da limitare la scala è comune, per 100 g (bevande per 100 ml): Trascurabile fino alla soglia «senza» del Reg. CE 1924/2006, Basso fino a «a basso contenuto» (verde FSA), Medio nell'ambra e Alto nel rosso del semaforo FSA. Diabete: carico glicemico della porzione e zuccheri liberi, un livello in meno con molte fibre. Colesterolo: grassi saturi, e colesterolo della porzione oltre il limite giornaliero dei LARN. Malassorbimento: fruttosio in eccesso sul glucosio nella porzione rispetto alla soglia FODMAP (Varney 2017). Metabolico: densità energetica (WCRF) e zuccheri liberi. Tumorale: alcol e carni lavorate (IARC gruppo 1), carne rossa, sale, ultra-trasformati, bevande zuccherate; fibre protettive. Regole e riferimenti completi nella Guida.
