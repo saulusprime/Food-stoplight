@@ -86,7 +86,7 @@ Commit `0aef7ea` — 7 novembre 2026 — 900 alimenti reali del CREA al posto de
 
 ## 🔍 Ricerca e consultazione
 
-8 novembre 2026 — la home mostra 50 righe per pagina (circa 200 KB invece di 1,6 MB); la copia offline resta quella con tutte le righe
+Commit `2ad9b63` — 8 novembre 2026 — la home mostra 50 righe per pagina (circa 200 KB invece di 1,6 MB); la copia offline resta quella con tutte le righe
 
 - [x] **Barra di ricerca testuale** per nome alimento: parziale, senza accenti, singolare/plurale, con errori di battitura (`ricerca.py`), ordinata per pertinenza; anche nell'API e nell'export
 - [x] **Paginazione** della tabella: 25, 50, 100 righe o tutte; grafici e classifiche restano calcolati su tutti gli alimenti filtrati
@@ -95,3 +95,14 @@ Commit `0aef7ea` — 7 novembre 2026 — 900 alimenti reali del CREA al posto de
 - [x] **Confronto side-by-side** tra 2–4 alimenti (`/confronta`), dalla tabella, dalla scheda o con la ricerca
 - [x] Ordinamento multiplo fino a tre criteri (menu «Ordina per / poi per» e Maiusc+clic sulle intestazioni); rischi in ordine di gravità, dati mancanti in fondo
 - [x] Filtro rapido «Solo alimenti sicuri» (tutti e cinque i rischi classificati, al massimo Bassi)
+
+## 🌐 Integrazione dati: fonti aggiuntive
+
+8 novembre 2026 — nuova fonte CoFID 2021 (tabella britannica, Open Government Licence v3.0), ricette calcolate dagli ingredienti, appendice di Atkinson 2008. Non classificati: colesterolo da 195 a 52 alimenti, malassorbimento da 217 a 79
+
+- [x] Grassi saturi per carni e pesci che il CREA pubblica senza percentuale degli acidi grassi: percentuale di saturi da un alimento CoFID simile (alimenti senza saturi da 281 a 134)
+- [x] Fruttosio per ricette, biscotti e prodotti da forno: profilo degli zuccheri da CoFID (anche al posto di 15 abbinamenti USDA con sciroppo di mais, come la cola) e ricette CREA calcolate dagli ingredienti (alimenti senza fruttosio da 229 a 82)
+- [x] Indice glicemico oltre le 62 voci della tabella di Atkinson 2008: appendice A1 (singoli studi), da 83 a 190 alimenti; le tabelle 2021 restano non accessibili (vedi TODO)
+- [x] Materiale per la revisione delle regole da parte di un nutrizionista: `docs/revisione_regole.md` (la revisione resta nel TODO)
+- [x] Corretta la sincronizzazione USDA: gli alimenti CREA abbinati a USDA senza campi presi da lì (3) non vengono più sovrascritti
+

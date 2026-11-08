@@ -168,11 +168,22 @@ def leggi_campi(testo: object) -> list[str]:
 
 def campi_da_aggiornare(riga: Mapping[str, Any]) -> list[str]:
     """
-    Campi che la sincronizzazione aggiorna per un alimento con FDC ID.
+    Campi che la sincronizzazione aggiorna per un alimento con FDC ID: quelli
+    presi da USDA; tutti solo per gli alimenti che vengono interamente da
+    USDA (senza codice CREA né codice a barre). Un alimento CREA abbinato a
+    USDA ma senza campi presi da lì resta com'è.
     """
     campi = leggi_campi(riga.get("campi_usda"))
-    return campi if campi else list(CAMPI_FORNIBILI)
+
+    if campi or riga.get("codice_crea") or riga.get("codice_barre"):
+        return campi
+
+    return list(CAMPI_FORNIBILI)
 
 
 def righe_da_sincronizzare(conn: sqlite3.Connection) -> list[dict[str, Any]]:
-    return [dict(r) for r in conn.execute("SELECT * FROM alimenti WHERE fdc_id IS NOT NULL ORDER BY id")]
+    """
+    Alimenti con FDC ID e almeno un campo da aggiornare da USDA.
+    """
+    righe = (dict(r) for r in conn.execute("SELECT * FROM alimenti WHERE fdc_id IS NOT NULL ORDER BY id"))
+    return [r for r in righe if campi_da_aggiornare(r)]

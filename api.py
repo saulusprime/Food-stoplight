@@ -23,6 +23,7 @@ import analisi
 import archivio
 import importazione
 import nutrienti
+import ricette
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -44,6 +45,7 @@ def serializza(alimento: archivio.Alimento) -> dict[str, Any]:
 
     return {
         **{campo: alimento.get(campo) for campo in CAMPI},
+        "ingredienti": ricette.leggi_ingredienti(alimento.get("ingredienti")),
         "punteggio": alimento.get("punteggio"),
         "livello_medio": livello["etichetta"] if alimento.get("punteggio") is not None else None,
         "carico_glicemico": nutrienti.carico_glicemico(alimento),

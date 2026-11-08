@@ -1,84 +1,191 @@
-codice_crea,alimento_crea,indice_glicemico,voce_tabella
-000530,Pane bianco,75,White wheat bread
-000560,Pane formato rosetta,75,White wheat bread
-000580,Panini al latte,75,White wheat bread
-000590,Panini all'olio,75,White wheat bread
-000550,Pane di tipo integrale,74,Whole wheat/whole meal bread
-000600,Pane azzimo,70,Unleavened wheat bread
-000100,"Riso, brillato",73,"White rice, boiled"
-000105,"Riso, brillato, cotto, bollito",73,"White rice, boiled"
-000110,"Riso, integrale",68,"Brown rice, boiled"
-000115,"Riso, integrale, cotto, bollito",68,"Brown rice, boiled"
-000090,Orzo perlato,28,Barley
-000095,"Orzo perlato, cotto, bollito",28,Barley
-000800,Pasta di semola,49,"Spaghetti, white"
-000805,"Pasta di semola, cotta, bollita",49,"Spaghetti, white"
-000850,"Pasta di semola, integrale",48,"Spaghetti, whole meal"
-000855,"Pasta di semola, integrale, cotta, bollita",48,"Spaghetti, whole meal"
-000045,"Couscous, crudo",65,Couscous
-000046,"Couscous, cotto",65,Couscous
-000070,"Mais, dolce, in scatola, sgocciolato",52,Sweet corn
-003020,Corn flakes,81,Cornflakes
-003030,Fiocchi d'avena,55,"Porridge, rolled oats"
-003040,Muesli,57,Muesli
-007110,"Mele, fresche, senza buccia",36,"Apple, raw"
-007120,"Mele, fresche, con buccia",36,"Apple, raw"
-007130,"Mele, fresche, annurche",36,"Apple, raw"
-007140,"Mele, fresche, deliziose",36,"Apple, raw"
-007150,"Mele, fresche, golden",36,"Apple, raw"
-007160,"Mele, fresche, granny smith",36,"Apple, raw"
-007170,"Mele, fresche, imperatore",36,"Apple, raw"
-007180,"Mele, fresche, renette",36,"Apple, raw"
-008000,"Arance, fresche",43,"Orange, raw"
-008001,"Arance bionde, fresche",43,"Orange, raw"
-008002,"Arance Valencia, fresche",43,"Orange, raw"
-008003,"Arance Washington Navel, fresche",43,"Orange, raw"
-008004,"Arance rosse, fresche",43,"Orange, raw"
-008005,"Arance Moro, fresche",43,"Orange, raw"
-008006,"Arance Sanguinello, fresche",43,"Orange, raw"
-008007,"Arance Tarocco, fresche",43,"Orange, raw"
-007510,"Banane, fresche",51,"Banana, raw"
-007460,"Ananas, fresco",59,"Pineapple, raw"
-007590,"Mango, fresco",51,"Mango, raw"
-007040,"Cocomero, fresco",76,"Watermelon, raw"
-007630,"Datteri, secchi",42,"Dates, raw"
-007310,"Pesche, sciroppate",43,"Peaches, canned"
-204500,Marmellata,49,Strawberry jam/jelly
-008010,"Arance succo, fresco",50,Orange juice
-008011,"Arance bionde succo, fresco",50,Orange juice
-008012,"Arance rosse succo, fresco",50,Orange juice
-006505,"Patate, con buccia, cotte, bollite",78,"Potato, boiled"
-006515,"Patate, senza buccia, cotte, bollite",78,"Potato, boiled"
-006585,"Patate novelle, cotte, bollite",78,"Potato, boiled"
-006517,"Patate, fritte",63,"Potato, french fries"
-119080,"Patatine, fritte, fast food",63,"Potato, french fries"
-005155,"Carote, cotte, bollite",39,"Carrots, boiled"
-905010,"Minestrone, cotto",48,Vegetable soup
-135010,"Latte di vacca, pastorizzato, intero",39,"Milk, full fat"
-135810,"Latte di vacca, UHT, intero",39,"Milk, full fat"
-135030,"Latte di vacca, pastorizzato, scremato",37,"Milk, skim"
-206040,"Gelato confezionato, fior di latte, in vaschetta",51,Ice cream
-206070,"Gelato confezionato, panna, in vaschetta",51,Ice cream
-206100,"Gelato confezionato, vaniglia, in vaschetta",51,Ice cream
-206010,"Gelato confezionato, cacao, in vaschetta",51,Ice cream
-150500,"Yogurt da latte intero, alla frutta",41,"Yogurt, fruit"
-150025,"Yogurt greco, da latte magro, alla frutta",41,"Yogurt, fruit"
-509010,"Soia, bevanda",34,Soy milk
-004000,"Ceci, secchi",28,Chickpeas
-004005,"Ceci, secchi, cotti, bolliti",28,Chickpeas
-004010,"Ceci, in scatola, scolati",28,Chickpeas
-004100,Fagioli,24,Kidney beans
-004105,"Fagioli, cotti, bolliti",24,Kidney beans
-004500,"Lenticchie, secche",32,Lentils
-004505,"Lenticchie, secche, cotte, bollite",32,Lentils
-004510,"Lenticchie, in scatola, scolate",32,Lentils
-004900,"Soia, secca",16,Soya beans
-203010,"Cioccolato, al latte",40,Chocolate
-203020,"Cioccolato, fondente",40,Chocolate
-203030,"Cioccolato, al latte con nocciole",40,Chocolate
-501200,Pop corn,65,Popcorn
-006570,"Patatine, fritte, confezionate in busta",56,Potato crisps
-401010,Aranciata,59,Soft drink/soda
-401100,Bevanda tipo cola,59,Soft drink/soda
-201500,"Zucchero, saccarosio",65,Sucrose
-210010,Miele,61,Honey
+codice_crea,alimento_crea,indice_glicemico,voce_tabella,voci_appendice
+000030,Frumento duro,51,"Durum wheat, precooked kernels, cooked 10-20 min (Ebly, France), mean of 2","610,611"
+000045,"Couscous, crudo",65,Couscous,
+000046,"Couscous, cotto",65,Couscous,
+000050,Grano saraceno,45,"Buckwheat groats, hydrothermally treated, dehusked, boiled 12 min (Sweden)",497
+000070,"Mais, dolce, in scatola, sgocciolato",52,Sweet corn,
+000075,"Polenta, cruda",68,Cornmeal porridge (China),500
+000076,"Polenta, cotta",68,Cornmeal porridge (China),500
+000080,Miglio,62,Millet porridge (China),507
+000081,"Miglio, decorticato",62,Millet porridge (China),507
+000090,Orzo perlato,28,Barley,
+000095,"Orzo perlato, cotto, bollito",28,Barley,
+000096,"Quinoa, cruda",53,"Quinoa, cooked, refrigerated, reheated in microwave 1.5 min (Australia)",508
+000097,"Quinoa, cotta, bollita",53,"Quinoa, cooked, refrigerated, reheated in microwave 1.5 min (Australia)",508
+000100,"Riso, brillato",73,"White rice, boiled",
+000105,"Riso, brillato, cotto, bollito",73,"White rice, boiled",
+000110,"Riso, integrale",68,"Brown rice, boiled",
+000115,"Riso, integrale, cotto, bollito",68,"Brown rice, boiled",
+000120,"Riso, parboiled",72,"Rice, long grain, parboiled, cooked 10-20 min (Uncle Ben's, Belgium), mean of 2","522,523"
+000125,"Riso, parboiled, cotto, bollito",72,"Rice, long grain, parboiled, cooked 10-20 min (Uncle Ben's, Belgium), mean of 2","522,523"
+000130,"Riso Basmati, crudo",55,"Basmati rice, white, boiled (UK), mean of 4","557,558,559,562"
+000135,"Riso Basmati, cotto, bollito",55,"Basmati rice, white, boiled (UK), mean of 4","557,558,559,562"
+000500,Pane al malto,56,"Crusty malted wheat bread (Finest, UK) and Malt loaf, organic (UK), mean of 2","256,265"
+000510,Pane di segale,64,"Rye bread, 50% rye + 50% wheat flour (Turkey) and 69% whole-grain rye flour (Finland), mean of 2","152,157"
+000530,Pane bianco,75,White wheat bread,
+000540,Pane di tipo semintegrale,75,"White wheat flour bread (mean of 16 studies) and wholemeal wheat flour bread (mean of 10 studies), mean of 2","M2,M5"
+000550,Pane di tipo integrale,74,Whole wheat/whole meal bread,
+000560,Pane formato rosetta,75,White wheat bread,
+000580,Panini al latte,75,White wheat bread,
+000590,Panini all'olio,75,White wheat bread,
+000600,Pane azzimo,70,Unleavened wheat bread,
+000800,Pasta di semola,49,"Spaghetti, white",
+000805,"Pasta di semola, cotta, bollita",49,"Spaghetti, white",
+000850,"Pasta di semola, integrale",48,"Spaghetti, whole meal",
+000855,"Pasta di semola, integrale, cotta, bollita",48,"Spaghetti, whole meal",
+000870,"Pasta all'uovo, secca",51,"Egg pasta, dry, boiled: lasagne egg, lasagne egg verdi, tagliatelle egg (UK), mean of 4","1342,1343,1383,1384"
+000871,"Pasta all'uovo, secca, cotta, bollita",51,"Egg pasta, dry, boiled: lasagne egg, lasagne egg verdi, tagliatelle egg (UK), mean of 4","1342,1343,1383,1384"
+000875,"Ravioli, crudi, freschi",39,"Ravioli, durum wheat flour, meat filled, boiled (Australia)",1352
+000876,"Ravioli, cotti",39,"Ravioli, durum wheat flour, meat filled, boiled (Australia)",1352
+000880,"Tortellini, freschi",39,"Ravioli, durum wheat flour, meat filled, boiled (Australia)",1352
+000885,"Tortellini, freschi, cotti",39,"Ravioli, durum wheat flour, meat filled, boiled (Australia)",1352
+000890,"Tortellini, secchi",39,"Ravioli, durum wheat flour, meat filled, boiled (Australia)",1352
+000900,"Biscotti, frollini",58,"Vitasnella frollini (Saiwa, Italy) and Sable des Flandres (LU, France), mean of 2","715,701"
+000910,"Biscotti, integrali",44,"Wholegrain biscuits: Digestives (UK), Better Choice Wholegrain (LU, Denmark), Jyvashyva Paussi Wholegrain (LU, Finland), mean of 3","630,628,650"
+000950,"Biscotti, secchi",52,"Dry biscuits: Oro (Saiwa, Italy), The (LU, France), Veritable Petit Beurre (LU, France, 3 studies), mean of 5","680,711,712,713,714"
+001000,"Crackers, al formaggio",54,"Combos Snacks Cheddar Cheese Crackers (M&M/Mars, USA)",1401
+001020,"Crackers, salati",66,"Plain crackers: Cream Cracker (Brazil), Jatz salted, Sao plain, water crackers (Australia, Canada), mean of 5","718,720,739,740,741"
+001030,"Crackers, integrali",46,"Choice grain crackers, wholegrain crackers with sesame and rosemary, wholewheat crackers with pumpkin and thyme (UK), mean of 3","716,742,743"
+002500,Cornetti,63,"Pain au lait (Pasquier, France)",106
+003000,Bastoncini di crusca di frumento,44,"All-Bran (Kellogg's), high-fiber cereal, mean of 4 studies",M7
+003020,Corn flakes,81,Cornflakes,
+003030,Fiocchi d'avena,55,"Porridge, rolled oats",
+003040,Muesli,57,Muesli,
+003050,"Riso, soffiato, da prima colazione",88,"Rice Bubbles (Kellogg's, Australia), puffed rice cereal, mean of 4 studies",M14
+004000,"Ceci, secchi",28,Chickpeas,
+004005,"Ceci, secchi, cotti, bolliti",28,Chickpeas,
+004010,"Ceci, in scatola, scolati",28,Chickpeas,
+004100,Fagioli,24,Kidney beans,
+004105,"Fagioli, cotti, bolliti",24,Kidney beans,
+004120,"Fagioli, Borlotti, secchi",24,Kidney beans,
+004125,"Fagioli, Borlotti, secchi, cotti, bolliti",24,Kidney beans,
+004130,"Fagioli, Borlotti, in scatola, scolati",37,"Beans, canned, drained: Cannellini, Dark Red Kidney, Red Kidney (Edgell's, Australia), mean of 3","1093,1109,1110"
+004200,"Fagioli, Cannellini, secchi",24,Kidney beans,
+004205,"Fagioli, Cannellini, secchi, cotti, bolliti",24,Kidney beans,
+004210,"Fagioli, Cannellini in scatola, scolati",31,"Cannellini beans, canned, drained, Edgell's brand (Australia)",1093
+004220,"Fagioli dall'occhio, secchi",43,"Blackeyed beans (Canada) + Blackeyed peas (Vigna unguiculata), boiled (Nigeria), mean of 2","1086,1087"
+004406,"Fave, fresche, cotte, in padella",63,"Broad beans, frozen, reheated in microwave (Australia)",1610
+004500,"Lenticchie, secche",32,Lentils,
+004505,"Lenticchie, secche, cotte, bollite",32,Lentils,
+004510,"Lenticchie, in scatola, scolate",32,Lentils,
+004700,"Piselli, freschi",53,"Pea, frozen, boiled (Canada) + Pea, green (Pisum sativum) (India), mean of 2","1611,1612"
+004706,"Piselli, freschi, cotti, in padella",53,"Pea, frozen, boiled (Canada) + Pea, green (Pisum sativum) (India), mean of 2","1611,1612"
+004710,"Piselli, secchi",36,"Marrowfat peas, dried, boiled (Canada) + Split peas, yellow, dried, soaked, boiled 55 min (UK), mean of 2","1116,1128"
+004730,"Piselli, surgelati",51,"Pea, frozen, boiled (Canada)",1611
+004900,"Soia, secca",16,Soya beans,
+005150,"Carote, crude",37,"Carrots, raw, diced + raw, ground (Australia), mean of 2","1621,1622"
+005154,"Carote, cotte, al microonde",41,"Carrots, peeled, boiled + peeled, diced, boiled (Australia), mean of 2","1623,1624"
+005155,"Carote, cotte, bollite",39,"Carrots, boiled",
+006500,"Patate, crude",78,"Potato, boiled",
+006505,"Patate, con buccia, cotte, bollite",78,"Potato, boiled",
+006511,"Patate, cotte, arrosto",72,"California white potatoes, cubed, roasted in soybean oil (Canada)",1683
+006514,"Patate, cotte, al microonde",76,"Potato, microwaved: Pontiac peeled (Australia), Prince Edward Island white (Canada), Russet Burbank unpeeled (Canada), mean of 3","1675,1676,1677"
+006515,"Patate, senza buccia, cotte, bollite",78,"Potato, boiled",
+006517,"Patate, fritte",63,"Potato, french fries",
+006570,"Patatine, fritte, confezionate in busta",56,Potato crisps,
+006580,"Patate novelle, crude",78,"Potato, boiled",
+006584,"Patate novelle, cotte, al microonde",76,"Potato, microwaved: Pontiac peeled (Australia), Prince Edward Island white (Canada), Russet Burbank unpeeled (Canada), mean of 3","1675,1676,1677"
+006585,"Patate novelle, cotte, bollite",78,"Potato, boiled",
+006590,"Gnocchi di patate, crudi",68,"Gnocchi, type NS (Latina, Pillsbury, Australia)",1336
+006591,"Gnocchi di patate, cotti",68,"Gnocchi, type NS (Latina, Pillsbury, Australia)",1336
+007000,"Albicocche, fresche",34,"Apricots, raw, NS (Australia)",948
+007010,"Albicocche, disidratate",32,"Apricots, dried, ready to eat + ready to eat bite size (UK), mean of 2","951,952"
+007030,"Albicocche, secche",32,"Apricots, dried, ready to eat + ready to eat bite size (UK), mean of 2","951,952"
+007040,"Cocomero, fresco",76,"Watermelon, raw",
+007053,"Fichi, seccati al forno e mandorlati",61,"Figs, dried, tenderised, Dessert Maid brand (Australia)",979
+007070,"Fichi, secchi",61,"Figs, dried, tenderised, Dessert Maid brand (Australia)",979
+007110,"Mele, fresche, senza buccia",36,"Apple, raw",
+007120,"Mele, fresche, con buccia",36,"Apple, raw",
+007130,"Mele, fresche, annurche",36,"Apple, raw",
+007140,"Mele, fresche, deliziose",36,"Apple, raw",
+007150,"Mele, fresche, golden",36,"Apple, raw",
+007160,"Mele, fresche, granny smith",36,"Apple, raw",
+007170,"Mele, fresche, imperatore",36,"Apple, raw",
+007180,"Mele, fresche, renette",36,"Apple, raw",
+007190,"Mele, disidratate",29,"Apple, dried (Australia)",946
+007230,"Melone, d'estate, fresco",68,"Rockmelon/Cantaloupe, raw (Australia), mean of 2","1021,1022"
+007300,"Pesche, disidratate",35,"Peach, dried (UK)",1008
+007310,"Pesche, sciroppate",43,"Peaches, canned",
+007320,"Pesche, secche",35,"Peach, dried (UK)",1008
+007330,"Peschenoci, fresche",43,"Nectarines, raw (Australia)",993
+007370,"Prugne, secche",29,"Prunes, pitted (Sunsweet Growers, USA)",1017
+007380,"Uva, fresca",59,"Grapes, black, Waltham Cross (Australia)",984
+007390,"Uva, bianca, fresca",59,"Grapes, black, Waltham Cross (Australia)",984
+007400,"Uva, nera, fresca",59,"Grapes, black, Waltham Cross (Australia)",984
+007410,"Uva, secca",57,"Sultanas (UK), mean of 2","1030,1031"
+007460,"Ananas, fresco",59,"Pineapple, raw",
+007480,"Anona, fresca",54,"Custard apple, raw, flesh only (Australia)",972
+007510,"Banane, fresche",51,"Banana, raw",
+007570,"Kiwi, freschi",58,Kiwi fruit (Australia),987
+007590,"Mango, fresco",51,"Mango, raw",
+007600,"Papaia, fresca",56,"Paw paw (Carica papaya), raw (Australia)",999
+007630,"Datteri, secchi",42,"Dates, raw",
+007710,"Ciliege, fresche",63,"Cherries, dark, raw, pitted (Australia)",970
+007730,"Fragole, fresche",40,"Strawberries, fresh, raw (Australia)",1023
+007760,"Mirtilli, freschi",53,"Blueberries, wild (Wild Blueberries Association, Canada)",965
+008000,"Arance, fresche",43,"Orange, raw",
+008001,"Arance bionde, fresche",43,"Orange, raw",
+008002,"Arance Valencia, fresche",43,"Orange, raw",
+008003,"Arance Washington Navel, fresche",43,"Orange, raw",
+008004,"Arance rosse, fresche",43,"Orange, raw",
+008005,"Arance Moro, fresche",43,"Orange, raw",
+008006,"Arance Sanguinello, fresche",43,"Orange, raw",
+008007,"Arance Tarocco, fresche",43,"Orange, raw",
+008010,"Arance succo, fresco",50,Orange juice,
+008011,"Arance bionde succo, fresco",50,Orange juice,
+008012,"Arance rosse succo, fresco",50,Orange juice,
+008500,"Arachidi, tostate",7,"Peanuts, crushed (South Africa)",1324
+008610,Anacardi,26,"Cashew nuts: plain, organic roasted and salted, halves, roasted and salted (UK), mean of 4","1318,1319,1320,1321"
+119020,"Cheese burger, fast food",66,"Hamburger + Lean beef burger with cheese, on a burger bun (McDonald's, Australia), mean of 2","1176,1177"
+119030,"Hamburger, fast food",66,"Hamburger (beef patty, ketchup, pickle, onion and mustard on a burger bun) (McDonald's, Australia)",1176
+119040,"Chicken Nuggets, fast food",46,"Chicken nuggets, frozen, reheated in microwave oven 5 min (Australia)",1183
+119060,"Panino, fast food",75,White wheat bread,
+119070,"Panino con hamburger piccolo, fast food",66,"Hamburger (beef patty, ketchup, pickle, onion and mustard on a burger bun) (McDonald's, Australia)",1176
+119080,"Patatine, fritte, fast food",63,"Potato, french fries",
+135010,"Latte di vacca, pastorizzato, intero",39,"Milk, full fat",
+135020,"Latte di vacca, pastorizzato, parzialmente scremato",38,"Milk, full fat; Milk, skim (mean)",
+135030,"Latte di vacca, pastorizzato, scremato",37,"Milk, skim",
+135510,"Latte di vacca, condensato, zuccherato",61,"Milk, condensed, sweetened (Nestle, Australia)",782
+135610,"Latte di vacca, in polvere, intero",39,"Milk, full fat",
+135620,"Latte di vacca, in polvere, parzialmente scremato",38,"Milk, full fat; Milk, skim (mean)",
+135630,"Latte di vacca, in polvere, scremato",37,"Milk, skim",
+135810,"Latte di vacca, UHT, intero",39,"Milk, full fat",
+135820,"Latte di vacca, UHT, parzialmente scremato",38,"Milk, full fat; Milk, skim (mean)",
+150015,"Yogurt, 0% lipidi",19,"Fat-free natural yoghurt (Jalna, Australia)",892
+150025,"Yogurt greco, da latte magro, alla frutta",41,"Yogurt, fruit",
+150035,"Yogurt greco, 0% lipidi, aromatizzato",39,"Yoghurt, Greek style, honey topped (UK) and Ski non-fat sugar-sweetened yoghurt, honey and vanilla (Australia), mean of 3","847,902,903"
+150500,"Yogurt da latte intero, alla frutta",41,"Yogurt, fruit",
+201500,"Zucchero, saccarosio",65,Sucrose,
+202010,Caramelle dure,70,"Life Savers, peppermint candy (Nestle, Australia)",1438
+202800,Torrone alla mandorla,32,"Nougat, Jijona (La Fama, Spain)",1446
+203010,"Cioccolato, al latte",40,Chocolate,
+203020,"Cioccolato, fondente",40,Chocolate,
+203030,"Cioccolato, al latte con nocciole",40,Chocolate,
+203500,Crema di nocciole e cacao,29,"Nutella, chocolate hazelnut spread (Ferrero, Australia), mean of 3 studies",M65
+204500,Marmellata,49,Strawberry jam/jelly,
+206010,"Gelato confezionato, cacao, in vaschetta",51,Ice cream,
+206020,"Gelato confezionato, caffè, in vaschetta",51,Ice cream,
+206040,"Gelato confezionato, fior di latte, in vaschetta",51,Ice cream,
+206060,"Gelato confezionato, nocciola, in vaschetta",51,Ice cream,
+206070,"Gelato confezionato, panna, in vaschetta",51,Ice cream,
+206090,"Gelato confezionato, stracciatella, in vaschetta",51,Ice cream,
+206100,"Gelato confezionato, vaniglia, in vaschetta",51,Ice cream,
+206710,"Gelato confezionato, ghiacciolo all'arancio",59,"Ice fruit confection, Frosty Fruits Orange Mango Splits (Nestle Peters, Australia)",768
+206800,"Gelato confezionato, sorbetto al limone, in vaschetta",59,"Ice fruit confection, Frosty Fruits Orange Mango Splits (Nestle Peters, Australia)",768
+210010,Miele,61,Honey,
+210060,"Merendine, tipo brioche, industriale",63,"Pain au lait (Pasquier, France)",106
+401010,Aranciata,59,Soft drink/soda,
+401100,Bevanda tipo cola,59,Soft drink/soda,
+501200,Pop corn,65,Popcorn,
+509010,"Soia, bevanda",34,Soy milk,
+900410,"Minestre in scatola, crema di pomodori",50,"Tomato soup, condensed, prepared with water (Campbell's, USA) and Tomato & Herb soup (President's Choice, Canada), mean of 2","1555,1556"
+905010,"Minestrone, cotto",48,Vegetable soup,
+905100,Minestrone liofilizzato,47,"Minestrone soup (condensed, ready-to-serve, instant), mean of 3 studies",M69
+PC0010,Pasta e fagioli,52,"Pasta & Fagioli soup, ready-to-serve (President's Choice Blue Menu, Canada)",1550
+PC0017,Pasta al ragù alla bolognese,52,"Spaghetti bolognaise, home made (Australia)",1252
+PC0048,Lasagna,34,"Lasagne, beef/meat/type NS (UK), mean of 4","1206,1207,1208,1209"
+PE0002,Nachos,57,"Corn chips, plain, salted (Doritos original, Australia, 1985 and 1998), mean of 2","1403,1404"
+PE0005,Sarmale,30,Stuffed grapevine leaves (rice and lamb stuffing with tomato sauce),1732
+PE0008,Ravioli al vapore,28,"Dumpling, containing meat and shallots (China)",1199
+PE0009,Spaghetti fritti,51,"Chow mein, chicken, convenience meal (UK), mean of 2","1188,1189"
+PE0016,Hummus,14,"Hummus (chickpea salad dip) and Chickpea Hommus dip (Australia), mean of 2","1730,1097"

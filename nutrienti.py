@@ -97,7 +97,10 @@ NOVA = {
     4: {"gruppo": 4, "etichetta": N_("Ultra-trasformati"), "stato": "critical"},
 }
 
-CAMPI_FONTE = ("fonte_nutrienti", "url_fonte", "fdc_id", "codice_crea", "codice_barre", "campi_usda")
+CAMPI_FONTE = (
+    "fonte_nutrienti", "url_fonte", "fdc_id", "codice_crea", "codice_barre", "campi_usda",
+    "codice_cofid", "campi_cofid", "campi_ricetta", "ingredienti",
+)
 
 # Porzione tipica quando la fonte non ne indica una
 PORZIONE_PREDEFINITA = 100.0
@@ -106,7 +109,8 @@ PORZIONE_PREDEFINITA = 100.0
 # Tutti i nuovi campi (None = non disponibile)
 CAMPI_NUMERICI_NULLABILI = (*CAMPI_NUTRIENTI, "indice_glicemico", "nova", "fdc_id", "porzione")
 CAMPI_TESTO_NULLABILI = (
-    *CAMPI_FODMAP, "fonte_nutrienti", "url_fonte", "codice_crea", "codice_barre", "campi_usda", "note",
+    *CAMPI_FODMAP, "fonte_nutrienti", "url_fonte", "codice_crea", "codice_barre", "campi_usda",
+    "codice_cofid", "campi_cofid", "campi_ricetta", "ingredienti", "note",
 )
 CAMPI_NULLABILI = (*CAMPI_NUMERICI_NULLABILI, *CAMPI_TESTO_NULLABILI)
 
@@ -132,6 +136,10 @@ ETICHETTE = {
     "codice_crea": N_("Codice CREA"),
     "codice_barre": N_("Codice a barre"),
     "campi_usda": N_("Campi da USDA"),
+    "codice_cofid": N_("Codice CoFID"),
+    "campi_cofid": N_("Campi da CoFID"),
+    "campi_ricetta": N_("Campi calcolati dagli ingredienti"),
+    "ingredienti": N_("Ingredienti della ricetta"),
     "porzione": N_("Porzione tipica (g)"),
     "note": N_("Note"),
 }

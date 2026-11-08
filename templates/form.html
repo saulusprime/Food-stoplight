@@ -199,11 +199,15 @@
     <div class="row g-3 mb-4">
         {{ campo('fonte_nutrienti', _('Fonte'), col='col-md-6') }}
         {{ campo('url_fonte', _('URL della fonte'), col='col-md-6', aiuto=_('Indirizzo http:// o https://.')) }}
-        {{ campo('codice_crea', _('Codice CREA'), col='col-md-4') }}
-        {{ campo('codice_barre', _('Codice a barre'), col='col-md-4') }}
-        {{ campo('fdc_id', _('FDC ID (USDA)'), col='col-md-4', tipo='numero',
+        {{ campo('codice_crea', _('Codice CREA'), col='col-md-3') }}
+        {{ campo('codice_barre', _('Codice a barre'), col='col-md-3') }}
+        {{ campo('fdc_id', _('FDC ID (USDA)'), col='col-md-3', tipo='numero',
                  aiuto=_('Con un FDC ID la sincronizzazione aggiorna i valori presi da USDA.')) }}
-        <input type="hidden" name="campi_usda" value="{{ item.campi_usda if item and item.campi_usda else '' }}">
+        {{ campo('codice_cofid', _('Codice CoFID'), col='col-md-3',
+                 aiuto=_('Tabella britannica CoFID 2021, es. 11-1145.')) }}
+        {% for nascosto in ('campi_usda', 'campi_cofid', 'campi_ricetta', 'ingredienti') %}
+            <input type="hidden" name="{{ nascosto }}" value="{{ item[nascosto] if item and item[nascosto] else '' }}">
+        {% endfor %}
 
         <div class="col-12">
             <label for="note" class="form-label">{{ _('Note') }}</label>

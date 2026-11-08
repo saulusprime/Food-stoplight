@@ -14,7 +14,7 @@ import csv
 import re
 from functools import cache
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 from analisi import Alimento
 
@@ -302,10 +302,18 @@ def fodmap(alimento: Alimento, altri: dict[str, float | None] | None = None) -> 
 # (file dati/indice_glicemico.csv: codice CREA, IG, voce della tabella).
 # ---------------------------------------------------------------
 
+class IndiceGlicemico(NamedTuple):
+    valore: float
+    voce: str                 # descrizione della voce (o delle voci) di Atkinson 2008
+    voci_appendice: str = ""  # numeri delle voci della tabella A1 dell'appendice; vuoto = tabella 1
+
+
 @cache
-def indici_glicemici() -> dict[str, tuple[float, str]]:
+def indici_glicemici() -> dict[str, IndiceGlicemico]:
     """
-    {codice CREA: (indice glicemico, voce della tabella di Atkinson 2008)}.
+    {codice CREA: indice glicemico} da dati/indice_glicemico.csv: tabella 1 di
+    Atkinson 2008 (alimenti comuni, medie di più studi) o, dove manca,
+    tabella A1 dell'appendice (singoli studi, media delle voci scelte).
     """
     percorso = CARTELLA_DATI / "indice_glicemico.csv"
 
@@ -314,13 +322,15 @@ def indici_glicemici() -> dict[str, tuple[float, str]]:
 
     with percorso.open(encoding="utf-8", newline="") as f:
         return {
-            riga["codice_crea"]: (float(riga["indice_glicemico"]), riga["voce_tabella"])
+            riga["codice_crea"]: IndiceGlicemico(
+                float(riga["indice_glicemico"]), riga["voce_tabella"], (riga.get("voci_appendice") or "").strip(),
+            )
             for riga in csv.DictReader(f)
             if riga.get("codice_crea") and riga.get("indice_glicemico")
         }
 
 
-def indice_glicemico(alimento: Alimento) -> tuple[float, str] | None:
+def indice_glicemico(alimento: Alimento) -> IndiceGlicemico | None:
     codice = alimento.get("codice_crea")
     return indici_glicemici().get(str(codice)) if codice else None
 
@@ -342,6 +352,6 @@ def classifica(alimento: dict[str, Any], altri: dict[str, float | None] | None =
     ig = indice_glicemico(alimento)
 
     if ig is not None:
-        risultato["indice_glicemico"] = ig[0]
+        risultato["indice_glicemico"] = ig.valore
 
     return risultato

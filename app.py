@@ -56,6 +56,7 @@ import archivio
 import backup
 import calcoli
 import classificazioni
+import cofid
 import crea
 import database
 import esportazione
@@ -66,6 +67,7 @@ import nutrienti
 import openfoodfacts
 import pwa
 import ricerca
+import ricette
 import rischi
 import sincronizzazione
 import usda
@@ -387,7 +389,7 @@ def parse_form() -> tuple[dict[str, Any], list[str]]:
     porzione = numero("porzione", N_("Porzione tipica (g)"), nutrienti.GRAMMI_MIN, nutrienti.GRAMMI_MAX)
     valori["porzione"] = porzione
 
-    for campo in ("codice_crea", "codice_barre"):
+    for campo in ("codice_crea", "codice_barre", "codice_cofid"):
         valori[campo] = (form.get(campo) or "").strip() or None
 
     if valori["codice_crea"] and not crea.CODICE_RE.match(valori["codice_crea"]):
@@ -396,13 +398,39 @@ def parse_form() -> tuple[dict[str, Any], list[str]]:
     if valori["codice_barre"] and not openfoodfacts.CODICE_RE.match(valori["codice_barre"]):
         errori.append(_("Codice a barre: servono da 8 a 14 cifre."))
 
+    if valori["codice_cofid"]:
+        codici = [c.strip() for c in valori["codice_cofid"].split(",")]
+
+        if not all(cofid.CODICE_RE.match(c) for c in codici):
+            errori.append(_("Codice CoFID: gruppo e numero, es. 11-1145 (più codici separati da virgola)."))
+
+        valori["codice_cofid"] = ",".join(codici)
+
+    # Provenienza dei valori (campi nascosti del form): restano com'erano
     valori["campi_usda"] = ",".join(usda.leggi_campi(form.get("campi_usda"))) or None
+    valori["campi_cofid"] = ",".join(cofid.leggi_campi(form.get("campi_cofid"))) or None
+    valori["campi_ricetta"] = ",".join(ricette.leggi_campi(form.get("campi_ricetta"))) or None
+    valori["ingredienti"] = ricette.scrivi_ingredienti(ricette.leggi_ingredienti(form.get("ingredienti")))
 
     if not errori:
         calcoli.completa_energia(valori, forniti, nuovo=True)
         rischi.assegna(valori)
 
     return valori, errori
+
+
+def aggiorna_ricette() -> None:
+    """
+    Dopo una modifica dei dati: ricette ricalcolate dagli ingredienti (un
+    ingrediente può essere cambiato o eliminato).
+    """
+    conn = get_db()
+
+    try:
+        if fonti.ricalcola_ricette(conn, adesso_testo()):
+            conn.commit()
+    finally:
+        conn.close()
 
 
 def salva_alimento(valori: dict[str, Any], alimento_id: int | None = None) -> int:
@@ -819,15 +847,28 @@ def fonti_alimento(item: Alimento) -> dict[str, Any]:
     campi), Open Food Facts, indice glicemico dalla tabella di Atkinson 2008.
     """
     campi_usda = usda.leggi_campi(item.get("campi_usda"))
+    campi_cofid = cofid.leggi_campi(item.get("campi_cofid"))
+    campi_ricetta = ricette.leggi_campi(item.get("campi_ricetta"))
     indice = classificazioni.indice_glicemico(item)
+
+    def etichette(campi: list[str]) -> list[str]:
+        return [lingue.traduci(ETICHETTE_CAMPI.get(c, c)) for c in campi]
 
     return {
         "crea": crea.URL_SCHEDA.format(codice=item["codice_crea"]) if item.get("codice_crea") else None,
         "usda": usda.url_scheda(item["fdc_id"]) if item.get("fdc_id") else None,
-        "campi_usda": [lingue.traduci(ETICHETTE_CAMPI.get(c, c)) for c in campi_usda],
+        "campi_usda": etichette(campi_usda),
         "usda_tutti": bool(item.get("fdc_id")) and not campi_usda and not item.get("codice_crea"),
+        "cofid": [
+            (codice, (cofid.alimenti().get(codice) or {}).get("nome") or "")
+            for codice in cofid.leggi_codici(item.get("codice_cofid"))
+        ] if campi_cofid else [],
+        "cofid_url": cofid.URL,
+        "campi_cofid": etichette(campi_cofid),
+        "campi_ricetta": etichette(campi_ricetta),
+        "ingredienti": ricette.leggi_ingredienti(item.get("ingredienti")),
         "off": openfoodfacts.URL_SCHEDA.format(codice=item["codice_barre"]) if item.get("codice_barre") else None,
-        "indice_glicemico": indice[1] if indice and indice[0] == item.get("indice_glicemico") else None,
+        "indice_glicemico": indice if indice and indice.valore == item.get("indice_glicemico") else None,
     }
 
 
@@ -988,6 +1029,7 @@ def nuovo() -> ResponseReturnValue:
             return render_template("form.html", **pagina, item=valori, opzioni=get_form_options())
 
         nuovo_id = salva_alimento(valori)
+        aggiorna_ricette()
         flash(_("Alimento aggiunto correttamente."), "success")
         return redirect(url_for("scheda", alimento_id=nuovo_id))
 
@@ -1021,6 +1063,7 @@ def modifica(alimento_id: int) -> ResponseReturnValue:
             return render_template("form.html", **pagina, item={**item, **valori}, opzioni=get_form_options())
 
         salva_alimento(valori, alimento_id)
+        aggiorna_ricette()
         flash(_("Alimento aggiornato correttamente."), "success")
         return redirect(url_for("scheda", alimento_id=alimento_id))
 
@@ -1068,6 +1111,7 @@ def elimina(alimento_id: int) -> ResponseReturnValue:
         abort(404)
 
     archivio.elimina_alimento(alimento_id)
+    aggiorna_ricette()
     flash(_("Alimento eliminato: %(nome)s.", nome=item["alimento"]), "warning")
     return redirect(url_for("index"))
 
@@ -1277,7 +1321,7 @@ def conta_da_sincronizzare() -> int:
     conn = get_db()
 
     try:
-        return int(conn.execute("SELECT COUNT(*) FROM alimenti WHERE fdc_id IS NOT NULL").fetchone()[0])
+        return len(usda.righe_da_sincronizzare(conn))
     finally:
         conn.close()
 
@@ -1388,6 +1432,7 @@ def importa_conferma() -> ResponseReturnValue:
         nome_backup = backup.crea(DB_PATH, app.config["BACKUP_DIR"], "import")
         adesso = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         eliminati = importazione.applica(conn, voci, modalita, adesso)
+        fonti.ricalcola_ricette(conn, adesso)
         conn.commit()
     except Exception:
         conn.rollback()
@@ -2226,6 +2271,44 @@ def ricalcola_rischi_cmd() -> None:
     click.echo(f"Livelli ricalcolati: {cambiati} alimenti cambiati. Backup: {nome_backup}.")
 
 
+@app.cli.command("ricalcola-ricette")
+def ricalcola_ricette_cmd() -> None:
+    """Ricalcola dagli ingredienti fruttosio, glucosio, lattosio e saturi delle ricette CREA."""
+    conn = get_db()
+
+    try:
+        nome_backup = backup.crea(DB_PATH, app.config["BACKUP_DIR"], "ricette")
+        cambiate = fonti.ricalcola_ricette(conn, adesso_testo())
+        conn.commit()
+    finally:
+        conn.close()
+
+    click.echo(f"Ricette ricalcolate: {cambiate} cambiate. Backup: {nome_backup}.")
+
+
+@app.cli.command("cofid-estrai")
+@click.argument("file_excel", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+def cofid_estrai_cmd(file_excel: Path) -> None:
+    """
+    Rigenera dati/cofid.csv dal file Excel ufficiale di CoFID 2021, con i soli
+    alimenti abbinati in dati/crea_cofid.csv. Poi «flask crea-importa --tutti»
+    aggiorna gli alimenti.
+    """
+    codici = {codice for gruppi in cofid.abbinamenti().values() for codice in gruppi.values()}
+
+    try:
+        righe = cofid.estrai_excel(file_excel, codici)
+    except (KeyError, ValueError, OSError) as exc:
+        raise click.ClickException(f"File CoFID non leggibile: {exc}") from None
+
+    cofid.scrivi_dati(righe)
+    trovati = {r["codice"] for r in righe}
+    click.echo(f"{len(righe)} alimenti CoFID scritti in {cofid.FILE_DATI.name}.")
+
+    if codici - trovati:
+        click.echo(f"Codici non trovati nel file: {', '.join(sorted(codici - trovati))}", err=True)
+
+
 # ---------------------------------------------------------------
 # ERROR HANDLER
 # ---------------------------------------------------------------
@@ -2325,6 +2408,8 @@ def guida() -> ResponseReturnValue:
         posti_medaglia=analisi.POSTI_MEDAGLIA,
         tef=calcoli.TEF_MACRONUTRIENTI,
         kcal_per_grammo=calcoli.KCAL_PER_GRAMMO,
+        cofid_url=cofid.URL,
+        cofid_licenza=cofid.URL_LICENZA,
         nova=nutrienti.NOVA.values(),
         livelli_fodmap=nutrienti.LIVELLI_FODMAP,
         fodmap=nutrienti.FODMAP,

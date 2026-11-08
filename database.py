@@ -164,6 +164,15 @@ def _alimenti_3_fonti_e_zuccheri(conn: sqlite3.Connection) -> None:
     """)
 
 
+def _alimenti_4_cofid_e_ricette(conn: sqlite3.Connection) -> None:
+    """
+    Valori presi dalla tabella britannica CoFID (codice e campi) e ricette CREA:
+    ingredienti (JSON) e campi calcolati dagli ingredienti.
+    """
+    for nome in ("codice_cofid", "campi_cofid", "campi_ricetta", "ingredienti"):
+        conn.execute(f"ALTER TABLE alimenti ADD COLUMN {nome} TEXT")
+
+
 # ---------------------------------------------------------------
 # UTENTI E DIARIO
 # ---------------------------------------------------------------
@@ -207,6 +216,7 @@ MIGRAZIONI: dict[str, list[Migrazione]] = {
         (2, "Rimuove fonte_kcal e fonte_tef (sostituite da fonte_nutrienti)", _alimenti_2_rimuovi_fonti_storiche),
         (3, "Codici CREA e a barre, porzione, glucosio, lattosio, alcol, sincronizzazioni",
          _alimenti_3_fonti_e_zuccheri),
+        (4, "Valori da CoFID e ricette calcolate dagli ingredienti", _alimenti_4_cofid_e_ricette),
     ],
     "utenti": [
         (1, "Schema di base", _utenti_1_schema_di_base),

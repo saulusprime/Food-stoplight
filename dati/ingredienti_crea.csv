@@ -1,0 +1,152 @@
+ingrediente,codice_crea,nota
+"Acciughe sott'olio, 3 filetti",120020,
+Acqua,0,senza zuccheri né grassi
+Acqua (Latte in 1 campione),0,acqua
+Acqua di fiori d'arancio,0,"aroma, 3 ml"
+Aglio,005000,
+"Aglio, 1 spicchio",005000,
+"Aglio, 2 spicchi",005000,
+Alici,120010,
+Alici (eviscerate),120010,
+"Alloro fresco, 2 foglie",0,"aroma, 1 g"
+"Arance, cedro e ciliege candite",204010,canditi
+Basilico,006800,
+"Basilico, 2 foglie",006800,
+"Basilico, 5 foglie",006800,
+Besciamella,PC0044,ricetta CREA
+Brodo vegetale,,non abbinato: nessun brodo nelle tabelle CREA
+"Bulgur, crudo",000030,grano duro (il bulgur è grano duro precotto)
+Burro,190010,
+"Cannella, stecca",0,"spezia, 2,5 g"
+"Carciofi romaneschi mondati, 4",005131,
+Carote,005150,
+"Carote grandi, 2",005150,
+"Carote, a fette sottili",005150,
+"Carote, fette sottili",005150,
+"Cavolo verza, in salamoia",005210,verza cruda
+"Ceci in scatola, scolati",004010,
+Cedro candito,204010,canditi
+"Chiodi di garofano, 2 chiodi",0,"spezia, 0,3 g"
+Cioccolato fondente,203020,
+Cipolla,005300,
+"Cipolla, tritata",005300,
+Cipolle,005300,
+"Cipolle bianche, 2",005300,
+"Cipolle, 3",005300,
+Cumino,0,"spezia, 0,3 g"
+Dado,503010,
+"Fagioli borlotti, in scatola",004130,
+Farina,000220,farina di frumento tipo 00
+Farina di castagne,504010,
+Farina di frumento tipo 00,000220,
+Farina di grano duro,000250,
+Fontina,162020,
+Frutta candita,204010,canditi
+Gnocchi di patate,006590,crudi
+"Grana Padano, grattugiato",162410,
+"Grano, cotto",000040,frumento tenero
+Guanciale,110310,pancetta tesa: il guanciale non è nelle tabelle CREA
+Latte,135010,latte vaccino intero
+Latte intero,135010,
+Lievito madre,0,9 g
+Lievito per dolci,0,agenti lievitanti
+"Limone, succo",008040,
+Liquore Amaretto,407010,liquori da dessert
+"Maiale, carne macinata",105220,spalla
+Melanzane (prive della parte apicale),005500,
+"Mele mondate, 4",007110,mele senza buccia
+Menta,006810,
+"Mentuccia, 4 foglie",006810,
+"Merluzzo, filetti surgelati",121420,
+Mozzarella,164820,mozzarella di vacca
+Mozzarella fior di latte,164820,mozzarella di vacca
+Noce moscata,0,spezia
+Noci,008560,
+Olio,009650,olio di semi (girasole)
+Olio di oliva e di soia,009200,olio di oliva
+Olio extravergine di oliva,009210,
+Olio extravergine d’oliva,009210,
+Olio extrevergine di oliva,009210,
+Olio per la frittura,009610,olio di arachide
+Pancetta,110310,
+Pangrattato,000570,
+Panna acida,140400,panna da cucina
+Parmigiano Reggiano,166000,
+Parmigiano Reggiano e Pecorino,166000,
+Parmigiano Reggiano grattugiato,166000,
+"Parmigiano Reggiano, grattugiato",166000,
+Passata di pomodoro,006670,
+Pasta di semola,000800,
+Pasta di semola (spaghetti),000800,
+"Pasta di semola, corta",000800,
+"Pasta di semola, spaghetti",000800,
+Pasta frolla,210070,merendine tipo pasta frolla
+Pasta integrale,000850,
+"Patate cotte, senza buccia",006515,
+Pecorino romano,166060,
+"Pecorino romano, grattugiato",166060,
+Pepe,006820,
+"Pepe bianco, in polvere",006820,pepe nero
+Pepe nero,006820,
+"Pepe nero, grani",006820,
+"Pepe, macinato",006820,
+"Peperoncini, secchi",0,"spezia, 0,15 g"
+Peperoncino,006830,
+"Peperoncino, in polvere",0,"spezia, 0,5 g"
+Pesto,PC0008,ricetta CREA
+Pinoli,008590,
+"Polenta, precotta cruda",000075,
+Polpa di pomodoro,006680,pomodori pelati in scatola
+Pomodori,006610,pomodori maturi freschi
+Pomodori a pezzi,006680,pomodori pelati in scatola
+Pomodori pelati San Marzano,006680,
+Pomodorini,006650,
+Prezzemolo,006840,
+Prosciutto cotto,110400,
+Ragù,PC0007,ricetta CREA
+Ravioli di ricotta e spinaci,000875,ravioli freschi
+Ricotta di pecora,166810,
+Riso,000100,
+Rosmarino,006850,
+"Rosmarino, fresco",006850,
+Sale,0,senza zuccheri né grassi
+Salsa tahina,,non abbinato: niente sesamo nelle tabelle CREA
+Salsicce senza budello,110710,
+"Salsicce, senza budello",110710,
+Salvia,006860,
+Sardine sotto sale,122800,sardine
+Scamorza,167200,
+Scorza d'arancio e limone grattugiata,0,"scorza, 1 g"
+Scorza di arancia,008000,arance
+Scorza di limone grattugiata,0,"scorza, 1 g"
+Sedano,005680,
+"Sedano, affettato sottilmente",005680,
+"Sedano, gambo",005680,
+Sfoglia all'uovo,000870,pasta all'uovo
+Sogliola surgelata,123110,
+Sottopaletta di manzo,101230,
+Spigola (eviscerata e priva di testa),123200,
+"Stoccafisso, ammollato",121330,
+Strutto,193010,
+Succo di limone,008040,
+"Tacchino, fesa a fette",106850,
+Tagliatelle all'uovo,000870,pasta all'uovo
+"Trote, 3 (eviscerate)",124000,
+Uova,181100,
+"Uova intere,",181100,
+"Uova, 2",181100,
+"Uova, 4",181100,
+"Uova, 6",181100,
+"Uovo, albume",182010,
+Uvetta sultanina,007410,uva secca
+Vanillina,0,"aroma, 0,5 g"
+Vino,405010,vino bianco
+Vino bianco,405010,
+Vino rosso,405020,
+"Vino rosso ""Barolo""",405020,
+"Vitellone, macinato",101120,tagli anteriori
+"Vitellone, spezzatino",101120,tagli anteriori
+Vongole veraci (solo molluschi),127170,
+Zucchero,201500,
+Zucchero a velo,201500,
+Zucchine,005730,

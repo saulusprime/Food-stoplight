@@ -24,9 +24,9 @@ def test_database_nuovo_arriva_all_ultima_versione(tmp_path):
     eseguite = database.migra(percorso, "alimenti", prima_di_migrare=lambda: chiamate.append(1))
     assert len(eseguite) == database.ultima_versione("alimenti")
     assert chiamate == []  # niente backup per un database vuoto
-    assert database.stato(percorso, "alimenti") == (3, 3)
+    assert database.stato(percorso, "alimenti") == (4, 4)
     assert "fonte_kcal" not in colonne(percorso)
-    assert {"note", "vitamina_c", "fdc_id", "rischio_diabete"} <= colonne(percorso)
+    assert {"note", "vitamina_c", "fdc_id", "rischio_diabete", "codice_cofid", "ingredienti"} <= colonne(percorso)
 
 
 def test_migrazioni_idempotenti(tmp_path):
@@ -83,7 +83,7 @@ def test_database_del_progetto_aggiornato():
     """
     alimenti.db versionato in git è già all'ultima versione dello schema.
     """
-    assert database.stato(str(PROGETTO / "alimenti.db"), "alimenti") == (3, 3)
+    assert database.stato(str(PROGETTO / "alimenti.db"), "alimenti") == (4, 4)
 
 
 # ---------------------------------------------------------------

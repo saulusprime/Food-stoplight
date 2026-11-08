@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Food-stoplight 1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 07:46+0100\n"
+"POT-Creation-Date: 2026-11-08 08:38+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -432,11 +432,25 @@ msgstr "CSV not readable at row %(riga)d: %(errore)s."
 msgid "Calcio"
 msgstr "Calcium"
 
+#, python-format
+msgid ""
+"Calcolati dagli ingredienti della ricetta CREA, in proporzione agli "
+"zuccheri o ai grassi del piatto: %(campi)s."
+msgstr ""
+"Calculated from the ingredients of the CREA recipe, in proportion to the "
+"sugars or fat of the dish: %(campi)s."
+
 msgid "Calcolato al salvataggio: fruttosio ÷ fibre."
 msgstr "Calculated when saving: fructose ÷ fiber."
 
 msgid "Calcolatore della porzione"
 msgstr "Portion calculator"
+
+msgid "Campi calcolati dagli ingredienti"
+msgstr "Fields calculated from the ingredients"
+
+msgid "Campi da CoFID"
+msgstr "Fields from CoFID"
 
 msgid "Campi da USDA"
 msgstr "Fields from USDA"
@@ -543,6 +557,20 @@ msgstr "CREA code: 6 characters needed, digits or capital letters (e.g. 007000).
 #, python-format
 msgid "Codice CREA: «%(testo)s» non valido, ignorato"
 msgstr "CREA code: “%(testo)s” is not valid, ignored"
+
+msgid "Codice CoFID"
+msgstr "CoFID code"
+
+msgid ""
+"Codice CoFID: gruppo e numero, es. 11-1145 (più codici separati da "
+"virgola)."
+msgstr ""
+"CoFID code: group and number, e.g. 11-1145 (several codes separated by "
+"commas)."
+
+#, python-format
+msgid "Codice CoFID: «%(testo)s» non valido, ignorato"
+msgstr "CoFID code: “%(testo)s” is not valid, ignored"
 
 msgid "Codice a barre"
 msgstr "Barcode"
@@ -669,6 +697,16 @@ msgstr ""
 
 msgid "Da dove vengono i dati"
 msgstr "Where the data comes from"
+
+#, python-format
+msgid ""
+"Dalla tabella britannica <a href=\"%(url)s\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">CoFID 2021</a> (alimento %(alimenti)s), in "
+"proporzione agli zuccheri o ai grassi del CREA: %(campi)s."
+msgstr ""
+"From the UK <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">CoFID 2021</a> table (food %(alimenti)s), in proportion to "
+"the CREA sugars or fat: %(campi)s."
 
 msgid "Data"
 msgstr "Date"
@@ -1080,6 +1118,19 @@ msgstr ""
 msgid "Fruttosio, Fibre: il rapporto F/F viene sempre ricalcolato"
 msgstr "Fruttosio, Fibre: the F/F ratio is always recalculated"
 
+msgid ""
+"Fruttosio, glucosio e lattosio presi da un'altra fonte seguono le "
+"proporzioni sugli zuccheri totali dell'alimento simile, riportate agli "
+"zuccheri del CREA; i grassi saturi da CoFID si calcolano dai grassi "
+"totali del CREA con lo stesso fattore di conversione. Così i valori "
+"restano coerenti con quelli del CREA."
+msgstr ""
+"Fructose, glucose and lactose taken from another source keep their share "
+"of the total sugars of the similar food, applied to the CREA sugars; "
+"saturated fat from CoFID is calculated from the CREA total fat with the "
+"same conversion factor. This keeps the values consistent with the CREA "
+"ones."
+
 msgid "GOS (galatto-oligosaccaridi)"
 msgstr "GOS (galacto-oligosaccharides)"
 
@@ -1185,15 +1236,25 @@ msgstr ""
 
 #, python-format
 msgid ""
-"I valori che il CREA non pubblica, soprattutto fruttosio e glucosio, "
-"vengono dall'alimento corrispondente di <a href=\"%(url)s\" "
-"target=\"_blank\" rel=\"noopener noreferrer\">USDA FoodData Central</a> "
-"(dominio pubblico), scelto alimento per alimento: la scheda indica quali."
+"I valori che il CREA non pubblica vengono, in quest'ordine: dalla tabella"
+" britannica <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">CoFID 2021</a> (McCance and Widdowson, Public Health "
+"England, <a href=\"%(licenza)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">Open Government Licence v3.0</a>) per il profilo degli "
+"zuccheri di prodotti europei e per i grassi saturi come percentuale degli"
+" acidi grassi; poi dall'alimento corrispondente di USDA FoodData Central "
+"(dominio pubblico) per gli altri campi. Gli abbinamenti sono scelti "
+"alimento per alimento e la scheda indica quali valori vengono da dove."
 msgstr ""
-"The values CREA doesn't publish, mainly fructose and glucose, come from "
-"the matching food in <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener"
-" noreferrer\">USDA FoodData Central</a> (public domain), chosen food by "
-"food: the food page says which ones."
+"Values that CREA doesn't publish come, in this order: from the UK <a "
+"href=\"%(url)s\" target=\"_blank\" rel=\"noopener noreferrer\">CoFID "
+"2021</a> table (McCance and Widdowson, Public Health England, <a "
+"href=\"%(licenza)s\" target=\"_blank\" rel=\"noopener noreferrer\">Open "
+"Government Licence v3.0</a>) for the sugar profile of European products "
+"and for saturated fat as a percentage of fatty acids; then from the "
+"matching USDA FoodData Central food (public domain) for the other fields."
+" Matches are chosen food by food, and the food page shows which values "
+"come from where."
 
 msgid "I valori indicati con «–» non sono disponibili."
 msgstr "Values shown as “–” are not available."
@@ -1414,11 +1475,19 @@ msgstr ""
 "per portion: low up to 10, medium 11–19, high from 20."
 
 msgid ""
-"Indice glicemico: valori della tabella 1 di Atkinson et al. (2008), "
-"assegnati solo agli alimenti che corrispondono a una voce della tabella."
+"Indice glicemico: valori della tabella 1 di Atkinson et al. (2008), medie"
+" di più studi per gli alimenti comuni; per gli altri, voci della tabella "
+"A1 dell'appendice (singoli studi su persone con tolleranza al glucosio "
+"normale), preferendo i test italiani ed europei e facendo la media quando"
+" più voci corrispondono. Si assegna solo dove una voce corrisponde "
+"davvero all'alimento e alla preparazione."
 msgstr ""
-"Glycemic index: values from table 1 of Atkinson et al. (2008), assigned "
-"only to the foods that match an entry of the table."
+"Glycemic index: values from table 1 of Atkinson et al. (2008), means of "
+"several studies for common foods; for the others, entries of table A1 of "
+"the appendix (single studies in people with normal glucose tolerance), "
+"preferring Italian and European tests and averaging when several entries "
+"match. It is assigned only where an entry really matches the food and its"
+" preparation."
 
 #, python-format
 msgid "Indice glicemico: «%(testo)s» fuori scala (0-100), ignorato"
@@ -1435,6 +1504,15 @@ msgstr "Information:"
 
 msgid "Ingredienti culinari trasformati"
 msgstr "Processed culinary ingredients"
+
+msgid "Ingredienti della ricetta"
+msgstr "Recipe ingredients"
+
+msgid "Ingredienti della ricetta CREA"
+msgstr "Ingredients of the CREA recipe"
+
+msgid "Ingredienti: elenco non valido, ignorato"
+msgstr "Ingredients: invalid list, ignored"
 
 msgid "Iniziata"
 msgstr "Started"
@@ -2067,6 +2145,9 @@ msgstr ""
 msgid "Prima del ricalcolo dei rischi"
 msgstr "Before recalculating the risks"
 
+msgid "Prima del ricalcolo delle ricette"
+msgstr "Before recalculating the recipes"
+
 msgid "Prima dell'import dal CREA"
 msgstr "Before the CREA import"
 
@@ -2179,6 +2260,22 @@ msgstr "Search"
 #, python-format
 msgid "Ricerca: «%(testo)s»"
 msgstr "Search: “%(testo)s”"
+
+#, python-format
+msgid ""
+"Ricette CREA: dove il CREA non pubblica il dettaglio di zuccheri o acidi "
+"grassi, la composizione si calcola dagli ingredienti della ricetta "
+"(quanta parte degli zuccheri è fruttosio, quanta parte dei grassi è "
+"satura) e si applica agli zuccheri e ai grassi del piatto. Se gli "
+"ingredienti senza il dato portano più del 5%% degli zuccheri o dei "
+"grassi, il valore resta non disponibile."
+msgstr ""
+"CREA recipes: where CREA doesn't publish the breakdown of sugars or fatty"
+" acids, the composition is calculated from the recipe ingredients (how "
+"much of the sugars is fructose, how much of the fat is saturated) and "
+"applied to the sugars and fat of the dish. If the ingredients without the"
+" value bring more than 5%% of the sugars or fat, the value stays "
+"unavailable."
 
 msgid "Riferimenti"
 msgstr "References"
@@ -2493,12 +2590,23 @@ msgstr ""
 msgid "Tabella"
 msgstr "Table"
 
+msgid "Tabella britannica CoFID 2021, es. 11-1145."
+msgstr "UK CoFID 2021 table, e.g. 11-1145."
+
 msgid "Tabella degli alimenti"
 msgstr "Food table"
 
 #, python-format
 msgid "Tabelle internazionali (Atkinson 2008), voce «%(voce)s»"
 msgstr "International tables (Atkinson 2008), entry “%(voce)s”"
+
+#, python-format
+msgid ""
+"Tabelle internazionali (Atkinson 2008, appendice, tabella A1, voci "
+"%(voci)s): «%(voce)s»"
+msgstr ""
+"International tables (Atkinson 2008, appendix, table A1, entries "
+"%(voci)s): “%(voce)s”"
 
 msgid "Togli"
 msgstr "Remove"

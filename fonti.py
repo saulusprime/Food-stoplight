@@ -1,14 +1,18 @@
 """
-Alimenti dalle fonti esterne: CREA (con i nutrienti mancanti da USDA),
-Open Food Facts e USDA FoodData Central.
+Alimenti dalle fonti esterne: CREA (con i nutrienti mancanti da CoFID, USDA
+e, per le ricette, dagli ingredienti), Open Food Facts e USDA FoodData Central.
 
 Ogni alimento costruito da una fonte passa da completa(): classificazioni
 documentate (NOVA, FODMAP, indice glicemico), energia derivata (TEF, Kcal
 nette, rapporto F/F) e livelli di rischio calcolati.
 
-Abbinamenti CREA -> USDA in dati/crea_usda.csv (codice CREA, FDC ID,
-descrizione USDA): scelti alimento per alimento, servono a prendere da USDA
-i valori che il CREA non pubblica (soprattutto fruttosio e glucosio).
+Per i valori che il CREA non pubblica, in quest'ordine:
+1. CoFID 2021 (dati/crea_cofid.csv): profilo degli zuccheri di prodotti
+   europei e grassi saturi come percentuale degli acidi grassi (cofid.py);
+2. USDA FoodData Central (dati/crea_usda.csv): gli altri campi mancanti;
+3. ricette CREA: fruttosio, glucosio, lattosio e saturi dagli ingredienti
+   (ricette.py), calcolati dopo aver costruito tutti gli alimenti.
+Gli abbinamenti sono scelti alimento per alimento.
 """
 
 from __future__ import annotations
@@ -22,9 +26,11 @@ from typing import Any
 
 import calcoli
 import classificazioni
+import cofid
 import crea
 import importazione
 import openfoodfacts
+import ricette
 import rischi
 import usda
 
@@ -153,20 +159,73 @@ def regole_zuccheri(valori: dict[str, Any], categoria_crea: str, nome: str) -> N
             valori.setdefault("lattosio", float(zuccheri))
 
 
+def da_cofid(valori: dict[str, Any], scheda: Mapping[str, Any]) -> tuple[list[str], set[str]]:
+    """
+    Valori mancanti dall'alimento CoFID abbinato alla scheda CREA: profilo
+    degli zuccheri e grassi saturi. Restituisce (campi presi, campi riservati):
+    i riservati non si prendono da USDA, perché un profilo degli zuccheri
+    mescolato da due fonti non sarebbe coerente.
+    """
+    gruppi = cofid.abbinamenti().get(scheda["codice"], {})
+    presi: list[str] = []
+    riservati: set[str] = set()
+    usati: list[str] = []
+
+    zuccheri = cofid.alimenti().get(gruppi.get(cofid.ZUCCHERI, ""))
+
+    if zuccheri and any(valori.get(c) is None for c in cofid.CAMPI_ZUCCHERI):
+        profilo = cofid.profilo_zuccheri(zuccheri, valori.get("zuccheri"))
+
+        for campo, valore in profilo.items():
+            if valori.get(campo) is None:
+                riservati.add(campo)
+
+                if valore is not None:
+                    valori[campo] = valore
+                    presi.append(campo)
+
+        if profilo:
+            usati.append(zuccheri["codice"])
+
+    saturi = cofid.alimenti().get(gruppi.get(cofid.SATURI, ""))
+
+    if saturi and valori.get("grassi_saturi") is None:
+        valore = cofid.saturi(saturi, valori.get("grassi"), crea.fattore_acidi_grassi(dict(scheda)))
+
+        if valore is not None:
+            valori["grassi_saturi"] = valore
+            presi.append("grassi_saturi")
+            riservati.add("grassi_saturi")
+            usati.append(saturi["codice"])
+
+    if presi:
+        valori["codice_cofid"] = ",".join(dict.fromkeys(usati))
+        valori["campi_cofid"] = ",".join(c for c in cofid.CAMPI_FORNIBILI if c in presi)
+
+    return presi, riservati
+
+
 def da_crea(scheda: Mapping[str, Any], alimento_usda: Mapping[str, Any] | None = None) -> dict[str, Any]:
     """
     Alimento da una scheda CREA; i nutrienti che il CREA non pubblica si
-    prendono dall'alimento USDA abbinato (elencati in campi_usda).
+    prendono dall'alimento CoFID abbinato (elencati in campi_cofid), poi da
+    quello USDA (in campi_usda). Le ricette portano con sé gli ingredienti.
     """
     valori = crea.valori(dict(scheda))
     regole_zuccheri(valori, scheda["categoria"], scheda["nome"])
+    fonti = [crea.FONTE]
+
+    presi_cofid, riservati = da_cofid(valori, scheda)
+
+    if presi_cofid:
+        fonti.extend(cofid.descrizione(cofid.alimenti()[c]) for c in cofid.leggi_codici(valori["codice_cofid"]))
 
     if alimento_usda:
         da_usda = scala_zuccheri(usda.valori(alimento_usda), valori.get("zuccheri"))
         presi = []
 
         for campo in usda.CAMPI_FORNIBILI:
-            if valori.get(campo) is None and da_usda.get(campo) is not None:
+            if campo not in riservati and valori.get(campo) is None and da_usda.get(campo) is not None:
                 valori[campo] = da_usda[campo]
                 presi.append(campo)
 
@@ -177,7 +236,10 @@ def da_crea(scheda: Mapping[str, Any], alimento_usda: Mapping[str, Any] | None =
         valori["campi_usda"] = ",".join(presi) or None
 
         if presi:
-            valori["fonte_nutrienti"] = f"{crea.FONTE}; {usda.descrizione(alimento_usda)}"
+            fonti.append(usda.descrizione(alimento_usda))
+
+    valori["fonte_nutrienti"] = "; ".join(fonti)
+    valori["ingredienti"] = ricette.scrivi_ingredienti(scheda.get("ingredienti") or [])
 
     altri = {
         chiave: scheda["valori"].get(etichetta)
@@ -343,7 +405,8 @@ def importa_crea(
         eliminati = conn.execute("DELETE FROM alimenti WHERE codice_crea IS NULL").rowcount
 
     conteggi = scrivi(conn, alimenti, adesso)
-    return {**conteggi, "eliminati": eliminati, "errori": errori, "letti": len(schede)}
+    ricalcolate = ricalcola_ricette(conn, adesso)
+    return {**conteggi, "eliminati": eliminati, "errori": errori, "letti": len(schede), "ricette": ricalcolate}
 
 
 def sincronizza_usda(
@@ -406,7 +469,36 @@ def sincronizza_usda(
             [v.get(c) for c in importazione.CAMPI] + [adesso, v["id"]],
         )
 
+    # Gli ingredienti possono essere cambiati: si ricalcolano le ricette
+    if aggiornati:
+        ricalcola_ricette(conn, adesso)
+
     return len(aggiornati)
+
+
+def ricalcola_ricette(conn: sqlite3.Connection, adesso: str) -> int:
+    """
+    Ricalcola dagli ingredienti i campi delle ricette CREA (fruttosio,
+    glucosio, lattosio, grassi saturi che il CREA non pubblica), con
+    derivati e rischi; non fa commit. Restituisce le ricette cambiate.
+    """
+    righe = {r["codice_crea"]: dict(r) for r in conn.execute("SELECT * FROM alimenti WHERE codice_crea IS NOT NULL")}
+    prima = {codice: dict(r) for codice, r in righe.items() if r.get("ingredienti")}
+    ricette.completa_tutte(righe)
+    colonne = (*importazione.CAMPI, "aggiornato_il")
+    cambiate = 0
+
+    for codice, vecchia in prima.items():
+        nuova = righe[codice]
+
+        if _diversi(nuova, vecchia):
+            conn.execute(
+                f"UPDATE alimenti SET {', '.join(f'{c} = ?' for c in colonne)} WHERE id = ?",
+                [nuova.get(c) for c in importazione.CAMPI] + [adesso, nuova["id"]],
+            )
+            cambiate += 1
+
+    return cambiate
 
 
 def ricalcola_rischi(conn: sqlite3.Connection, adesso: str) -> int:

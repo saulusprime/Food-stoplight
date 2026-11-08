@@ -209,6 +209,13 @@
                         {% elif fonti_dati.usda_tutti %}
                             <li>{% trans url=fonti_dati.usda, fdc=item.fdc_id %}Valori nutrizionali: USDA FoodData Central, <a href="{{ url }}" target="_blank" rel="noopener noreferrer">FDC {{ fdc }}</a>.{% endtrans %}</li>
                         {% endif %}
+                        {% if fonti_dati.cofid %}
+                            {% set alimenti_cofid %}{% for codice, nome in fonti_dati.cofid %}{{ codice }} «{{ nome }}»{% if not loop.last %}, {% endif %}{% endfor %}{% endset %}
+                            <li>{% trans url=fonti_dati.cofid_url, alimenti=alimenti_cofid, campi=fonti_dati.campi_cofid|join(', ') %}Dalla tabella britannica <a href="{{ url }}" target="_blank" rel="noopener noreferrer">CoFID 2021</a> (alimento {{ alimenti }}), in proporzione agli zuccheri o ai grassi del CREA: {{ campi }}.{% endtrans %}</li>
+                        {% endif %}
+                        {% if fonti_dati.campi_ricetta %}
+                            <li>{% trans campi=fonti_dati.campi_ricetta|join(', ') %}Calcolati dagli ingredienti della ricetta CREA, in proporzione agli zuccheri o ai grassi del piatto: {{ campi }}.{% endtrans %}</li>
+                        {% endif %}
                         {% if fonti_dati.off %}
                             <li>{% trans url=fonti_dati.off %}Valori dell'etichetta e gruppo NOVA: <a href="{{ url }}" target="_blank" rel="noopener noreferrer">Open Food Facts</a> (licenza ODbL).{% endtrans %}</li>
                         {% endif %}
@@ -227,6 +234,17 @@
                     </ul>
                     {{ _('I valori indicati con «–» non sono disponibili.') }}
                     <a href="{{ url_for('guida') }}#tef">{{ _('Come si calcolano TEF e Kcal nette') }}</a>
+
+                    {% if fonti_dati.ingredienti %}
+                        <details class="mt-2">
+                            <summary>{{ _('Ingredienti della ricetta CREA') }}</summary>
+                            <ul class="mb-0 mt-1">
+                                {% for voce in fonti_dati.ingredienti %}
+                                    <li>{{ voce.nome }}: {{ voce.quantita|numero }} {{ voce.unita }}</li>
+                                {% endfor %}
+                            </ul>
+                        </details>
+                    {% endif %}
                 </div>
 
                 {% if item.note %}
@@ -282,9 +300,14 @@
                             {% if item.indice_glicemico is not none %}
                                 {% set liv_ig = nutrienti.livello_indice_glicemico(item.indice_glicemico) %}
                                 <span class="badge-risk stato-{{ liv_ig.stato }}">{{ item.indice_glicemico|numero }} · {{ liv_ig.etichetta|traduci }}</span>
-                                {% if fonti_dati.indice_glicemico %}
+                                {% set ig_fonte = fonti_dati.indice_glicemico %}
+                                {% if ig_fonte and ig_fonte.voci_appendice %}
                                     <small class="text-muted d-block">
-                                        {% trans voce=fonti_dati.indice_glicemico %}Tabelle internazionali (Atkinson 2008), voce «{{ voce }}»{% endtrans %}
+                                        {% trans voce=ig_fonte.voce, voci=ig_fonte.voci_appendice.replace(',', ', ') %}Tabelle internazionali (Atkinson 2008, appendice, tabella A1, voci {{ voci }}): «{{ voce }}»{% endtrans %}
+                                    </small>
+                                {% elif ig_fonte %}
+                                    <small class="text-muted d-block">
+                                        {% trans voce=ig_fonte.voce %}Tabelle internazionali (Atkinson 2008), voce «{{ voce }}»{% endtrans %}
                                     </small>
                                 {% endif %}
                             {% else %}

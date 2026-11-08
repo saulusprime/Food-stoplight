@@ -28,9 +28,11 @@ from openpyxl.utils.exceptions import InvalidFileException
 
 import analisi
 import calcoli
+import cofid
 import crea
 import nutrienti
 import openfoodfacts
+import ricette
 import rischi
 import usda
 from calcoli import arrotonda, leggi_numero  # noqa: F401  (usati anche da altri moduli)
@@ -159,6 +161,12 @@ def campo_colonna(intestazione: object) -> str | None:
 
     if "usda" in norm and "campi" in norm:
         return "campi_usda"
+
+    if "cofid" in norm:
+        return "campi_cofid" if "campi" in norm else "codice_cofid"
+
+    if "ingredient" in norm:
+        return "campi_ricetta" if "campi" in norm or "calcolat" in norm else "ingredienti"
 
     if "crea" in norm.split():
         return "codice_crea"
@@ -731,6 +739,34 @@ def _normalizza_nutrienti(
     if not assente(testo):
         valori["campi_usda"] = ",".join(usda.leggi_campi(testo)) or None
         forniti.append("campi_usda")
+
+    testo = grezzo("codice_cofid")
+
+    if not assente(testo):
+        codici = [c.strip() for c in testo.split(",")]
+
+        if all(cofid.CODICE_RE.match(c) for c in codici):
+            valori["codice_cofid"] = ",".join(codici)
+            forniti.append("codice_cofid")
+        else:
+            avvisi.append(gettext("Codice CoFID: «%(testo)s» non valido, ignorato", testo=testo))
+
+    for campo, leggi in (("campi_cofid", cofid.leggi_campi), ("campi_ricetta", ricette.leggi_campi)):
+        testo = grezzo(campo)
+
+        if not assente(testo):
+            valori[campo] = ",".join(leggi(testo)) or None
+            forniti.append(campo)
+
+    testo = grezzo("ingredienti")
+
+    if not assente(testo):
+        valori["ingredienti"] = ricette.scrivi_ingredienti(ricette.leggi_ingredienti(testo))
+
+        if valori["ingredienti"] is None:
+            avvisi.append(gettext("Ingredienti: elenco non valido, ignorato"))
+        else:
+            forniti.append("ingredienti")
 
 
 def leggi_file(nome_file: str, raw: bytes) -> dict[str, Any]:

@@ -9,10 +9,9 @@ Le attività completate sono in [ASIS.md](ASIS.md).
 
 ## 🌐 Integrazione dati
 
-- [ ] Grassi saturi per le 91 carni e pesci che il CREA pubblica senza percentuale degli acidi grassi (abbinamento USDA come per il fruttosio)
-- [ ] Fruttosio per ricette, biscotti e prodotti da forno (oggi «non disponibile»: malassorbimento non classificato)
-- [ ] Indice glicemico oltre le 62 voci della tabella di Atkinson 2008 (tabelle complete 2021, previo accesso ai dati)
-- [ ] Revisione delle regole dei rischi da parte di un nutrizionista o di un medico
+- [ ] Revisione delle regole dei rischi da parte di un nutrizionista o di un medico: il dossier da inviare è pronto in `docs/revisione_regole.md` (regole, soglie, esempi, 13 domande)
+- [ ] Indice glicemico dalle tabelle internazionali 2021 (Atkinson et al., Am J Clin Nutr 2021): il sito dell'editore blocca lo scaricamento dei dati supplementari
+- [ ] Rischi ancora non classificati per dati mancanti: colesterolo di 52 alimenti (frattaglie, carni rare, alcuni prodotti industriali) e malassorbimento di 79 (verdure, cereali e ricette senza un equivalente in CoFID o USDA)
 
 ## 🏗️ Architettura e qualità del codice
 

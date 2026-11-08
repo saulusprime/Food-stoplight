@@ -11,7 +11,7 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 - **Filtri per valori** da / fino a, per 100 g: Kcal, zuccheri, fruttosio, fibre, grassi saturi, sodio, rapporto F/F, punteggio; e il filtro rapido **«Solo alimenti sicuri»** (tutti e cinque i rischi classificati e al massimo Bassi).
 - **Ordinamento multiplo** fino a tre criteri (es. categoria, poi Kcal decrescenti): dai menu «Ordina per / poi per» o con Maiusc+clic sulle intestazioni. I livelli di rischio si ordinano per gravità, i dati mancanti vanno in fondo.
 - **Confronto affiancato** di 2–4 alimenti (`/confronta`): rischi, energia, macro e micronutrienti con barre proporzionali, indice e carico glicemico, NOVA, FODMAP e fonte. Si scelgono con le caselle della tabella (la selezione resta cambiando pagina o ricerca), dalla scheda o dal campo di ricerca della pagina.
-- **Dati reali e tracciabili**: i 900 alimenti delle Tabelle di composizione degli alimenti del CREA (2019), con i valori che il CREA non pubblica (soprattutto fruttosio e glucosio) presi dall'alimento corrispondente di USDA FoodData Central; ogni scheda dice da dove viene ogni dato.
+- **Dati reali e tracciabili**: i 900 alimenti delle Tabelle di composizione degli alimenti del CREA (2019), con i valori che il CREA non pubblica (fruttosio, glucosio, grassi saturi) presi da un alimento simile della tabella britannica CoFID 2021 o di USDA FoodData Central, oppure calcolati dagli ingredienti delle ricette CREA; ogni scheda dice da dove viene ogni dato.
 - **Compila da una fonte**: nel form un alimento si riempie da un codice CREA, da un codice a barre (Open Food Facts) o da un FDC ID USDA.
 - **Sincronizzazione periodica con USDA**: l'app aggiorna da sola i valori presi da USDA (con una chiave personale), con backup prima e storico nella pagina Importa.
 - **Sistema a semaforo** per cinque indicatori di rischio, **calcolati dai valori nutrizionali** con regole documentate e riferimenti bibliografici (Reg. CE 1924/2006, semaforo FSA, OMS, EFSA, LARN, IARC, WCRF, tabelle internazionali dell'indice glicemico, soglie FODMAP):
@@ -68,12 +68,14 @@ Food-stoplight/
 ├── nutrienti.py        # Campi nutrizionali, carico glicemico, porzioni, profilo dei pasti, alternative
 ├── crea.py             # Lettura delle schede delle Tabelle di composizione del CREA
 ├── usda.py             # Valori da USDA FoodData Central per FDC ID
+├── cofid.py            # Tabella britannica CoFID 2021: profilo degli zuccheri e saturi % sugli acidi grassi
+├── ricette.py          # Ricette CREA: fruttosio, glucosio, lattosio e saturi calcolati dagli ingredienti
 ├── openfoodfacts.py    # Prodotti confezionati per codice a barre (Open Food Facts)
-├── fonti.py            # Alimenti dalle fonti: CREA + USDA, Open Food Facts, USDA; import e sincronizzazione
+├── fonti.py            # Alimenti dalle fonti: CREA + CoFID + USDA + ricette, Open Food Facts, USDA; import e sincronizzazione
 ├── classificazioni.py  # Bevande, carni rosse e lavorate, zuccheri liberi, NOVA, FODMAP, indice glicemico
 ├── rischi.py           # Regole dei cinque rischi, con motivi e riferimenti bibliografici
 ├── sincronizzazione.py # Sincronizzazione periodica con USDA (automatica nell'app, storico, blocco)
-├── dati/               # Abbinamenti CREA -> USDA e indice glicemico (Atkinson 2008) per codice CREA
+├── dati/               # Abbinamenti CREA -> USDA e CREA -> CoFID, alimenti CoFID usati, ingredienti delle ricette, indice glicemico
 ├── lingue.py           # Scelta della lingua (italiano, inglese) e traduzione dei valori mostrati
 ├── pwa.py              # App installabile: manifest, service worker, pagina offline
 ├── babel.cfg, translations/   # Estrazione dei testi e traduzione inglese (messages.po / .mo)
@@ -112,7 +114,7 @@ Food-stoplight/
 ├── .github/workflows/ci.yml   # GitHub Actions: lint, tipi, test e immagine Docker a ogni push
 ├── pyproject.toml      # Configurazione di ruff, mypy e pytest
 ├── requirements.txt, requirements-dev.txt   # Dipendenze dell'app e strumenti di sviluppo
-└── docs/               # Fogli di esempio (XLSX) e prototipi HTML
+└── docs/               # Dossier per la revisione delle regole (revisione_regole.md), fogli di esempio e prototipi HTML
 ```
 
 ## 🚀 Installazione e avvio
@@ -226,7 +228,9 @@ All'uscita dall'account le pagine salvate vengono cancellate, perché possono co
 - **CREA** – [Tabelle di composizione degli alimenti](https://www.alimentinutrizione.it/tabelle-nutrizionali), aggiornamento 2019: nomi, categorie, porzione tipica e valori nutrizionali dei 900 alimenti. Il sito non ha API né file da scaricare: si leggono le schede, una al secondo. I dati si riproducono citando la fonte, come chiede il CREA (ogni alimento ha fonte, codice e link alla scheda).
 - **USDA FoodData Central** (dominio pubblico) – i valori che il CREA non pubblica, soprattutto fruttosio e glucosio, dall'alimento corrispondente: gli abbinamenti, scelti alimento per alimento, sono in `dati/crea_usda.csv` (441 alimenti). Fruttosio, glucosio e lattosio mantengono la proporzione sugli zuccheri dell'alimento USDA, applicata agli zuccheri del CREA. Negli alimenti di origine animale il fruttosio è 0; nel latte e nei latticini non zuccherati gli zuccheri sono lattosio.
 - **Open Food Facts** (licenza ODbL) – prodotti confezionati per codice a barre, dal form.
-- **Indice glicemico** – tabella 1 di Atkinson et al., *Diabetes Care* 2008, assegnata agli alimenti CREA corrispondenti (`dati/indice_glicemico.csv`, con la voce della tabella usata).
+- **CoFID 2021** – [McCance and Widdowson's Composition of Foods Integrated Dataset](https://www.gov.uk/government/publications/composition-of-foods-integrated-dataset-cofid) (Public Health England, Open Government Licence v3.0), prima di USDA: profilo degli zuccheri di prodotti europei (senza lo sciroppo di mais dei prodotti USA) e grassi saturi come percentuale degli acidi grassi, convertiti con i grassi totali del CREA e lo stesso fattore FAO. Abbinamenti in `dati/crea_cofid.csv` (una riga per gruppo di campi, con una nota sulla scelta); in `dati/cofid.csv` solo gli alimenti CoFID usati, rigenerabili dal file Excel ufficiale con `flask cofid-estrai`.
+- **Ricette CREA** – per i 53 piatti con la lista degli ingredienti, fruttosio, glucosio, lattosio e saturi che il CREA non pubblica si calcolano dagli ingredienti (abbinati agli alimenti CREA in `dati/ingredienti_crea.csv`): la composizione degli ingredienti si applica a zuccheri e grassi del piatto. Si ricalcolano dopo ogni import, modifica o sincronizzazione.
+- **Indice glicemico** – Atkinson et al., *Diabetes Care* 2008: tabella 1 (medie di più studi) e, dove manca, tabella A1 dell'appendice online (singoli studi, preferiti quelli italiani ed europei, media delle voci che corrispondono); 190 alimenti in `dati/indice_glicemico.csv`, con la voce e i numeri delle voci usate.
 - **NOVA, FODMAP, rischi** – regole documentate in `classificazioni.py` e `rischi.py`, spiegate nella pagina Guida con i riferimenti.
 
 ```bash
@@ -235,6 +239,8 @@ flask --app app crea-importa --tutti --cache instance/crea   # tutto l'indice (c
 flask --app app crea-importa --tutti --sostituisci   # elimina prima gli alimenti senza codice CREA
 flask --app app usda-sincronizza                    # aggiorna subito i valori USDA (serve USDA_API_KEY)
 flask --app app ricalcola-rischi                    # ricalcola i livelli dopo aver cambiato le regole
+flask --app app ricalcola-ricette                   # ricalcola i valori delle ricette dagli ingredienti
+flask --app app cofid-estrai CoFID_2021.xlsx        # rigenera dati/cofid.csv dal file Excel ufficiale
 ```
 
 Ogni comando fa un backup del database prima di scrivere. La sincronizzazione automatica parte nell'app stessa ogni `USDA_SINCRONIZZA_GIORNI` giorni (su Render un cron job separato non vedrebbe il disco dei dati); un file di blocco accanto al database evita che due processi la eseguano insieme. Lo stato e il pulsante «Sincronizza ora» sono nella pagina Importa. La chiave personale è gratuita: <https://fdc.nal.usda.gov/api-key-signup>.
@@ -325,7 +331,7 @@ python update.py --db altro.db --csv dati.csv
 - **Indicatori di rischio**: calcolati dai valori nutrizionali a ogni salvataggio, import e sincronizzazione (`rischi.py`), mai scritti a mano. Per i nutrienti da limitare la scala è comune, per 100 g (bevande per 100 ml): Trascurabile fino alla soglia «senza» del Reg. CE 1924/2006, Basso fino a «a basso contenuto» (verde FSA), Medio nell'ambra e Alto nel rosso del semaforo FSA. Diabete: carico glicemico della porzione e zuccheri liberi, un livello in meno con molte fibre. Colesterolo: grassi saturi, e colesterolo della porzione oltre il limite giornaliero dei LARN. Malassorbimento: fruttosio in eccesso sul glucosio nella porzione rispetto alla soglia FODMAP (Varney 2017). Metabolico: densità energetica (WCRF) e zuccheri liberi. Tumorale: alcol e carni lavorate (IARC gruppo 1), carne rossa, sale, ultra-trasformati, bevande zuccherate; fibre protettive. Regole e riferimenti completi nella Guida.
 - **Punteggio complessivo** = 100 × (1 − media dei punti ÷ 3), con Trascurabile = 0, Basso = 1, Medio = 2, Alto = 3 punti, calcolato sui rischi disponibili. Il colore del punteggio corrisponde al livello medio: oltre 83 Trascurabile, 51–83 Basso, 17–50 Medio, fino a 16 Alto.
 - **Medaglie**: primi 10 dell'intero database per punteggio (a parità, più fibre), per rapporto fruttosio/fibre (solo alimenti con almeno 1 g di fruttosio) e per Kcal (esclusi i valori a 0, che indicano dati mancanti).
-- **Origine dei dati**: vedi *Fonti dei dati*. Dove una fonte non dà un valore il campo resta vuoto e il rischio che ne dipende «Non classificato»: oggi soprattutto grassi saturi di alcune carni e pesci, fruttosio di ricette, biscotti e prodotti da forno.
+- **Origine dei dati**: vedi *Fonti dei dati*. Dove una fonte non dà un valore il campo resta vuoto e il rischio che ne dipende «Non classificato»: oggi il colesterolo di 52 alimenti (soprattutto frattaglie e carni rare) e il malassorbimento di 79 (soprattutto verdure, cereali e ricette senza un equivalente). Le regole sono descritte, con domande aperte, in `docs/revisione_regole.md`, il dossier per la revisione di un nutrizionista.
 - **Dati nutrizionali**: valori per 100 g; un campo vuoto significa «non disponibile», 0 è un valore misurato.
 - **Carico glicemico** = indice glicemico × carboidrati disponibili della porzione ÷ 100. I carboidrati sono quelli disponibili (senza fibre), come nelle etichette europee e nel CREA; da USDA si sottraggono le fibre. Soglie: indice basso fino a 55, medio 56–69, alto da 70; carico per porzione basso fino a 10, medio 11–19, alto da 20.
 - **FODMAP**: livello Basso / Medio / Alto per fruttani, GOS, lattosio, fruttosio in eccesso e polioli, come il semaforo delle tabelle Monash; il complessivo è il più alto dei cinque.

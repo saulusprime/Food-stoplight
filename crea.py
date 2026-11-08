@@ -189,6 +189,7 @@ def leggi_scheda(pagina: str, codice: str) -> dict[str, Any]:
 
     porzione = re.match(r"(\d+(?:[.,]\d+)?)\s*g", dopo("Porzione") or "")
     edibile = re.match(r"(\d+(?:[.,]\d+)?)", dopo("Parte Edibile") or "")
+    resa = re.match(r"(\d+(?:[.,]\d+)?)", dopo("Variazione Peso (Y.F.)") or "")
 
     return {
         "codice": codice,
@@ -199,7 +200,48 @@ def leggi_scheda(pagina: str, codice: str) -> dict[str, Any]:
         "porzione": float(porzione.group(1).replace(",", ".")) if porzione else None,
         "parte_edibile": float(edibile.group(1).replace(",", ".")) if edibile else None,
         "valori": valori,
+        "ingredienti": leggi_ingredienti(pagina),
+        "resa": float(resa.group(1).replace(",", ".")) if resa else None,
     }
+
+
+INGREDIENTE_RE = re.compile(r"^(\d+(?:[.,]\d+)?)\s*(g|ml|kg|l)$", re.IGNORECASE)
+
+
+def leggi_ingredienti(pagina: str) -> list[dict[str, Any]]:
+    """
+    Ingredienti di una ricetta CREA: [{"nome", "quantita", "unita"}], con le
+    quantità in g o ml (kg e l convertiti). Le righe senza quantità (es.
+    «PER 10 PERSONE», «q.b.») restano fuori.
+    """
+    blocco = re.search(r'<td class="ingredienti">(.*?)</table>', pagina, re.S)
+
+    if not blocco:
+        return []
+
+    ingredienti = []
+
+    for riga in re.findall(r'<tr class="corporicetta">(.*?)</tr>', blocco.group(1), re.S):
+        celle = [_testo(c) for c in re.findall(r"<td[^>]*>(.*?)</td>", riga, re.S)]
+
+        if len(celle) < 2:
+            continue
+
+        quantita = INGREDIENTE_RE.match(celle[1].strip())
+
+        if not celle[0] or not quantita:
+            continue
+
+        valore = float(quantita.group(1).replace(",", "."))
+        unita = quantita.group(2).lower()
+
+        if unita in ("kg", "l"):
+            valore *= 1000
+            unita = "g" if unita == "kg" else "ml"
+
+        ingredienti.append({"nome": celle[0], "quantita": valore, "unita": unita})
+
+    return ingredienti
 
 
 # ---------------------------------------------------------------
