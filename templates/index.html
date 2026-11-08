@@ -6,30 +6,21 @@
 
 {% block content %}
 
+{# Clic: ordina solo per la colonna (o ne inverte la direzione);
+   Maiusc+clic: la aggiunge come criterio successivo (static/js/app.js) #}
 {% macro th_sortable(field, label, class='') %}
-    {% set current_sort = request.args.get('sort', 'alimento') %}
-    {% set current_dir = request.args.get('dir', 'asc') %}
-    {% set new_dir = 'desc' if current_sort == field and current_dir == 'asc' else 'asc' %}
+    {% set col = colonne[field] %}
 
-    <th class="{{ class }}"{% if current_sort == field %} aria-sort="{{ 'ascending' if current_dir == 'asc' else 'descending' }}"{% endif %}>
+    <th class="{{ class }}"{% if col.posizione == 1 %} aria-sort="{{ 'ascending' if col.direzione == 'asc' else 'descending' }}"{% endif %}>
         <a
-            href="{{ url_for(
-                'index',
-                categoria=request.args.get('categoria', ''),
-                rischio_diabete=request.args.get('rischio_diabete', ''),
-                rischio_colesterolo=request.args.get('rischio_colesterolo', ''),
-                rischio_malassorbimento=request.args.get('rischio_malassorbimento', ''),
-                rischio_metabolico=request.args.get('rischio_metabolico', ''),
-                rischio_tumorale=request.args.get('rischio_tumorale', ''),
-                sort=field,
-                dir=new_dir
-            ) }}"
-            class="sort-link {{ 'sort-active' if current_sort == field else '' }}"
+            href="{{ col.url }}"
+            data-url-aggiungi="{{ col.url_aggiungi }}"
+            class="sort-link {{ 'sort-active' if col.posizione else '' }}"
         >
             {{ label }}
 
-            {% if current_sort == field %}
-                <span>{{ '▲' if current_dir == 'asc' else '▼' }}</span>
+            {% if col.posizione %}
+                <span>{{ '▲' if col.direzione == 'asc' else '▼' }}{% if criteri|length > 1 %}<sup class="sort-ordine">{{ col.posizione }}</sup>{% endif %}</span>
             {% else %}
                 <span class="sort-idle">↕</span>
             {% endif %}
@@ -78,11 +69,44 @@
 <h1 class="visually-hidden">{{ _('Database alimenti') }}</h1>
 
 
-<form method="get" action="{{ url_for('index') }}" class="row g-2 mb-3 align-items-end filtri">
+<form method="get" action="{{ url_for('index') }}" class="filtri mb-3" role="search" aria-label="{{ _('Cerca e filtra gli alimenti') }}">
 
-    <input type="hidden" name="sort" value="{{ request.args.get('sort', 'alimento') }}">
-    <input type="hidden" name="dir" value="{{ request.args.get('dir', 'asc') }}">
+    {# Ordinamento e righe per pagina restano; senza un ordinamento scelto
+       la ricerca ordina per pertinenza #}
+    {% for nome in ('sort', 'dir', 'per_pagina') %}
+        {% if parametri_tabella.get(nome) %}
+            <input type="hidden" name="{{ nome }}" value="{{ parametri_tabella[nome] }}">
+        {% endif %}
+    {% endfor %}
 
+    <div class="row g-2 align-items-end mb-2">
+        <div class="col-12 col-md">
+            <label class="form-label" for="filtro-q">{{ _('Cerca un alimento') }}</label>
+            <input
+                type="search"
+                class="form-control filtro-ricerca"
+                id="filtro-q"
+                name="q"
+                value="{{ filtri.q }}"
+                maxlength="100"
+                autocomplete="off"
+                placeholder="{{ _('Nome, anche parziale o con errori di battitura: es. mozarella') }}"
+            >
+        </div>
+
+        <div class="col-12 col-md-auto filtro-sicuri">
+            <div class="toggles">
+                <label for="filtro-sicuri">
+                    {{ _('Solo alimenti sicuri') }}
+                    <input type="checkbox" id="filtro-sicuri" name="sicuri" value="1" aria-describedby="nota-sicuri" onchange="this.form.submit()" {% if filtri.sicuri %}checked{% endif %}>
+                    <span class="lever"></span>
+                </label>
+            </div>
+            <p class="filtro-nota" id="nota-sicuri">{{ _('Tutti e cinque i rischi trascurabili o bassi') }}</p>
+        </div>
+    </div>
+
+    <div class="row g-2 align-items-end">
     {{ filtro('categoria', _('Categoria'), category_options, _('Tutte le categorie'), 'col-12 filtro-categoria') }}
     {{ filtro('rischio_diabete', _('Diabete'), diabete_options, _('Tutti')) }}
     {{ filtro('rischio_colesterolo', _('Colesterolo'), colesterolo_options, _('Tutti')) }}
@@ -99,6 +123,68 @@
             {{ _('Reset') }}
         </a>
     </div>
+    </div>
+
+    <details class="filtri-valori"{% if intervalli_attivi %} open{% endif %}>
+        <summary>
+            {{ _('Filtri per valori (per 100 g)') }}
+            {% if intervalli_attivi %}<span class="filtri-valori-conta">{{ ngettext('%(num)d attivo', '%(num)d attivi', intervalli_attivi) }}</span>{% endif %}
+        </summary>
+
+        <div class="filtri-valori-griglia">
+            {% for campo, etichetta in campi_intervallo.items() %}
+                {% set nome_campo = etichetta|traduci %}
+                <fieldset class="filtro-intervallo">
+                    <legend>{{ nome_campo }}</legend>
+                    <div class="filtro-intervallo-campi">
+                        <label class="visually-hidden" for="filtro-{{ campo }}_min">{{ _('%(campo)s: da', campo=nome_campo) }}</label>
+                        <input type="number" class="form-control" id="filtro-{{ campo }}_min" name="{{ campo }}_min"
+                               value="{{ intervalli[campo][0] }}" min="0"{% if campo == 'punteggio' %} max="100"{% endif %} step="any" inputmode="decimal"
+                               placeholder="{{ _('da') }}">
+                        <span aria-hidden="true">–</span>
+                        <label class="visually-hidden" for="filtro-{{ campo }}_max">{{ _('%(campo)s: fino a', campo=nome_campo) }}</label>
+                        <input type="number" class="form-control" id="filtro-{{ campo }}_max" name="{{ campo }}_max"
+                               value="{{ intervalli[campo][1] }}" min="0"{% if campo == 'punteggio' %} max="100"{% endif %} step="any" inputmode="decimal"
+                               placeholder="{{ _('a') }}">
+                    </div>
+                </fieldset>
+            {% endfor %}
+        </div>
+
+        <p class="filtro-nota mb-2">{{ _('Estremi compresi. Gli alimenti senza il dato (es. fruttosio non disponibile) restano fuori quando il campo ha un limite.') }}</p>
+        <button type="submit" class="btn btn-sm btn-outline-secondary">{{ _('Applica') }}</button>
+    </details>
+
+    {# Filtri meno visibili dei menu: si tolgono uno per uno #}
+    {% set attivi = [] %}
+    {% if filtri.q %}{% set _a = attivi.append((_('Ricerca: «%(testo)s»', testo=filtri.q), url_tabella(q=none))) %}{% endif %}
+    {% if filtri.sicuri %}{% set _a = attivi.append((_('Solo alimenti sicuri'), url_tabella(sicuri=none))) %}{% endif %}
+    {% for campo, etichetta in campi_intervallo.items() %}
+        {% set da, a = intervalli[campo] %}
+        {% if da or a %}
+            {% set nome_campo = etichetta|traduci %}
+            {% if da and a %}
+                {% set testo = _('%(campo)s da %(da)s a %(a)s', campo=nome_campo, da=da|float|numero, a=a|float|numero) %}
+            {% elif da %}
+                {% set testo = _('%(campo)s da %(da)s', campo=nome_campo, da=da|float|numero) %}
+            {% else %}
+                {% set testo = _('%(campo)s fino a %(a)s', campo=nome_campo, a=a|float|numero) %}
+            {% endif %}
+            {% set _a = attivi.append((testo, url_tabella(**{campo ~ '_min': none, campo ~ '_max': none}))) %}
+        {% endif %}
+    {% endfor %}
+
+    {% if attivi %}
+        <ul class="filtri-attivi" aria-label="{{ _('Filtri attivi') }}">
+            {% for testo, togli in attivi %}
+                <li>
+                    <a href="{{ togli }}" class="filtro-attivo" aria-label="{{ _('Togli il filtro %(filtro)s', filtro=testo) }}">
+                        {{ testo }} <span aria-hidden="true">✕</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
 </form>
 
@@ -125,17 +211,7 @@
                         <li>
                             <a
                                 class="barra-riga"
-                                href="{{ url_for(
-                                    'index',
-                                    categoria=c.categoria,
-                                    rischio_diabete=filter_diabete,
-                                    rischio_colesterolo=filter_colesterolo,
-                                    rischio_malassorbimento=filter_malassorbimento,
-                                    rischio_metabolico=filter_metabolico,
-                                    rischio_tumorale=filter_tumorale,
-                                    sort=sort,
-                                    dir=dir
-                                ) }}"
+                                href="{{ url_tabella(categoria=c.categoria) }}"
                                 data-tooltip="{{ nome_categoria }}"
                                 data-tooltip-valore="{{ quanti }} · {{ c.quota|percentuale }}"
                                 aria-label="{{ _('%(categoria)s: %(quanti)s, %(quota)s. Filtra per questa categoria', categoria=nome_categoria, quanti=quanti, quota=c.quota|percentuale) }}"
@@ -290,7 +366,7 @@
 
 <div class="barra-export">
     <h2 class="grafico-titolo mb-0" id="titolo-tabella">
-        {{ _('Tabella') }} <span class="text-muted fw-normal">· {{ ngettext('%(num)d alimento', '%(num)d alimenti', visualizzati) }}</span>
+        {{ _('Tabella') }} <span class="text-muted fw-normal">· {{ ngettext('%(num)d alimento', '%(num)d alimenti', visualizzati) }}{% if paginazione.pagine > 1 %} · {{ _('righe %(da)d–%(a)d', da=paginazione.inizio + 1, a=paginazione.fine) }}{% endif %}</span>
     </h2>
 
     <div class="d-flex flex-wrap align-items-center gap-2" role="group" aria-labelledby="etichetta-export">
@@ -328,6 +404,12 @@
             <dd>{{ _('Kcal meno TEF.') }}</dd>
             <dt>{{ _('Rapporto F/F') }}</dt>
             <dd>{{ _('fruttosio diviso fibre: più è basso, meglio è.') }}</dd>
+            <dt>{{ _('Ricerca') }}</dt>
+            <dd>{{ _('trova nomi anche parziali, senza accenti, al singolare o al plurale e con qualche errore di battitura.') }}</dd>
+            <dt>{{ _('Ordinamento') }}</dt>
+            <dd>{{ _("clic su un'intestazione per ordinare, Maiusc+clic per aggiungere un criterio (es. categoria, poi Kcal); oppure i menu «Ordina per».") }}</dd>
+            <dt>{{ _('Confronto') }}</dt>
+            <dd>{{ _('seleziona da 2 a %(n)d alimenti con le caselle accanto al nome, anche da pagine o ricerche diverse.', n=confronto_max) }}</dd>
         </dl>
         <p class="mb-0">
             <a href="{{ url_for('guida') }}">{{ _('Guida completa: soglie, calcoli e fonti') }}</a>
@@ -335,34 +417,45 @@
     </div>
 </details>
 
-{# Su schermi piccoli la tabella diventa un elenco di schede senza intestazioni:
-   l'ordinamento si sceglie da qui #}
-<form method="get" action="{{ url_for('index') }}" class="ordina-mobile d-md-none">
-    {% for campo in ('categoria', 'rischio_diabete', 'rischio_colesterolo', 'rischio_malassorbimento', 'rischio_metabolico', 'rischio_tumorale') %}
-        {% if request.args.get(campo) %}
-            <input type="hidden" name="{{ campo }}" value="{{ request.args.get(campo) }}">
+{# Ordinamento (fino a tre criteri) e righe per pagina. Su schermi piccoli
+   la tabella diventa un elenco di schede senza intestazioni: si ordina da qui #}
+<form method="get" action="{{ url_for('index') }}" class="vista-form" aria-label="{{ _('Ordinamento e righe per pagina') }}">
+    {% for nome, valore in parametri_tabella.items() if nome not in ('sort', 'dir', 'per_pagina') %}
+        <input type="hidden" name="{{ nome }}" value="{{ valore }}">
+    {% endfor %}
+
+    {% for i in range(ordinamenti_max) %}
+        {% if i == 0 or criteri|length >= i %}
+            {% set criterio = criteri[i] if i < criteri|length else ('', 'asc') %}
+            <div class="vista-livello">
+                <label class="form-label" for="ordina-{{ i }}">{{ _('Ordina per') if i == 0 else _('poi per') }}</label>
+                <div class="d-flex gap-1">
+                    <select class="form-select" id="ordina-{{ i }}" name="sort" onchange="this.form.submit()">
+                        {% if i > 0 %}<option value="">—</option>{% endif %}
+                        {% for campo, etichetta in opzioni_ordine if i == 0 or campo != 'pertinenza' %}
+                            <option value="{{ campo }}" {% if criterio[0] == campo %}selected{% endif %}>{{ etichetta|traduci }}</option>
+                        {% endfor %}
+                    </select>
+                    <select class="form-select ordina-direzione" name="dir" aria-label="{{ _('Direzione') }}" onchange="this.form.submit()"{% if criterio[0] == 'pertinenza' %} hidden{% endif %}>
+                        <option value="asc" {% if criterio[1] == 'asc' %}selected{% endif %}>{{ _('Crescente') }}</option>
+                        <option value="desc" {% if criterio[1] == 'desc' %}selected{% endif %}>{{ _('Decrescente') }}</option>
+                    </select>
+                </div>
+            </div>
         {% endif %}
     {% endfor %}
-    <label class="form-label" for="ordina-mobile">{{ _('Ordina per') }}</label>
-    <div class="d-flex gap-2">
-        <select class="form-select" id="ordina-mobile" name="sort" onchange="this.form.submit()">
-            {% for campo, etichetta in [
-                ('alimento', _('Alimento')), ('categoria', _('Categoria')), ('punteggio', _('Punteggio')),
-                ('kcal', _('Kcal')), ('kcal_nette', _('Kcal nette')), ('tef_percent', _('TEF (%%)')),
-                ('fruttosio', _('Fruttosio')), ('fibre', _('Fibre')), ('rapporto', _('Rapporto F/F')),
-                ('rischio_diabete', _('Diabete')), ('rischio_colesterolo', _('Colesterolo')),
-                ('rischio_malassorbimento', _('Malassorbimento')), ('rischio_metabolico', _('Metabolico')),
-                ('rischio_tumorale', _('Tumorale')),
-            ] %}
-                <option value="{{ campo }}" {% if sort == campo %}selected{% endif %}>{{ etichetta }}</option>
+
+    <div class="vista-livello vista-per-pagina">
+        <label class="form-label" for="per-pagina">{{ _('Righe per pagina') }}</label>
+        <select class="form-select" id="per-pagina" name="per_pagina" onchange="this.form.submit()">
+            {% for n in per_pagina_opzioni %}
+                <option value="{{ n }}" {% if paginazione.per_pagina == n %}selected{% endif %}>{{ n }}</option>
             {% endfor %}
+            <option value="{{ tutti_valore }}" {% if paginazione.per_pagina is none %}selected{% endif %}>{{ _('Tutte') }}</option>
         </select>
-        <select class="form-select ordina-direzione" name="dir" aria-label="{{ _('Direzione') }}" onchange="this.form.submit()">
-            <option value="asc" {% if dir == 'asc' %}selected{% endif %}>{{ _('Crescente') }}</option>
-            <option value="desc" {% if dir == 'desc' %}selected{% endif %}>{{ _('Decrescente') }}</option>
-        </select>
-        <noscript><button type="submit" class="btn btn-outline-secondary">{{ _('Ordina') }}</button></noscript>
     </div>
+
+    <noscript><button type="submit" class="btn btn-outline-secondary vista-applica">{{ _('Applica') }}</button></noscript>
 </form>
 
 <div class="d-none d-md-flex justify-content-end mb-2">
@@ -378,6 +471,7 @@
     'rapporto': _('Rapporto F/F'), 'colesterolo': _('Colesterolo'), 'diabete': _('Diabete'),
     'malassorbimento': _('Malassorbimento'), 'metabolico': _('Metabolico'), 'tumorale': _('Tumorale'),
     'modifica': _('Modifica'), 'elimina': _('Elimina'), 'elimina_alimento': _('Elimina alimento'),
+    'confronta': _('Seleziona per il confronto:'),
 } %}
 {% set LIVELLI_TRADOTTI = {} %}
 {% set TITOLI_LIVELLO = {} %}
@@ -434,6 +528,10 @@
                     {%- endif %}
                     <tr>
                         <td class="col-nome">
+                            <div class="nome-cella">
+                            <input type="checkbox" class="form-check-input seleziona-confronto" name="id" value="{{ a.id }}"
+                                   form="form-confronto" aria-label="{{ T.confronta }} {{ a.alimento }}">
+                            <div>
                             <a class="nome-alimento" href="{{ url_for('scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
                             {%- if a.medaglie %}
                                 {% set titoli = a.medaglie|map(attribute='titolo')|map('traduci')|join(', ') %}
@@ -445,6 +543,8 @@
                                     title="{{ descrizione_medaglie }}"
                                 >{% for m in a.medaglie %}{{ m.icona }}{% endfor %}</span>
                             {%- endif %}
+                            </div>
+                            </div>
                         </td>
                         <td class="col-categoria">{{ CATEGORIE_TRADOTTE.get(a.categoria) or '-' }}</td>
                         <td class="text-end col-punteggio">
@@ -457,9 +557,9 @@
                         <td class="text-end col-valore col-secondaria col-tef_kcal">{{ (a.tef_kcal or 0)|numero }}</td>
                         <td class="text-end col-valore col-secondaria col-tef_percent">{{ (a.tef_percent or 0)|numero }}</td>
                         <td class="text-end col-valore col-kcal_nette">{{ (a.kcal_nette or 0)|numero }}</td>
-                        <td class="text-end col-valore col-secondaria col-fruttosio">{{ (a.fruttosio or 0)|numero(2) }}</td>
+                        <td class="text-end col-valore col-secondaria col-fruttosio">{{ a.fruttosio|numero(2) }}</td>
                         <td class="text-end col-valore col-secondaria col-fibre">{{ (a.fibre or 0)|numero(2) }}</td>
-                        <td class="text-end col-valore col-secondaria col-rapporto">{{ (a.rapporto or 0)|numero(2) }}</td>
+                        <td class="text-end col-valore col-secondaria col-rapporto">{{ a.rapporto|numero(2) }}</td>
                         <td class="col-rischio col-colesterolo">{{ risk_badge(a.rischio_colesterolo, LIVELLI_TRADOTTI) }}</td>
                         <td class="col-rischio col-diabete">{{ risk_badge(a.rischio_diabete, LIVELLI_TRADOTTI) }}</td>
                         <td class="col-rischio col-malassorbimento">{{ risk_badge(a.rischio_malassorbimento, LIVELLI_TRADOTTI) }}</td>
@@ -497,7 +597,11 @@
                 {%- else %}
                     <tr>
                         <td colspan="{{ 16 if current_user.is_admin else 15 }}" class="text-center py-4">
-                            {{ _('Nessun alimento trovato con i filtri correnti.') }}
+                            {% if filtri.q %}
+                                {{ _('Nessun alimento trovato per «%(testo)s» con i filtri correnti.', testo=filtri.q) }}
+                            {% else %}
+                                {{ _('Nessun alimento trovato con i filtri correnti.') }}
+                            {% endif %}
                         </td>
                     </tr>
                 {%- endfor %}
@@ -505,4 +609,50 @@
         </table>
     </div>
 </div>
+
+{% if paginazione.pagine > 1 %}
+    <nav class="pagination-wrapper paginazione" aria-label="{{ _('Pagine della tabella') }}">
+        <ul class="pagination">
+            <li class="page-item{% if paginazione.numero == 1 %} disabled{% endif %}">
+                {% if paginazione.numero > 1 %}
+                    <a class="page-link" href="{{ url_tabella(pagina=paginazione.numero - 1) }}" rel="prev" aria-label="{{ _('Pagina precedente') }}">‹ <span class="paginazione-testo">{{ _('Precedente') }}</span></a>
+                {% else %}
+                    <span class="page-link" aria-hidden="true">‹ <span class="paginazione-testo">{{ _('Precedente') }}</span></span>
+                {% endif %}
+            </li>
+
+            {% for n in paginazione.numeri %}
+                {% if n is none %}
+                    <li class="page-item paginazione-salto"><span class="page-link" aria-hidden="true">…</span></li>
+                {% elif n == paginazione.numero %}
+                    <li class="page-item active"><a class="page-link" href="{{ url_tabella(pagina=n) }}" aria-current="page">{{ n }}</a></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="{{ url_tabella(pagina=n) }}" aria-label="{{ _('Pagina %(n)d', n=n) }}">{{ n }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            <li class="page-item{% if paginazione.numero == paginazione.pagine %} disabled{% endif %}">
+                {% if paginazione.numero < paginazione.pagine %}
+                    <a class="page-link" href="{{ url_tabella(pagina=paginazione.numero + 1) }}" rel="next" aria-label="{{ _('Pagina successiva') }}"><span class="paginazione-testo">{{ _('Successiva') }}</span> ›</a>
+                {% else %}
+                    <span class="page-link" aria-hidden="true"><span class="paginazione-testo">{{ _('Successiva') }}</span> ›</span>
+                {% endif %}
+            </li>
+        </ul>
+    </nav>
+{% endif %}
+
+{# Confronto: le caselle della tabella appartengono a questo form (attributo form).
+   Con JavaScript la selezione resta anche cambiando pagina o ricerca e la barra
+   compare solo quando c'è qualcosa di selezionato #}
+<form method="get" action="{{ url_for('confronta') }}" id="form-confronto" class="barra-confronto" data-massimo="{{ confronto_max }}" aria-label="{{ _('Confronto tra alimenti') }}">
+    <p class="barra-confronto-testo mb-0" aria-live="polite">
+        <span data-confronto-stato>{{ _('Seleziona da 2 a %(n)d alimenti con le caselle accanto al nome.', n=confronto_max) }}</span>
+    </p>
+    <ul class="barra-confronto-scelti" data-confronto-scelti hidden></ul>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-sm btn-link" data-confronto-annulla hidden>{{ _('Annulla') }}</button>
+        <button type="submit" class="btn btn-sm btn-primary">⇄ {{ _('Confronta') }}</button>
+    </div>
+</form>
 {% endblock %}

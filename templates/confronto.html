@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ _('Confronta alimenti') }}
+{% endblock %}
+
+{% block content %}
+
+{# Riga di valori numerici: valore e barra proporzionale al massimo della riga #}
+{% macro righe_valori(righe) %}
+    {% for riga in righe %}
+        <tr>
+            <th scope="row">
+                {{ riga.etichetta|traduci }}{% if riga.unita %} <span class="text-muted fw-normal">({{ riga.unita }})</span>{% endif %}
+            </th>
+            {% for valore, quota in riga.valori %}
+                <td class="confronto-valore">
+                    {% if valore is none %}
+                        <span class="text-muted">–</span>
+                    {% else %}
+                        <span class="confronto-numero">{{ valore|round(riga.decimali)|numero }}</span>
+                        {% if quota > 0 %}
+                            <span class="confronto-barra" style="--quota: {{ '%.3f'|format(quota) }}" aria-hidden="true"></span>
+                        {% endif %}
+                    {% endif %}
+                </td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+{% endmacro %}
+
+{% macro intestazione_sezione(titolo) %}
+    <tr class="confronto-sezione">
+        <th scope="colgroup" colspan="{{ alimenti|length + 1 }}">{{ titolo }}</th>
+    </tr>
+{% endmacro %}
+
+<div class="page-header">
+    <h1>⇄ {{ _('Confronta alimenti') }}</h1>
+    <p>
+        {% trans n=confronto_max %}Fino a {{ n }} alimenti affiancati, con i valori per 100 g. Scegli gli alimenti dalla tabella con le caselle di selezione, oppure aggiungili qui sotto.{% endtrans %}
+    </p>
+</div>
+
+{% include "_elenco_alimenti.html" %}
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">← {{ _('Torna alla tabella') }}</a>
+    {% if alimenti %}
+        <a href="{{ url_for('confronta') }}" class="btn btn-link btn-sm">{{ _('Svuota il confronto') }}</a>
+    {% endif %}
+</div>
+
+{% if alimenti|length < confronto_max %}
+    <section class="card card-form shadow-sm p-4 mb-3" aria-labelledby="titolo-aggiungi-confronto">
+        <h2 class="grafico-titolo" id="titolo-aggiungi-confronto">{{ _('Aggiungi un alimento') }}</h2>
+
+        <form method="get" action="{{ url_for('confronta') }}" class="row g-2 align-items-end">
+            {% for i in ids %}
+                <input type="hidden" name="id" value="{{ i }}">
+            {% endfor %}
+
+            <div class="col-md-9">
+                <label for="cerca-confronto" class="form-label">{{ _('Alimento') }}</label>
+                <input type="text" class="form-control" id="cerca-confronto" name="cerca" list="elenco-alimenti"
+                       autocomplete="off" placeholder="{{ _('Scrivi per cercare, es. mela') }}" required>
+            </div>
+
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">{{ _('Aggiungi') }}</button>
+            </div>
+        </form>
+    </section>
+{% endif %}
+
+{% if alimenti|length < 2 %}
+    <p class="text-muted">
+        {% if alimenti %}
+            {{ _('Aggiungi almeno un altro alimento per vederli affiancati.') }}
+        {% else %}
+            {{ _('Nessun alimento da confrontare.') }}
+        {% endif %}
+    </p>
+{% endif %}
+
+{% if alimenti %}
+<section class="card table-card mb-3" aria-labelledby="titolo-confronto">
+    <h2 class="visually-hidden" id="titolo-confronto">{{ _('Confronto') }}</h2>
+
+    <div class="table-responsive confronto-scorrimento">
+        <table class="table align-middle mb-0 tabella-confronto" style="--colonne: {{ alimenti|length }}">
+            <caption class="visually-hidden">{{ _('Valori per 100 g degli alimenti a confronto') }}</caption>
+            <thead>
+                <tr>
+                    <td class="confronto-angolo"></td>
+                    {% for a in alimenti %}
+                        {% set altri = ids|reject('equalto', a.id)|list %}
+                        <th scope="col" class="confronto-alimento">
+                            <a class="nome-alimento" href="{{ url_for('scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
+                            <small class="d-block text-muted fw-normal">{{ (a.categoria or 'Senza categoria')|traduci }}</small>
+                            <a class="confronto-togli" href="{{ url_for('confronta', id=altri) }}"
+                               aria-label="{{ _('Togli %(nome)s dal confronto', nome=a.alimento) }}">✕ {{ _('Togli') }}</a>
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+
+            <tbody>
+                {{ intestazione_sezione(_('Sintesi')) }}
+                <tr>
+                    <th scope="row">{{ _('Punteggio') }} <span class="text-muted fw-normal">(/100)</span></th>
+                    {% for a in alimenti %}
+                        <td>
+                            {% if a.punteggio is not none %}
+                                {% set liv = livello_punteggio(a.punteggio) %}
+                                <span class="punteggio stato-{{ liv.stato }}" title="{{ _('Livello medio: %(livello)s', livello=liv.etichetta|traduci) }}">{{ a.punteggio }}</span>
+                            {% else %}
+                                <span class="text-muted">–</span>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                {% for campo, etichetta in rischi_elenco %}
+                    <tr>
+                        <th scope="row">{{ etichette_rischi[campo]|traduci }}</th>
+                        {% for a in alimenti %}
+                            <td>
+                                {% if a[campo] %}
+                                    <span class="badge-risk stato-{{ stato_rischio(a[campo]) }}">{{ a[campo]|traduci }}</span>
+                                {% else %}
+                                    <span class="badge-risk stato-nd">{{ _('Non classificato') }}</span>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+
+                {% if energia %}
+                    {{ intestazione_sezione(_('Energia')) }}
+                    {{ righe_valori(energia) }}
+                {% endif %}
+
+                {% if macro %}
+                    {{ intestazione_sezione(_('Macronutrienti')) }}
+                    {{ righe_valori(macro) }}
+                {% endif %}
+
+                {% if micro %}
+                    {{ intestazione_sezione(_('Vitamine e sali minerali')) }}
+                    {{ righe_valori(micro) }}
+                {% endif %}
+
+                {{ intestazione_sezione(_('Indici e porzione')) }}
+                <tr>
+                    <th scope="row">{{ _('Indice glicemico') }}</th>
+                    {% for a in alimenti %}
+                        {% set ig = indici[loop.index0].ig %}
+                        <td>
+                            {% if ig %}
+                                <span class="badge-risk stato-{{ ig.stato }}">{{ a.indice_glicemico|numero }} · {{ ig.etichetta|traduci }}</span>
+                            {% else %}
+                                <span class="text-muted">{{ _('Non disponibile') }}</span>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th scope="row">{{ _('Porzione tipica (g)') }}</th>
+                    {% for a in alimenti %}
+                        <td>{{ indici[loop.index0].porzione|numero }}</td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th scope="row">{{ _('Carico glicemico della porzione') }}</th>
+                    {% for a in alimenti %}
+                        {% set carico = indici[loop.index0].carico %}
+                        <td>
+                            {% if carico is not none %}
+                                {% set liv_cg = nutrienti.livello_carico_glicemico(carico) %}
+                                <span class="badge-risk stato-{{ liv_cg.stato }}">{{ carico|numero }} · {{ liv_cg.etichetta|traduci }}</span>
+                            {% else %}
+                                <span class="text-muted">{{ _('Non disponibile') }}</span>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th scope="row">{{ _('Processazione (NOVA)') }}</th>
+                    {% for a in alimenti %}
+                        {% set nova = indici[loop.index0].nova %}
+                        <td>
+                            {% if nova %}
+                                <span class="badge-risk stato-{{ nova.stato }}">NOVA {{ nova.gruppo }} · {{ nova.etichetta|traduci }}</span>
+                            {% else %}
+                                <span class="text-muted">{{ _('Non disponibile') }}</span>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th scope="row">{{ _('FODMAP complessivo') }}</th>
+                    {% for a in alimenti %}
+                        {% set fodmap = indici[loop.index0].fodmap %}
+                        <td>
+                            {% if fodmap %}
+                                <span class="badge-risk stato-{{ fodmap.stato }}">{{ fodmap.etichetta|traduci }}</span>
+                            {% else %}
+                                <span class="text-muted">{{ _('Non classificato') }}</span>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th scope="row">{{ _('Fonte') }}</th>
+                    {% for a in alimenti %}
+                        <td class="small">
+                            {% if a.url_fonte %}
+                                <a href="{{ a.url_fonte }}" target="_blank" rel="noopener noreferrer">{{ a.fonte_nutrienti or a.url_fonte }}</a>
+                            {% else %}
+                                {{ a.fonte_nutrienti or '–' }}
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<p class="small text-muted">
+    {{ _('Le barre confrontano i valori di ogni riga con il più alto della riga. Nessun valore è «migliore» di per sé: i livelli di rischio e la guida dicono quando un valore è alto.') }}
+    <a href="{{ url_for('guida') }}">{{ _('Guida') }}</a>
+</p>
+{% endif %}
+
+{% endblock %}

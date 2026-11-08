@@ -1590,6 +1590,342 @@ main:focus {
 }
 
 /* ---------------------------------------------------------------
+   Ricerca, «solo sicuri», filtri per valori e filtri attivi
+   --------------------------------------------------------------- */
+.filtro-ricerca {
+    height: var(--altezza-filtro);
+}
+
+.filtro-sicuri .toggles {
+    min-height: var(--altezza-filtro);
+}
+
+.filtro-sicuri .toggles label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    height: var(--altezza-filtro);
+    margin: 0;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--testo);
+    white-space: nowrap;
+}
+
+.filtro-sicuri .toggles label input[type=checkbox] + .lever {
+    margin-top: 0;
+    flex: none;
+}
+
+.filtro-nota {
+    margin: 0.15rem 0 0;
+    font-size: 0.8rem;
+    color: var(--testo-tenue);
+}
+
+.filtri-valori {
+    margin-top: 0.75rem;
+}
+
+.filtri-valori > summary {
+    cursor: pointer;
+    width: fit-content;
+    font-weight: 600;
+    color: var(--testo-secondario);
+}
+
+.filtri-valori-conta {
+    display: inline-block;
+    margin-left: 0.35rem;
+    padding: 0 0.5rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    background: var(--intestazione-tabella-bg);
+    color: var(--intestazione-tabella-testo);
+}
+
+.filtri-valori-griglia {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    gap: 0.5rem 1rem;
+    margin: 0.75rem 0 0.5rem;
+}
+
+.filtro-intervallo {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.filtro-intervallo legend {
+    float: none;
+    width: auto;
+    margin-bottom: 0.2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--testo-secondario);
+}
+
+.filtro-intervallo-campi {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--testo-tenue);
+}
+
+.filtro-intervallo-campi .form-control {
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    height: var(--altezza-filtro);
+    padding: 0.25rem 0.5rem;
+}
+
+.filtri-attivi {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.filtro-attivo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.15rem 0.65rem;
+    border: 1px solid var(--bordo);
+    border-radius: 999px;
+    background: var(--superficie);
+    color: var(--testo);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    text-decoration: none;
+}
+
+.filtro-attivo:hover,
+.filtro-attivo:focus-visible {
+    color: var(--testo);
+    border-color: var(--testo-tenue);
+}
+
+/* ---------------------------------------------------------------
+   Ordinamento (fino a tre criteri) e righe per pagina
+   --------------------------------------------------------------- */
+.vista-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.vista-livello {
+    min-width: 0;
+}
+
+.vista-livello .form-label {
+    margin-bottom: 0.2rem;
+    font-size: 0.85rem;
+}
+
+.vista-livello .form-select {
+    height: 2.25rem;
+    text-overflow: ellipsis;
+}
+
+.vista-livello .ordina-direzione {
+    flex: 0 0 9rem;
+    width: 9rem;
+}
+
+.vista-per-pagina {
+    margin-left: auto;
+}
+
+@media (max-width: 767.98px) {
+    .vista-livello {
+        flex: 1 1 100%;
+    }
+
+    .vista-per-pagina {
+        margin-left: 0;
+    }
+}
+
+.sort-ordine {
+    margin-left: 0.1rem;
+    font-size: 0.65rem;
+}
+
+/* Casella di selezione per il confronto, accanto al nome: il nome va a
+   capo nella sua colonna, non sotto la casella */
+.nome-cella {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+}
+
+.seleziona-confronto {
+    flex: none;
+    margin: 0.2em 0 0;
+    cursor: pointer;
+}
+
+/* ---------------------------------------------------------------
+   Paginazione della tabella
+   --------------------------------------------------------------- */
+.paginazione {
+    margin: 1rem 0;
+}
+
+.paginazione .page-link {
+    gap: 0.3rem;
+    color: var(--testo-secondario);
+    white-space: nowrap;
+}
+
+.paginazione a.page-link:hover {
+    color: var(--testo);
+    background: var(--superficie-2);
+}
+
+.paginazione .pagination .page-item .page-link[aria-current] {
+    border: 1px solid var(--intestazione-tabella-testo);
+    color: var(--intestazione-tabella-testo);
+    background: var(--intestazione-tabella-bg);
+}
+
+.paginazione .page-item.disabled .page-link {
+    opacity: 0.45;
+}
+
+@media (max-width: 575.98px) {
+    .paginazione-testo {
+        display: none;
+    }
+
+    .paginazione .page-item {
+        margin-right: 2px;
+    }
+
+    .paginazione .page-link {
+        min-width: 2.1rem;
+    }
+}
+
+/* ---------------------------------------------------------------
+   Barra del confronto: con JavaScript compare (fissa in basso)
+   solo quando c'è almeno un alimento selezionato
+   --------------------------------------------------------------- */
+.barra-confronto {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    background: var(--superficie);
+    border: 1px solid var(--bordo);
+    border-radius: 1rem;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+html.js .barra-confronto {
+    position: sticky;
+    bottom: 1rem;
+    z-index: 10;
+}
+
+html.js .barra-confronto:not(.attiva) {
+    display: none;
+}
+
+.barra-confronto-testo {
+    font-size: 0.9rem;
+    color: var(--testo-secondario);
+}
+
+.barra-confronto-scelti {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.barra-confronto .filtro-attivo {
+    cursor: pointer;
+}
+
+/* ---------------------------------------------------------------
+   Pagina di confronto: una colonna per alimento, prima colonna fissa
+   quando la tabella scorre in orizzontale
+   --------------------------------------------------------------- */
+.tabella-confronto th[scope="row"],
+.tabella-confronto .confronto-angolo {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 9.5rem;
+    background: var(--superficie);
+    font-weight: 600;
+}
+
+.tabella-confronto thead .confronto-angolo {
+    background: var(--intestazione-tabella-bg);
+}
+
+.tabella-confronto .confronto-alimento {
+    min-width: 9rem;
+    vertical-align: top;
+    white-space: normal;
+}
+
+.confronto-togli {
+    display: inline-block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+.tabella-confronto .confronto-sezione th {
+    position: static;
+    padding-top: 0.9rem;
+    background: var(--superficie-2);
+    color: var(--testo-secondario);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.confronto-valore {
+    min-width: 7rem;
+}
+
+.confronto-numero {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.confronto-barra {
+    display: block;
+    width: calc(var(--quota) * 100%);
+    min-width: 2px;
+    max-width: 8rem;
+    height: 4px;
+    margin-top: 0.3rem;
+    border-radius: 0 2px 2px 0;
+    background: var(--accento);
+}
+
+/* ---------------------------------------------------------------
    Guida
    --------------------------------------------------------------- */
 .guida-indice {

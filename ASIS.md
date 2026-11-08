@@ -83,3 +83,15 @@ Commit `0aef7ea` — 7 novembre 2026 — 900 alimenti reali del CREA al posto de
 - [x] Sostituire gli 805 alimenti sintetici generati da `autogen.py` (valori casuali, omonimi) con dati reali USDA o CREA (`autogen.py` e i CSV sintetici in `docs/` sono stati poi eliminati)
 - [x] Popolare indice glicemico, FODMAP e NOVA da una fonte documentata (tabelle internazionali IG, Monash, Open Food Facts per NOVA)
 - [x] Revisione scientifica dei punteggi di rischio con riferimenti bibliografici espliciti
+
+## 🔍 Ricerca e consultazione
+
+8 novembre 2026 — la home mostra 50 righe per pagina (circa 200 KB invece di 1,6 MB); la copia offline resta quella con tutte le righe
+
+- [x] **Barra di ricerca testuale** per nome alimento: parziale, senza accenti, singolare/plurale, con errori di battitura (`ricerca.py`), ordinata per pertinenza; anche nell'API e nell'export
+- [x] **Paginazione** della tabella: 25, 50, 100 righe o tutte; grafici e classifiche restano calcolati su tutti gli alimenti filtrati
+- [x] Filtri numerici a intervallo (da / fino a) per Kcal, zuccheri, fruttosio, fibre, grassi saturi, sodio, rapporto F/F e punteggio
+- [x] Vista scheda di dettaglio per singolo alimento con tutti i dati e le fonti (già presente dai commit `01e743e` e `0aef7ea`; ora porta anche al confronto)
+- [x] **Confronto side-by-side** tra 2–4 alimenti (`/confronta`), dalla tabella, dalla scheda o con la ricerca
+- [x] Ordinamento multiplo fino a tre criteri (menu «Ordina per / poi per» e Maiusc+clic sulle intestazioni); rischi in ordine di gravità, dati mancanti in fondo
+- [x] Filtro rapido «Solo alimenti sicuri» (tutti e cinque i rischi classificati, al massimo Bassi)

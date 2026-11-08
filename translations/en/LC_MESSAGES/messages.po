@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Food-stoplight 1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 22:19+0100\n"
+"POT-Creation-Date: 2026-11-08 07:46+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,6 +18,26 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+
+#, python-format
+msgid "%(campo)s da %(da)s"
+msgstr "%(campo)s from %(da)s"
+
+#, python-format
+msgid "%(campo)s da %(da)s a %(a)s"
+msgstr "%(campo)s from %(da)s to %(a)s"
+
+#, python-format
+msgid "%(campo)s fino a %(a)s"
+msgstr "%(campo)s up to %(a)s"
+
+#, python-format
+msgid "%(campo)s: da"
+msgstr "%(campo)s: from"
+
+#, python-format
+msgid "%(campo)s: fino a"
+msgstr "%(campo)s: up to"
 
 #, python-format
 msgid "%(campo)s: livello «%(testo)s» non riconosciuto, ignorato"
@@ -114,6 +134,12 @@ msgid "%(num)d alimento nel pasto"
 msgid_plural "%(num)d alimenti nel pasto"
 msgstr[0] "%(num)d food in the meal"
 msgstr[1] "%(num)d foods in the meal"
+
+#, python-format
+msgid "%(num)d attivo"
+msgid_plural "%(num)d attivi"
+msgstr[0] "%(num)d active"
+msgstr[1] "%(num)d active"
 
 #, python-format
 msgid "%(num)d eliminato"
@@ -237,6 +263,9 @@ msgstr "Add"
 msgid "Aggiungi al diario"
 msgstr "Add to the diary"
 
+msgid "Aggiungi almeno un altro alimento per vederli affiancati."
+msgstr "Add at least one more food to see them side by side."
+
 msgid "Aggiungi tutte come nuove"
 msgstr "Add all as new"
 
@@ -253,6 +282,13 @@ msgstr "Added to the meal: %(nome)s, %(grammi)s g."
 
 msgid "Alcol"
 msgstr "Alcohol"
+
+msgid ""
+"Alcuni alimenti non sono più nel database e sono stati tolti dal "
+"confronto."
+msgstr ""
+"Some foods are no longer in the database and were removed from the "
+"comparison."
 
 msgid "Alimenti"
 msgstr "Foods"
@@ -335,6 +371,9 @@ msgstr "Import preview"
 
 msgid "Anteprima import"
 msgstr "Import preview"
+
+msgid "Applica"
+msgstr "Apply"
 
 msgid "Apri il menu"
 msgstr "Open the menu"
@@ -476,6 +515,12 @@ msgstr "Empty cells, “-”, “N/A”, “nd”: no value."
 msgid "Cena"
 msgstr "Dinner"
 
+msgid "Cerca e filtra gli alimenti"
+msgstr "Search and filter foods"
+
+msgid "Cerca un alimento"
+msgstr "Search for a food"
+
 msgid "Cereali"
 msgstr "Grains"
 
@@ -580,6 +625,21 @@ msgid "Conferma: aggiungi %(num)d alimento"
 msgid_plural "Conferma: aggiungi %(num)d alimenti"
 msgstr[0] "Confirm: add %(num)d food"
 msgstr[1] "Confirm: add %(num)d foods"
+
+msgid "Confronta"
+msgstr "Compare"
+
+msgid "Confronta alimenti"
+msgstr "Compare foods"
+
+msgid "Confronta con altri"
+msgstr "Compare with others"
+
+msgid "Confronto"
+msgstr "Comparison"
+
+msgid "Confronto tra alimenti"
+msgstr "Food comparison"
 
 #, python-format
 msgid "Contiene alcol (%(grammi)s g per 100 g): cancerogeno del gruppo 1 IARC."
@@ -807,6 +867,13 @@ msgstr "Export with the filters:"
 msgid "Esporta:"
 msgstr "Export:"
 
+msgid ""
+"Estremi compresi. Gli alimenti senza il dato (es. fruttosio non "
+"disponibile) restano fuori quando il campo ha un limite."
+msgstr ""
+"Limits included. Foods without the value (e.g. fructose not available) "
+"are left out when the field has a limit."
+
 msgid "FDC ID"
 msgstr "FDC ID"
 
@@ -878,6 +945,12 @@ msgstr "File too large: the limit is %(mb)d MB."
 msgid "Filtra"
 msgstr "Filter"
 
+msgid "Filtri attivi"
+msgstr "Active filters"
+
+msgid "Filtri per valori (per 100 g)"
+msgstr "Filter by values (per 100 g)"
+
 #, python-format
 msgid ""
 "Fino a %(mb)s MB e %(righe)s righe. Separatore e codifica dei CSV vengono"
@@ -887,6 +960,15 @@ msgstr ""
 "Up to %(mb)s MB and %(righe)s rows. The separator and encoding of CSV "
 "files are detected automatically; for Excel files the first sheet with "
 "the “Alimento” column is read."
+
+#, python-format
+msgid ""
+"Fino a %(n)s alimenti affiancati, con i valori per 100 g. Scegli gli "
+"alimenti dalla tabella con le caselle di selezione, oppure aggiungili qui"
+" sotto."
+msgstr ""
+"Up to %(n)s foods side by side, with values per 100 g. Pick the foods in "
+"the table with the checkboxes, or add them below."
 
 msgid "Folati"
 msgstr "Folate"
@@ -1039,6 +1121,9 @@ msgstr "Fats and oils"
 
 msgid "Grassi saturi"
 msgstr "Saturated fat"
+
+msgid "Grassi saturi (g)"
+msgstr "Saturated fat (g)"
 
 #, python-format
 msgid "Grassi saturi: %(grammi)s g per 100 %(unita)s."
@@ -1339,6 +1424,9 @@ msgstr ""
 msgid "Indice glicemico: «%(testo)s» fuori scala (0-100), ignorato"
 msgstr "Glycemic index: “%(testo)s” out of range (0-100), ignored"
 
+msgid "Indici e porzione"
+msgstr "Indexes and serving"
+
 msgid "Indirizzo http:// o https://."
 msgstr "An http:// or https:// address."
 
@@ -1440,6 +1528,15 @@ msgstr "Dairy and eggs"
 
 msgid "Lattosio"
 msgstr "Lactose"
+
+msgid ""
+"Le barre confrontano i valori di ogni riga con il più alto della riga. "
+"Nessun valore è «migliore» di per sé: i livelli di rischio e la guida "
+"dicono quando un valore è alto."
+msgstr ""
+"The bars compare the values in each row with the highest one in that row."
+" No value is “better” in itself: the risk levels and the guide tell when "
+"a value is high."
 
 msgid ""
 "Le colonne dei rischi si ignorano: i livelli si ricalcolano dai valori "
@@ -1675,6 +1772,9 @@ msgstr ""
 msgid "Nessun alimento con i filtri correnti."
 msgstr "No foods with the current filters."
 
+msgid "Nessun alimento da confrontare."
+msgstr "No foods to compare."
+
 msgid "Nessun alimento della categoria ha un punteggio più alto."
 msgstr "No food in the category has a higher score."
 
@@ -1683,6 +1783,10 @@ msgstr "No foods recorded for this day."
 
 msgid "Nessun alimento trovato con i filtri correnti."
 msgstr "No foods found with the current filters."
+
+#, python-format
+msgid "Nessun alimento trovato per «%(testo)s» con i filtri correnti."
+msgstr "No foods found for “%(testo)s” with the current filters."
 
 #, python-format
 msgid "Nessun alimento «%(testo)s»: scegline uno dall'elenco."
@@ -1730,6 +1834,9 @@ msgstr "Username"
 
 msgid "Nome utente o password non validi."
 msgstr "Invalid username or password."
+
+msgid "Nome, anche parziale o con errori di battitura: es. mozarella"
+msgstr "Name, even partial or misspelled: e.g. mozarella"
 
 msgid "Non classificato"
 msgstr "Not classified"
@@ -1796,14 +1903,30 @@ msgstr "Open Food Facts (barcode)"
 msgid "Operazione riservata agli amministratori."
 msgstr "Only administrators can do this."
 
-msgid "Ordina"
-msgstr "Sort"
-
 msgid "Ordina per"
 msgstr "Sort by"
 
+msgid "Ordinamento"
+msgstr "Sorting"
+
+msgid "Ordinamento e righe per pagina"
+msgstr "Sorting and rows per page"
+
+#, python-format
+msgid "Pagina %(n)d"
+msgstr "Page %(n)d"
+
 msgid "Pagina non trovata"
 msgstr "Page not found"
+
+msgid "Pagina precedente"
+msgstr "Previous page"
+
+msgid "Pagina successiva"
+msgstr "Next page"
+
+msgid "Pagine della tabella"
+msgstr "Table pages"
 
 msgid "Passa alla modalità chiara"
 msgstr "Switch to light mode"
@@ -1877,6 +2000,9 @@ msgstr "To replace the whole table, tick the confirmation box."
 msgid "Perché questi livelli"
 msgstr "Why these levels"
 
+msgid "Pertinenza alla ricerca"
+msgstr "Search relevance"
+
 msgid "Pesa di più"
 msgstr "Weighs most"
 
@@ -1928,6 +2054,9 @@ msgstr "Potassium"
 msgid "Pranzo"
 msgstr "Lunch"
 
+msgid "Precedente"
+msgstr "Previous"
+
 msgid ""
 "Prende nome e valori nutrizionali dal CREA, da Open Food Facts o da USDA;"
 " prima di salvare puoi controllarli e correggerli."
@@ -1972,6 +2101,9 @@ msgstr "Risk profile of the meal"
 msgid "Profilo di rischio della giornata"
 msgstr "Risk profile of the day"
 
+msgid "Pronti per il confronto."
+msgstr "Ready to compare."
+
 #, python-format
 msgid "Prossima: %(quando)s."
 msgstr "Next: %(quando)s."
@@ -2001,6 +2133,10 @@ msgid ""
 msgstr ""
 "You can also build a meal in <a href=\"%(url)s\">Meal</a> and save it "
 "here in one go."
+
+#, python-format
+msgid "Puoi confrontare al massimo %(n)d alimenti."
+msgstr "You can compare up to %(n)d foods."
 
 msgid ""
 "Questa pagina richiede la connessione. Senza rete puoi consultare la "
@@ -2037,6 +2173,13 @@ msgstr "Recalculate"
 msgid "Ricco di fibre (%(grammi)s g per 100 g): un livello in meno."
 msgstr "High in fiber (%(grammi)s g per 100 g): one level lower."
 
+msgid "Ricerca"
+msgstr "Search"
+
+#, python-format
+msgid "Ricerca: «%(testo)s»"
+msgstr "Search: “%(testo)s”"
+
 msgid "Riferimenti"
 msgstr "References"
 
@@ -2049,6 +2192,9 @@ msgstr "Row %(n)d"
 
 msgid "Righe con modifiche"
 msgstr "Rows with changes"
+
+msgid "Righe per pagina"
+msgstr "Rows per page"
 
 msgid "Ripetuti nel file"
 msgstr "Repeated in the file"
@@ -2174,8 +2320,18 @@ msgstr "You are offline"
 msgid "Sei offline: le pagine già aperte restano consultabili."
 msgstr "You are offline: pages you have already opened are still available."
 
+msgid "Seleziona almeno un altro alimento."
+msgstr "Select at least one more food."
+
+#, python-format
+msgid "Seleziona da 2 a %(n)d alimenti con le caselle accanto al nome."
+msgstr "Select 2 to %(n)d foods with the checkboxes next to the name."
+
 msgid "Seleziona il file del database da ripristinare."
 msgstr "Select the database file to restore."
+
+msgid "Seleziona per il confronto:"
+msgstr "Select for comparison:"
 
 msgid "Seleziona un file CSV o Excel da importare."
 msgstr "Select a CSV or Excel file to import."
@@ -2204,6 +2360,16 @@ msgstr "Carbohydrates needed"
 msgid "Sessione scaduta o richiesta non valida: riprova."
 msgstr "Session expired or invalid request: try again."
 
+#, python-format
+msgid "Si possono confrontare al massimo %(n)d alimenti: ecco i primi %(n)d."
+msgstr "Up to %(n)d foods can be compared: here are the first %(n)d."
+
+#, python-format
+msgid ""
+"Si possono confrontare al massimo %(n)d alimenti: togline uno prima di "
+"aggiungerne un altro."
+msgstr "Up to %(n)d foods can be compared: remove one before adding another."
+
 msgid "Significato"
 msgstr "Meaning"
 
@@ -2224,14 +2390,23 @@ msgstr "USDA sync started: reload the page in a few minutes to see the outcome."
 msgid "Sincronizzazione in corso…"
 msgstr "Sync in progress…"
 
+msgid "Sintesi"
+msgstr "Summary"
+
 msgid "Sintesi dei cinque rischi: 100 = tutti trascurabili, 0 = tutti alti."
 msgstr "Summary of the five risks: 100 = all negligible, 0 = all high."
 
 msgid "Sodio"
 msgstr "Sodium"
 
+msgid "Sodio (mg)"
+msgstr "Sodium (mg)"
+
 msgid "Soglie per 100 g (bevande per 100 ml)"
 msgstr "Thresholds per 100 g (drinks per 100 ml)"
+
+msgid "Solo alimenti sicuri"
+msgstr "Safe foods only"
 
 msgid "Solo le colonne principali"
 msgstr "Main columns only"
@@ -2279,8 +2454,14 @@ msgstr ""
 msgid "Spuntino"
 msgstr "Snack"
 
+msgid "Successiva"
+msgstr "Next"
+
 msgid "Svuota"
 msgstr "Empty"
+
+msgid "Svuota il confronto"
+msgstr "Clear the comparison"
 
 msgid "Svuota il pasto"
 msgstr "Empty the meal"
@@ -2323,8 +2504,19 @@ msgid "Togli"
 msgstr "Remove"
 
 #, python-format
+msgid "Togli %(nome)s dal confronto"
+msgstr "Remove %(nome)s from the comparison"
+
+#, python-format
 msgid "Togli %(nome)s dal pasto"
 msgstr "Remove %(nome)s from the meal"
+
+msgid "Togli dal confronto:"
+msgstr "Remove from the comparison:"
+
+#, python-format
+msgid "Togli il filtro %(filtro)s"
+msgstr "Remove the filter %(filtro)s"
 
 #, python-format
 msgid "Togliere %(num)d alimento dal pasto?"
@@ -2349,11 +2541,17 @@ msgstr "Negligible"
 msgid "Tumorale"
 msgstr "Cancer"
 
+msgid "Tutte"
+msgstr "All"
+
 msgid "Tutte le categorie"
 msgstr "All categories"
 
 msgid "Tutti"
 msgstr "All"
+
+msgid "Tutti e cinque i rischi trascurabili o bassi"
+msgstr "All five risks negligible or low"
 
 msgid ""
 "Tutti i valori si riferiscono a 100 g di alimento, salvo dove è indicata "
@@ -2465,6 +2663,9 @@ msgstr ""
 msgid "Valori per %(grammi)s g"
 msgstr "Values per %(grammi)s g"
 
+msgid "Valori per 100 g degli alimenti a confronto"
+msgstr "Values per 100 g of the compared foods"
+
 #, python-format
 msgid "Valori presi da %(fonte)s: controllali e salva."
 msgstr "Values taken from %(fonte)s: check them and save."
@@ -2515,6 +2716,9 @@ msgstr "Zinc"
 msgid "Zuccheri"
 msgstr "Sugars"
 
+msgid "Zuccheri (g)"
+msgstr "Sugars (g)"
+
 msgid "Zuccheri liberi"
 msgstr "Free sugars"
 
@@ -2537,6 +2741,9 @@ msgstr "Free sugars: %(grammi)s g per 100 %(unita)s."
 msgid "Zuccheri liberi: %(grammi)s g per 100 g."
 msgstr "Free sugars: %(grammi)s g per 100 g."
 
+msgid "a"
+msgstr "to"
+
 msgid "admin"
 msgstr "admin"
 
@@ -2547,8 +2754,18 @@ msgstr "updated on %(data)s"
 msgid "campo obbligatorio."
 msgstr "required field."
 
+msgid ""
+"clic su un'intestazione per ordinare, Maiusc+clic per aggiungere un "
+"criterio (es. categoria, poi Kcal); oppure i menu «Ordina per»."
+msgstr ""
+"click a header to sort, Shift+click to add a criterion (e.g. category, "
+"then Kcal); or use the “Sort by” menus."
+
 msgid "con moderazione"
 msgstr "in moderation"
+
+msgid "da"
+msgstr "from"
 
 msgid "da 0 a 16"
 msgstr "from 0 to 16"
@@ -2579,6 +2796,9 @@ msgstr "to be limited"
 
 msgid "dd/MM/y HH:mm:ss"
 msgstr "d MMM y, HH:mm:ss"
+
+msgid "di cui fruttosio"
+msgstr "of which fructose"
 
 msgid "di cui glucosio"
 msgstr "of which glucose"
@@ -2684,11 +2904,26 @@ msgstr "over 275 kcal"
 msgid "oltre 5 g (2,5)"
 msgstr "over 5 g (2.5)"
 
+msgid "poi per"
+msgstr "then by"
+
 msgid "punto e virgola"
 msgstr "semicolon"
 
+#, python-format
+msgid "righe %(da)d–%(a)d"
+msgstr "rows %(da)d–%(a)d"
+
 msgid "riuscita"
 msgstr "successful"
+
+#, python-format
+msgid ""
+"seleziona da 2 a %(n)d alimenti con le caselle accanto al nome, anche da "
+"pagine o ricerche diverse."
+msgstr ""
+"select 2 to %(n)d foods with the checkboxes next to the name, even from "
+"different pages or searches."
 
 msgid "senza categoria"
 msgstr "no category"
@@ -2702,6 +2937,13 @@ msgstr "summary of the five risks: 100 = all negligible, 0 = all high."
 
 msgid "tabulazione"
 msgstr "tab"
+
+msgid ""
+"trova nomi anche parziali, senza accenti, al singolare o al plurale e con"
+" qualche errore di battitura."
+msgstr ""
+"finds names even when partial, without accents, singular or plural and "
+"with a few typos."
 
 msgid "un fattore lieve"
 msgstr "one mild factor"
@@ -2728,6 +2970,10 @@ msgid "«%(nome)s» è già alla riga %(riga)d del file: valori uniti a quella r
 msgstr ""
 "“%(nome)s” is already at row %(riga)d of the file: values merged into "
 "that row"
+
+#, python-format
+msgid "«%(nome)s» è già nel confronto."
+msgstr "“%(nome)s” is already in the comparison."
 
 #, python-format
 msgid "➕ Aggiungi al pasto (%(grammi)s g)"

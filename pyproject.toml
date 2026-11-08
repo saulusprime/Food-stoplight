@@ -34,7 +34,7 @@ ignore = [
 [tool.ruff.lint.isort]
 known-first-party = [
     "analisi", "api", "app", "archivio", "backup", "calcoli", "classificazioni", "config", "crea",
-    "database", "esportazione", "fonti", "importazione", "lingue", "nutrienti", "openfoodfacts", "pwa", "rischi",
+    "database", "esportazione", "fonti", "importazione", "lingue", "nutrienti", "openfoodfacts", "pwa", "ricerca", "rischi",
     "sincronizzazione", "update", "usda",
 ]
 

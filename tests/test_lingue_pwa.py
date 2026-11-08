@@ -213,13 +213,13 @@ def test_guida(client):
     assert "TEF: 25% of 36" in inglese
 
 
-def test_home_legenda_e_ordinamento_mobile(client):
+def test_home_legenda_e_menu_di_ordinamento(client):
     html = client.get("/?categoria=Frutta&sort=kcal&dir=desc").data.decode()
     assert "Come leggere la tabella" in html
-    mobile = html.split('class="ordina-mobile')[1].split("</form>")[0]
-    assert '<input type="hidden" name="categoria" value="Frutta">' in mobile
-    assert '<option value="kcal" selected>' in mobile
-    assert '<option value="desc" selected>' in mobile
+    vista = html.split('class="vista-form"')[1].split("</form>")[0]
+    assert '<input type="hidden" name="categoria" value="Frutta">' in vista
+    assert '<option value="kcal" selected>' in vista
+    assert '<option value="desc" selected>' in vista
 
 
 def test_colonne_secondarie_segnate(client):
@@ -240,7 +240,7 @@ def test_notifiche(admin):
 
 
 def test_conferme_con_finestra(admin, visitatore):
-    assert 'data-conferma="Eliminare «Asparagi di campo, crudi» dal database?' in admin.get("/").data.decode()
+    assert 'data-conferma="Eliminare «Asparagi di campo, crudi» dal database?' in admin.get("/?q=asparagi").data.decode()
     assert "data-conferma=" in admin.get(f"/alimento/{ASPARAGI}").data.decode()
 
     visitatore.post("/diario/aggiungi", data={"pasto": "pranzo", "alimento_id": ASPARAGI, "grammi": "100"})

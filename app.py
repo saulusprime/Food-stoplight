@@ -8,7 +8,7 @@ import secrets
 import sqlite3
 import time
 import unicodedata
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from datetime import date, datetime, timedelta
 from functools import wraps
 from pathlib import Path
@@ -21,6 +21,7 @@ from flask import (
     Response,
     abort,
     flash,
+    g,
     jsonify,
     redirect,
     render_template,
@@ -64,6 +65,7 @@ import lingue
 import nutrienti
 import openfoodfacts
 import pwa
+import ricerca
 import rischi
 import sincronizzazione
 import usda
@@ -191,6 +193,10 @@ def testi_js() -> dict[str, Any]:
         "livelli": {livello: _(livello) for livello in ("Basso", "Medio", "Alto")},
         "tutteLeColonne": _("Mostra tutte le colonne"),
         "colonnePrincipali": _("Solo le colonne principali"),
+        "confrontoPochi": _("Seleziona almeno un altro alimento."),
+        "confrontoPronti": _("Pronti per il confronto."),
+        "confrontoTogli": _("Togli dal confronto:"),
+        "confrontoMassimo": _("Puoi confrontare al massimo %(n)d alimenti.", n=CONFRONTO_MAX),
     }
 
 
@@ -615,37 +621,128 @@ def cambia_lingua(codice: str) -> ResponseReturnValue:
 # ROUTE PRINCIPALI
 # ---------------------------------------------------------------
 
+# Criteri di ordinamento della tabella, con le etichette dei menu
+ETICHETTE_ORDINE = {
+    archivio.PERTINENZA: N_("Pertinenza alla ricerca"),
+    "alimento": N_("Alimento"),
+    "categoria": N_("Categoria"),
+    "punteggio": N_("Punteggio"),
+    "kcal": N_("Kcal"),
+    "kcal_nette": N_("Kcal nette"),
+    "tef_percent": N_("TEF (%)"),
+    "tef_kcal": N_("TEF (Kcal)"),
+    "zuccheri": N_("Zuccheri"),
+    "fruttosio": N_("Fruttosio"),
+    "fibre": N_("Fibre"),
+    "rapporto": N_("Rapporto F/F"),
+    "grassi_saturi": N_("Grassi saturi"),
+    "sodio": N_("Sodio"),
+    **dict(analisi.RISCHI),
+}
+
+
+def parametri_vista(filtri: archivio.Filtri, sort: str, direction: str, per_pagina: int | None) -> dict[str, str]:
+    """
+    Parametri della query string che descrivono la tabella mostrata (pagina
+    esclusa): filtri non vuoti, ordinamento e righe per pagina se diversi dal predefinito.
+    """
+    parametri = {campo: valore for campo, valore in filtri.items() if valore}
+    predefinito = archivio.ordinamenti([], [], bool(filtri.get("q")))
+
+    if sort.split(",") != [campo for campo, _ in predefinito] or direction.split(",") != [d for _, d in predefinito]:
+        parametri["sort"] = sort
+        parametri["dir"] = direction
+
+    if per_pagina != ricerca.PER_PAGINA_PREDEFINITO:
+        parametri["per_pagina"] = str(per_pagina) if per_pagina else ricerca.TUTTI
+
+    return parametri
+
+
+@app.template_global()
+def url_tabella(**cambi: Any) -> str:
+    """
+    Indirizzo della tabella con i parametri correnti più le modifiche
+    (valore vuoto o None = togli il parametro). Si torna alla prima pagina
+    salvo pagina esplicita.
+    """
+    parametri = {**g.get("parametri_tabella", {}), **cambi}
+    return url_for("index", **{k: v for k, v in parametri.items() if v not in (None, "")})
+
+
+def ordine_colonne(criteri: list[tuple[str, str]]) -> dict[str, dict[str, Any]]:
+    """
+    Per ogni colonna ordinabile: posizione tra i criteri (1, 2, 3 o None),
+    direzione, indirizzo del clic (ordina solo per questa colonna, o ne
+    inverte la direzione se è già la prima) e del Maiusc+clic (aggiunge la
+    colonna come criterio successivo, o ne inverte la direzione).
+    """
+    colonne = {}
+
+    for campo in archivio.SORT_EXPRESSIONS:
+        posizione = next((i for i, (c, _) in enumerate(criteri) if c == campo), None)
+        direzione = criteri[posizione][1] if posizione is not None else None
+        nuova = "desc" if posizione == 0 and direzione == "asc" else "asc"
+
+        altri = [(c, d) for c, d in criteri if c != archivio.PERTINENZA]
+
+        if posizione is None:
+            altri = [*altri[: archivio.ORDINAMENTI_MAX - 1], (campo, "asc")]
+        else:
+            altri = [(c, ("desc" if d == "asc" else "asc") if c == campo else d) for c, d in altri]
+
+        colonne[campo] = {
+            "posizione": posizione + 1 if posizione is not None else None,
+            "direzione": direzione,
+            "url": url_tabella(sort=campo, dir=nuova),
+            "url_aggiungi": url_tabella(sort=",".join(c for c, _ in altri), dir=",".join(d for _, d in altri)),
+        }
+
+    return colonne
+
+
 @app.route("/")
 def index() -> ResponseReturnValue:
     filtri, sort, direction = leggi_filtri()
+    criteri = archivio.ordinamenti(sort.split(","), direction.split(","), bool(filtri["q"]))
+    per_pagina = ricerca.leggi_per_pagina(request.args.get("per_pagina"))
+    g.parametri_tabella = parametri_vista(filtri, sort, direction, per_pagina)
 
-    filter_categoria = filtri["categoria"]
-    filter_diabete = filtri["rischio_diabete"]
-    filter_colesterolo = filtri["rischio_colesterolo"]
-    filter_malassorbimento = filtri["rischio_malassorbimento"]
-    filter_metabolico = filtri["rischio_metabolico"]
-    filter_tumorale = filtri["rischio_tumorale"]
+    # I menu di ordinamento inviano sort e dir ripetuti: indirizzo compatto (sort=categoria,kcal)
+    if len(request.args.getlist("sort")) > 1 or len(request.args.getlist("dir")) > 1:
+        return redirect(url_tabella(pagina=request.args.get("pagina")))
 
     alimenti = get_alimenti(filtri, sort, direction)
-
-    opzioni = get_filter_options()
-
     filtri_attivi = any(filtri.values())
 
     # Le medaglie si calcolano sull'intero database, non sugli alimenti filtrati
     tutti = get_alimenti() if filtri_attivi else alimenti
     medaglie = analisi.medaglie_per_alimento(tutti)
 
-    for a in alimenti:
+    # Grafici e classifiche seguono i filtri, la tabella mostra una pagina
+    paginazione = ricerca.pagina(len(alimenti), ricerca.leggi_pagina(request.args.get("pagina")), per_pagina)
+    righe = alimenti[paginazione["inizio"]:paginazione["fine"]]
+
+    for a in righe:
         a["medaglie"] = medaglie.get(a["id"], [])
 
-    # Grafici e classifiche seguono invece i filtri
     distribuzione_rischi = analisi.distribuzione_rischi(alimenti)
+    opzioni = get_filter_options()
+    intervalli = {
+        campo: (filtri[f"{campo}_min"], filtri[f"{campo}_max"])
+        for campo in archivio.CAMPI_INTERVALLO
+    }
 
     return render_template(
         "index.html",
-        alimenti=alimenti,
+        alimenti=righe,
+        visualizzati=len(alimenti),
+        paginazione=paginazione,
+        filtri=filtri,
         filtri_attivi=filtri_attivi,
+        intervalli=intervalli,
+        intervalli_attivi=sum(1 for coppia in intervalli.values() for valore in coppia if valore),
+        campi_intervallo=archivio.CAMPI_INTERVALLO,
         grafico_categorie=analisi.distribuzione_categorie(alimenti),
         grafico_rischi=distribuzione_rischi,
         legenda_rischi=analisi.legenda_rischi(distribuzione_rischi),
@@ -659,15 +756,18 @@ def index() -> ResponseReturnValue:
             "sort": sort,
             "dir": direction,
         },
-        filter_categoria=filter_categoria,
-        filter_diabete=filter_diabete,
-        filter_colesterolo=filter_colesterolo,
-        filter_malassorbimento=filter_malassorbimento,
-        filter_metabolico=filter_metabolico,
-        filter_tumorale=filter_tumorale,
-        sort=sort,
-        dir=direction,
-        visualizzati=len(alimenti),
+        parametri_tabella=g.parametri_tabella,
+        criteri=criteri,
+        colonne=ordine_colonne(criteri),
+        opzioni_ordine=[
+            (campo, etichetta)
+            for campo, etichetta in ETICHETTE_ORDINE.items()
+            if campo != archivio.PERTINENZA or filtri["q"]
+        ],
+        ordinamenti_max=archivio.ORDINAMENTI_MAX,
+        per_pagina_opzioni=ricerca.PER_PAGINA,
+        tutti_valore=ricerca.TUTTI,
+        confronto_max=CONFRONTO_MAX,
         category_options=opzioni["categoria"],
         diabete_options=opzioni["rischio_diabete"],
         colesterolo_options=opzioni["rischio_colesterolo"],
@@ -737,6 +837,133 @@ ETICHETTE_CAMPI = {
     "fibre": N_("Fibre"),
     "kcal": N_("Kcal"),
 }
+
+
+# ---------------------------------------------------------------
+# CONFRONTO TRA ALIMENTI
+# ---------------------------------------------------------------
+
+CONFRONTO_MAX = 4
+
+# Righe numeriche del confronto, per 100 g: (campo, etichetta, unità, decimali)
+CONFRONTO_ENERGIA = (
+    ("kcal", N_("Kcal"), "", 0),
+    ("kcal_nette", N_("Kcal nette"), "", 0),
+    ("tef_percent", N_("TEF (%)"), "", 1),
+)
+CONFRONTO_MACRO = (
+    *((campo, etichetta, unita, decimali) for campo, etichetta, unita, decimali, _codice in nutrienti.MACRO[:3]),
+    ("fruttosio", N_("di cui fruttosio"), "g", 2),
+    *((campo, etichetta, unita, decimali) for campo, etichetta, unita, decimali, _codice in nutrienti.MACRO[3:]),
+    ("fibre", N_("Fibre"), "g", 1),
+    ("rapporto", N_("Rapporto fruttosio/fibre"), "", 2),
+)
+CONFRONTO_MICRO = tuple((c, e, u, d) for c, e, u, d, _codice in nutrienti.MICRO)
+
+
+def ids_confronto(valori: list[str]) -> list[int]:
+    """
+    ID degli alimenti da confrontare, nell'ordine e senza ripetizioni (anche «1,2,3»).
+    """
+    ids: list[int] = []
+
+    for valore in valori:
+        for parte in valore.split(","):
+            parte = parte.strip()
+
+            if parte.isdigit() and int(parte) not in ids:
+                ids.append(int(parte))
+
+    return ids
+
+
+def righe_numeriche(alimenti: list[Alimento], campi: Sequence[tuple[str, str, str, int]]) -> list[dict[str, Any]]:
+    """
+    Righe di valori del confronto, con la quota di ciascuno sul massimo della
+    riga (per le barre); senza le righe in cui manca il dato per tutti.
+    """
+    righe = []
+
+    for campo, etichetta, unita, decimali in campi:
+        valori = [a.get(campo) for a in alimenti]
+        numeri = [v for v in valori if v is not None]
+
+        if not numeri:
+            continue
+
+        massimo = max(numeri)
+        righe.append({
+            "etichetta": etichetta,
+            "unita": unita,
+            "decimali": decimali,
+            "valori": [
+                (v, v / massimo if v is not None and massimo > 0 else 0.0)
+                for v in valori
+            ],
+        })
+
+    return righe
+
+
+@app.route("/confronta")
+def confronta() -> ResponseReturnValue:
+    """
+    Due o più alimenti affiancati (?id=1&id=2...). Dal campo di ricerca
+    (cerca) si aggiunge un alimento e si torna all'indirizzo con gli ID.
+    """
+    ids = ids_confronto(request.args.getlist("id"))
+
+    if "cerca" in request.args:
+        item, errore = trova_alimento_da_modulo(request.args)
+
+        if errore or item is None:
+            flash(errore or _("Alimento non trovato."), "warning")
+        elif item["id"] in ids:
+            flash(_("«%(nome)s» è già nel confronto.", nome=item["alimento"]), "info")
+        elif len(ids) >= CONFRONTO_MAX:
+            flash(
+                _("Si possono confrontare al massimo %(n)d alimenti: togline uno prima di aggiungerne un altro.",
+                  n=CONFRONTO_MAX),
+                "warning",
+            )
+        else:
+            ids.append(item["id"])
+
+        return redirect(url_for("confronta", id=ids))
+
+    if len(ids) > CONFRONTO_MAX:
+        flash(_("Si possono confrontare al massimo %(n)d alimenti: ecco i primi %(n)d.", n=CONFRONTO_MAX), "warning")
+        return redirect(url_for("confronta", id=ids[:CONFRONTO_MAX]))
+
+    trovati = archivio.get_alimenti_per_id(ids)
+
+    if len(trovati) < len(ids):
+        flash(_("Alcuni alimenti non sono più nel database e sono stati tolti dal confronto."), "warning")
+        return redirect(url_for("confronta", id=[i for i in ids if i in trovati]))
+
+    alimenti = [trovati[i] for i in ids]
+
+    return render_template(
+        "confronto.html",
+        alimenti=alimenti,
+        ids=ids,
+        confronto_max=CONFRONTO_MAX,
+        energia=righe_numeriche(alimenti, CONFRONTO_ENERGIA),
+        macro=righe_numeriche(alimenti, CONFRONTO_MACRO),
+        micro=righe_numeriche(alimenti, CONFRONTO_MICRO),
+        indici=[
+            {
+                "ig": nutrienti.livello_indice_glicemico(a.get("indice_glicemico")),
+                "carico": nutrienti.carico_glicemico(a, nutrienti.porzione(a)),
+                "porzione": nutrienti.porzione(a),
+                "nova": nutrienti.gruppo_nova(a),
+                "fodmap": nutrienti.fodmap_complessivo(a),
+            }
+            for a in alimenti
+        ],
+        etichette_rischi={campo: importazione.ETICHETTE[campo] for campo in analisi.CAMPI_RISCHIO},
+        elenco=archivio.elenco_per_ricerca() if len(alimenti) < CONFRONTO_MAX else [],
+    )
 
 
 @app.route("/nuovo", methods=["GET", "POST"])
@@ -855,7 +1082,11 @@ FORMATI_EXPORT = {
     "pdf": "application/pdf",
 }
 
-ETICHETTE_ORDINAMENTO = {**importazione.ETICHETTE, "punteggio": "Punteggio"}
+ETICHETTE_ORDINAMENTO = {
+    **importazione.ETICHETTE,
+    "punteggio": "Punteggio",
+    archivio.PERTINENZA: "Pertinenza alla ricerca",
+}
 
 
 def invia_file(dati: bytes, nome: str, mimetype: str) -> Response:
@@ -883,16 +1114,20 @@ def nome_file_sicuro(testo: str | None, alternativa: str) -> str:
 
 
 def info_export(filtri: archivio.Filtri, sort: str, direction: str, totale: int) -> esportazione.InfoExport:
+    criteri = archivio.ordinamenti(sort.split(","), direction.split(","), bool(filtri.get("q")))
+
+    def descrizione(campo: str, direzione: str) -> str:
+        if campo == archivio.PERTINENZA:
+            return ETICHETTE_ORDINAMENTO[campo]
+        return f"{ETICHETTE_ORDINAMENTO.get(campo, campo)} ({'decrescente' if direzione == 'desc' else 'crescente'})"
+
     return {
         "filtri": [
-            (ETICHETTE_FILTRI[campo], valore)
+            (ETICHETTE_FILTRI[campo], "sì" if campo == "sicuri" else valore.replace(".", ","))
             for campo, valore in filtri.items()
             if valore
         ],
-        "ordinamento": (
-            f"{ETICHETTE_ORDINAMENTO.get(sort, sort)} "
-            f"({'decrescente' if direction == 'desc' else 'crescente'})"
-        ),
+        "ordinamento": ", poi ".join(descrizione(campo, direzione) for campo, direzione in criteri),
         "data": datetime.now(),
         "totale": totale,
     }

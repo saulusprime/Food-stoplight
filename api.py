@@ -2,7 +2,8 @@
 API REST in sola lettura (JSON).
 
     GET /api                      indice delle risorse
-    GET /api/alimenti             elenco con filtri, ricerca, ordinamento e paginazione
+    GET /api/alimenti             elenco con filtri (anche a intervallo), ricerca,
+                                  ordinamento multiplo e paginazione
     GET /api/alimenti/<id>        un alimento con i valori derivati
     GET /api/categorie            categorie con il numero di alimenti
 
@@ -80,11 +81,22 @@ def indice() -> ResponseReturnValue:
             "categorie": url_for("api.elenco_categorie", _external=True),
         },
         "parametri_alimenti": {
-            "q": "testo contenuto nel nome",
+            "q": "testo cercato nel nome: anche parziale, senza accenti, singolare o plurale, "
+                 "con qualche errore di battitura",
             "categoria": "categoria (uguale, maiuscole indifferenti)",
             **dict.fromkeys(analisi.CAMPI_RISCHIO, "livello: Trascurabile, Basso, Medio, Alto"),
-            "sort": ", ".join(archivio.SORT_EXPRESSIONS),
-            "dir": "asc oppure desc",
+            "sicuri": "1: solo alimenti con tutti i rischi classificati e al massimo Basso",
+            **{
+                f"{campo}_{limite}": f"{'minimo' if limite == 'min' else 'massimo'} per 100 g (compreso)"
+                for campo in archivio.CAMPI_INTERVALLO
+                for limite, _operatore, _parola in archivio.LIMITI
+            },
+            "sort": (
+                f"fino a {archivio.ORDINAMENTI_MAX} campi separati da virgole tra: "
+                + ", ".join(archivio.SORT_EXPRESSIONS)
+                + f"; con q anche {archivio.PERTINENZA} (predefinito)"
+            ),
+            "dir": "asc oppure desc, una per campo separate da virgole",
             "limit": f"risultati per pagina, 1-{LIMITE_MASSIMO} (default {LIMITE_PREDEFINITO})",
             "offset": "risultati da saltare (default 0)",
         },
@@ -96,9 +108,8 @@ def elenco_alimenti() -> ResponseReturnValue:
     filtri, sort, direction = archivio.leggi_filtri(request.args)
     limite = _intero("limit", LIMITE_PREDEFINITO, 1, LIMITE_MASSIMO)
     scarto = _intero("offset", 0, 0)
-    cerca = (request.args.get("q") or "").strip()
 
-    alimenti = archivio.get_alimenti(filtri, sort, direction, cerca=cerca)
+    alimenti = archivio.get_alimenti(filtri, sort, direction)
     pagina = alimenti[scarto:scarto + limite]
 
     def collegamento(nuovo_scarto: int) -> str:

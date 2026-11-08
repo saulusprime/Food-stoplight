@@ -4,6 +4,9 @@
  *   cambia quando cambia un file, e le copie vecchie vengono scartate.
  * - Tabella, guida e schede degli alimenti: dalla rete; senza connessione
  *   l'ultima copia salvata. Le altre pagine senza rete mostrano la pagina offline.
+ * - La tabella è divisa in pagine: la copia offline è quella con tutte le
+ *   righe (TABELLA_COMPLETA), salvata come pagina iniziale e riscaricata
+ *   in background, al massimo una volta all'ora, quando si apre la tabella.
  */
 "use strict";
 
@@ -14,7 +17,10 @@ const CACHE_PAGINE = {{ cache_pagine|tojson }};
 const STATICI = {{ statici|tojson }};
 const PREFISSO_STATICI = {{ prefisso_statici|tojson }};
 const BASE = {{ base|tojson }};
+// [indirizzo da scaricare, chiave con cui salvarlo]
 const PAGINE = {{ pagine|tojson }};
+const TABELLA_COMPLETA = {{ tabella_completa|tojson }};
+const AGGIORNA_TABELLA_MS = 60 * 60 * 1000;
 const OFFLINE = {{ offline|tojson }};
 const INTESTAZIONE = {{ intestazione|tojson }};
 
@@ -30,17 +36,19 @@ function consultabile(url) {
     return percorso !== null && CONSULTABILI.some((regola) => regola.test(percorso));
 }
 
-// Chiave della copia salvata: la tabella solo senza filtri (la copia
-// completa), le schede senza parametri (es. ?grammi=150)
+// Chiave della copia salvata: la tabella solo nella versione completa (tutte
+// le righe, senza filtri), salvata come pagina iniziale; le schede senza
+// parametri (es. ?grammi=150)
 function chiave(url) {
-    if (relativo(url) === "" && url.search) {
-        return null;
+    if (relativo(url) === "") {
+        const completa = new URL(TABELLA_COMPLETA, self.location.href);
+        return url.search === completa.search ? url.origin + url.pathname : null;
     }
     return url.origin + url.pathname;
 }
 
 // Salva una pagina in anticipo; l'intestazione evita che consumi i messaggi
-function precarica(cache, url) {
+function precarica(cache, url, chiaveCopia) {
     const richiesta = new Request(url, {
         credentials: "same-origin",
         cache: "no-store",
@@ -50,15 +58,27 @@ function precarica(cache, url) {
         if (!risposta.ok || risposta.redirected) {
             throw new Error("Pagina non salvata: " + url);
         }
-        return cache.put(new URL(url, self.location.href).href, risposta);
+        return cache.put(new URL(chiaveCopia || url, self.location.href).href, risposta);
     });
 }
 
 function precaricaPagine() {
     return caches.open(CACHE_PAGINE).then((cache) => Promise.all([
         precarica(cache, OFFLINE),
-        ...PAGINE.map((url) => precarica(cache, url).catch(() => undefined))
+        ...PAGINE.map(([url, chiaveCopia]) => precarica(cache, url, chiaveCopia).catch(() => undefined))
     ]));
+}
+
+// Riscarica la tabella completa se la copia salvata ha più di un'ora (o manca)
+async function aggiornaTabella() {
+    const cache = await caches.open(CACHE_PAGINE);
+    const salvata = await cache.match(new URL(BASE, self.location.href).href);
+    const data = salvata ? Date.parse(salvata.headers.get("date") || "") : NaN;
+
+    if (!Number.isNaN(data) && Date.now() - data < AGGIORNA_TABELLA_MS) {
+        return;
+    }
+    await precarica(cache, TABELLA_COMPLETA, BASE).catch(() => undefined);
 }
 
 self.addEventListener("install", (evento) => {
@@ -115,6 +135,8 @@ async function navigazione(evento, url) {
         if (chiaveCopia && risposta.ok && !risposta.redirected) {
             const copia = risposta.clone();
             evento.waitUntil(caches.open(CACHE_PAGINE).then((cache) => cache.put(chiaveCopia, copia)));
+        } else if (relativo(url) === "" && risposta.ok) {
+            evento.waitUntil(aggiornaTabella().catch(() => undefined));
         }
         return risposta;
     } catch (errore) {

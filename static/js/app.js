@@ -1,6 +1,7 @@
 /* Food-stoplight — comportamento delle pagine
  * Tema chiaro/scuro, tooltip dei grafici, notifiche, conferme, calcolatore
- * della porzione, colonne della tabella e app installabile (service worker).
+ * della porzione, colonne e ordinamento della tabella, selezione per il
+ * confronto e app installabile (service worker).
  * I testi arrivano tradotti dal blocco <script id="testi-js"> di base.html.
  */
 var TESTI = (function () {
@@ -484,6 +485,157 @@ var Notifiche = (function () {
         }
         aggiorna();
     });
+})();
+
+// ---------------------------------------------------------------
+// Tabella: Maiusc+clic su un'intestazione aggiunge la colonna come
+// criterio di ordinamento successivo (indirizzo in data-url-aggiungi).
+// ---------------------------------------------------------------
+document.addEventListener("click", function (evento) {
+    "use strict";
+
+    var link = evento.target.closest ? evento.target.closest("a[data-url-aggiungi]") : null;
+
+    if (!link || !evento.shiftKey || evento.ctrlKey || evento.metaKey || evento.altKey) {
+        return;
+    }
+
+    evento.preventDefault();
+    window.location.href = link.getAttribute("data-url-aggiungi");
+});
+
+// ---------------------------------------------------------------
+// Confronto: la selezione resta in sessionStorage anche cambiando pagina,
+// filtri o ricerca; la barra in fondo mostra gli scelti e apre il
+// confronto con tutti. Senza JavaScript il form invia le caselle della pagina.
+// ---------------------------------------------------------------
+(function () {
+    "use strict";
+
+    var form = document.getElementById("form-confronto");
+
+    if (!form) {
+        return;
+    }
+
+    var CHIAVE = "confronto";
+    var massimo = parseInt(form.getAttribute("data-massimo"), 10) || 4;
+    var stato = form.querySelector("[data-confronto-stato]");
+    var elenco = form.querySelector("[data-confronto-scelti]");
+    var annulla = form.querySelector("[data-confronto-annulla]");
+    var invia = form.querySelector("button[type=submit]");
+    var caselle = document.querySelectorAll(".seleziona-confronto");
+
+    function leggi() {
+        try {
+            var dati = JSON.parse(sessionStorage.getItem(CHIAVE) || "[]");
+            return Array.isArray(dati) ? dati.filter(function (voce) {
+                return voce && /^\d+$/.test(String(voce.id));
+            }) : [];
+        } catch (errore) {
+            return [];
+        }
+    }
+
+    var scelti = leggi();
+
+    function salva() {
+        try {
+            sessionStorage.setItem(CHIAVE, JSON.stringify(scelti));
+        } catch (errore) {
+            /* la selezione vale solo per questa pagina */
+        }
+    }
+
+    function indice(id) {
+        for (var i = 0; i < scelti.length; i++) {
+            if (String(scelti[i].id) === String(id)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    function aggiorna() {
+        var n = scelti.length;
+
+        form.classList.toggle("attiva", n > 0);
+        invia.disabled = n < 2;
+        annulla.hidden = n === 0;
+        elenco.hidden = n === 0;
+        stato.textContent = n < 2
+            ? testo("confrontoPochi", "Seleziona almeno un altro alimento.")
+            : testo("confrontoPronti", "Pronti per il confronto.");
+
+        elenco.textContent = "";
+        scelti.forEach(function (voce) {
+            var li = document.createElement("li");
+            var togli = document.createElement("button");
+            togli.type = "button";
+            togli.className = "filtro-attivo";
+            togli.textContent = voce.nome + " ✕";
+            togli.setAttribute("aria-label", testo("confrontoTogli", "Togli dal confronto:") + " " + voce.nome);
+            togli.addEventListener("click", function () {
+                scelti.splice(indice(voce.id), 1);
+                salva();
+                sincronizza();
+            });
+            li.appendChild(togli);
+            elenco.appendChild(li);
+        });
+    }
+
+    function sincronizza() {
+        caselle.forEach(function (casella) {
+            casella.checked = indice(casella.value) !== -1;
+        });
+        aggiorna();
+    }
+
+    caselle.forEach(function (casella) {
+        casella.addEventListener("change", function () {
+            var posizione = indice(casella.value);
+
+            if (casella.checked && posizione === -1) {
+                if (scelti.length >= massimo) {
+                    casella.checked = false;
+                    Notifiche.mostra(testo("confrontoMassimo", "Puoi confrontare al massimo " + massimo + " alimenti."), "warning");
+                    return;
+                }
+                var link = casella.closest("tr") && casella.closest("tr").querySelector(".nome-alimento");
+                scelti.push({ id: casella.value, nome: link ? link.textContent.trim() : casella.value });
+            } else if (!casella.checked && posizione !== -1) {
+                scelti.splice(posizione, 1);
+            }
+
+            salva();
+            aggiorna();
+        });
+    });
+
+    annulla.addEventListener("click", function () {
+        scelti = [];
+        salva();
+        sincronizza();
+    });
+
+    form.addEventListener("submit", function (evento) {
+        evento.preventDefault();
+
+        if (scelti.length < 2) {
+            return;
+        }
+
+        var parametri = scelti.map(function (voce) {
+            return "id=" + encodeURIComponent(voce.id);
+        }).join("&");
+
+        scelti = [];
+        salva();
+        window.location.href = form.action + "?" + parametri;
+    });
+
+    sincronizza();
 })();
 
 // ---------------------------------------------------------------

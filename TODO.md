@@ -7,16 +7,6 @@ Le attività completate sono in [ASIS.md](ASIS.md).
 
 - [ ] Limitare i tentativi di login falliti (es. Flask-Limiter) contro gli attacchi a forza bruta
 
-## 🔍 Ricerca e consultazione
-
-- [ ] **Barra di ricerca testuale** per nome alimento (con ricerca parziale/fuzzy)
-- [ ] **Paginazione** della tabella (attualmente carica tutti gli alimenti in una pagina)
-- [ ] Filtri numerici a intervallo (es. Kcal min–max, fruttosio max)
-- [ ] Vista scheda di dettaglio per singolo alimento con tutti i dati e le fonti
-- [ ] **Confronto side-by-side** tra due o più alimenti
-- [ ] Ordinamento multiplo (es. categoria + kcal)
-- [ ] Filtro rapido "solo alimenti sicuri" (tutti i rischi bassi/trascurabili)
-
 ## 🌐 Integrazione dati
 
 - [ ] Grassi saturi per le 91 carni e pesci che il CREA pubblica senza percentuale degli acidi grassi (abbinamento USDA come per il fruttosio)

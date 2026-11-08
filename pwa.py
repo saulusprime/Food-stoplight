@@ -7,8 +7,11 @@ Il service worker (templates/sw.js) conserva sul dispositivo:
   scarta le copie vecchie;
 - le pagine di consultazione (tabella, guida, schede degli alimenti):
   si leggono dalla rete e, senza connessione, dall'ultima copia salvata.
-  La tabella e la guida si salvano all'installazione, le schede quando
-  vengono aperte. Pasto, diario, login e amministrazione richiedono la rete.
+  La tabella (nella versione con tutte le righe: online è divisa in
+  pagine) e la guida si salvano all'installazione, le schede quando
+  vengono aperte; la tabella si riscarica in background, al massimo una
+  volta all'ora, quando la si apre. Pasto, diario, confronto, login e
+  amministrazione richiedono la rete.
 
 Le pagine salvate si cancellano all'uscita dall'account (possono contenere
 il nome dell'utente e i pulsanti di amministrazione).
@@ -26,6 +29,7 @@ from flask.typing import ResponseReturnValue
 from flask_babel import gettext as _
 
 import lingue
+import ricerca
 
 bp = Blueprint("pwa", __name__)
 
@@ -125,6 +129,13 @@ def manifest() -> ResponseReturnValue:
     return senza_cache(risposta)
 
 
+def tabella_completa() -> str:
+    """
+    La tabella con tutte le righe, senza filtri: la copia per l'uso offline.
+    """
+    return url_for("index", per_pagina=ricerca.TUTTI)
+
+
 @bp.route("/sw.js")
 def service_worker() -> ResponseReturnValue:
     testo = render_template(
@@ -134,7 +145,11 @@ def service_worker() -> ResponseReturnValue:
         statici=[url_for("static", filename=percorso) for percorso in STATICI],
         prefisso_statici=url_for("static", filename=""),
         base=url_for("index"),
-        pagine=[url_for("index"), url_for("guida")],
+        pagine=[
+            [tabella_completa(), url_for("index")],
+            [url_for("guida"), url_for("guida")],
+        ],
+        tabella_completa=tabella_completa(),
         offline=url_for("pwa.offline"),
         intestazione=INTESTAZIONE_PRECARICA,
     )

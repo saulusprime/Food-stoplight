@@ -6,7 +6,11 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 
 ## ✨ Funzionalità
 
-- **Tabella interattiva** di tutti gli alimenti con ordinamento su ogni colonna e filtri combinabili per categoria e livelli di rischio.
+- **Tabella interattiva** di tutti gli alimenti, divisa in pagine (25, 50, 100 righe o tutte), con filtri combinabili per categoria e livelli di rischio.
+- **Ricerca per nome** tollerante: trova nomi parziali, senza accenti, al singolare o al plurale (mela → Mele) e con errori di battitura (mozarella → Mozzarella); senza un ordinamento scelto i risultati sono per pertinenza.
+- **Filtri per valori** da / fino a, per 100 g: Kcal, zuccheri, fruttosio, fibre, grassi saturi, sodio, rapporto F/F, punteggio; e il filtro rapido **«Solo alimenti sicuri»** (tutti e cinque i rischi classificati e al massimo Bassi).
+- **Ordinamento multiplo** fino a tre criteri (es. categoria, poi Kcal decrescenti): dai menu «Ordina per / poi per» o con Maiusc+clic sulle intestazioni. I livelli di rischio si ordinano per gravità, i dati mancanti vanno in fondo.
+- **Confronto affiancato** di 2–4 alimenti (`/confronta`): rischi, energia, macro e micronutrienti con barre proporzionali, indice e carico glicemico, NOVA, FODMAP e fonte. Si scelgono con le caselle della tabella (la selezione resta cambiando pagina o ricerca), dalla scheda o dal campo di ricerca della pagina.
 - **Dati reali e tracciabili**: i 900 alimenti delle Tabelle di composizione degli alimenti del CREA (2019), con i valori che il CREA non pubblica (soprattutto fruttosio e glucosio) presi dall'alimento corrispondente di USDA FoodData Central; ogni scheda dice da dove viene ogni dato.
 - **Compila da una fonte**: nel form un alimento si riempie da un codice CREA, da un codice a barre (Open Food Facts) o da un FDC ID USDA.
 - **Sincronizzazione periodica con USDA**: l'app aggiorna da sola i valori presi da USDA (con una chiave personale), con backup prima e storico nella pagina Importa.
@@ -44,7 +48,7 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 - **Italiano e inglese**: la lingua segue il browser e si cambia dal menu (🌐). Export, API e riga di comando restano in italiano.
 - **App installabile** su telefono e computer: senza connessione restano consultabili la tabella, la guida e le schede già aperte.
 - **Guida ai dati** (livelli di rischio, soglie, punteggio, TEF, indice glicemico, FODMAP, NOVA, fonti) e legenda compatta sopra la tabella.
-- **Tabella su ogni schermo**: su telefono ogni alimento è una scheda compatta, con un menu per l'ordinamento; da tablet in su si vedono le colonne principali e «Mostra tutte le colonne» aggiunge TEF, fruttosio, fibre e rapporto F/F.
+- **Tabella su ogni schermo**: su telefono ogni alimento è una scheda compatta, ordinabile dai menu; da tablet in su si vedono le colonne principali e «Mostra tutte le colonne» aggiunge TEF, fruttosio, fibre e rapporto F/F.
 - **Notifiche e conferme**: i messaggi compaiono come notifiche in un angolo (gli errori restano finché non si chiudono); eliminazioni, ripristini e svuotamento del pasto chiedono conferma in una finestra.
 
 ## 📂 Struttura del progetto
@@ -53,7 +57,8 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 Food-stoplight/
 ├── app.py              # Applicazione Flask: pagine web, login e ruoli, comandi da riga di comando
 ├── api.py              # API REST in sola lettura (/api/alimenti, /api/categorie)
-├── archivio.py         # Query sugli alimenti (filtri, ordinamento), condivise da pagine e API
+├── archivio.py         # Query sugli alimenti (filtri, intervalli, ordinamento multiplo), condivise da pagine e API
+├── ricerca.py          # Ricerca per nome tollerante (varianti, errori di battitura) e paginazione
 ├── database.py         # Connessioni ai tre database e migrazioni versionate dello schema
 ├── calcoli.py          # Calcoli condivisi: numeri, Kcal e TEF dai macronutrienti, Kcal nette, rapporto F/F
 ├── analisi.py          # Livelli di rischio, punteggio, medaglie e dati per i grafici
@@ -83,6 +88,7 @@ Food-stoplight/
 │   ├── base.html       # Layout comune (navbar, lingua, tema chiaro/scuro, notifiche, finestra di conferma)
 │   ├── index.html      # Riepilogo grafico e tabella alimenti con filtri e ordinamento
 │   ├── scheda.html     # Scheda del singolo alimento: porzione, nutrienti, radar, alternative
+│   ├── confronto.html  # Confronto affiancato di 2–4 alimenti
 │   ├── pasto.html      # Composizione di un pasto
 │   ├── diario.html     # Diario alimentare giornaliero
 │   ├── _radar.html, _riepilogo_pasto.html, _elenco_alimenti.html  # Parti in comune
@@ -211,7 +217,7 @@ pybabel compile -d translations
 
 ## 📱 App installabile e offline
 
-Il sito si installa come app (Chrome, Edge, Safari su iPhone con «Aggiungi alla schermata Home»). Il service worker conserva sul dispositivo i file statici, la tabella completa e la guida; le schede degli alimenti restano disponibili dopo averle aperte una volta. Senza connessione la tabella mostra l'ultima copia salvata (senza filtri), e le pagine che richiedono la rete (pasto, diario, amministrazione) lasciano il posto a una pagina offline con l'elenco delle schede salvate.
+Il sito si installa come app (Chrome, Edge, Safari su iPhone con «Aggiungi alla schermata Home»). Il service worker conserva sul dispositivo i file statici, la tabella completa (la versione con tutte le righe: online la tabella è divisa in pagine; la copia si riscarica in background al massimo una volta all'ora) e la guida; le schede degli alimenti restano disponibili dopo averle aperte una volta. Senza connessione la tabella mostra l'ultima copia salvata (senza filtri), e le pagine che richiedono la rete (pasto, diario, confronto, amministrazione) lasciano il posto a una pagina offline con l'elenco delle schede salvate.
 
 All'uscita dall'account le pagine salvate vengono cancellate, perché possono contenere il nome dell'utente e i pulsanti di amministrazione. A ogni deploy che cambia CSS, JavaScript, icone o traduzioni il service worker si aggiorna da solo. L'app installabile richiede HTTPS (in locale va bene `http://localhost`).
 
@@ -244,10 +250,10 @@ API JSON in sola lettura, con gli stessi permessi della consultazione web (con `
 | `GET /api/alimenti/<id>` | Un alimento: tutti i campi più punteggio, livello medio, carico glicemico, FODMAP complessivo, link alla scheda |
 | `GET /api/categorie` | Categorie con il numero di alimenti |
 
-Parametri di `/api/alimenti`: `q` (testo nel nome), `categoria`, `rischio_diabete` … `rischio_tumorale` (livello), `sort` e `dir` (come la tabella), `limit` (1–500, default 100), `offset`.
+Parametri di `/api/alimenti`: `q` (ricerca nel nome, tollerante come nella tabella), `categoria`, `rischio_diabete` … `rischio_tumorale` (livello), `sicuri=1`, intervalli `<campo>_min` / `<campo>_max` per `kcal`, `zuccheri`, `fruttosio`, `fibre`, `grassi_saturi`, `sodio`, `rapporto`, `punteggio`, `sort` e `dir` (come la tabella, fino a tre criteri separati da virgole: `sort=categoria,kcal&dir=asc,desc`), `limit` (1–500, default 100), `offset`.
 
 ```bash
-curl "http://127.0.0.1:5000/api/alimenti?q=apple&rischio_diabete=Basso&sort=kcal&dir=desc&limit=5"
+curl "http://127.0.0.1:5000/api/alimenti?q=mele&rischio_diabete=Basso&kcal_max=60&sort=kcal&dir=desc&limit=5"
 ```
 
 Gli errori sono JSON: `{"errore": "...", "stato": 404}`. `GET /salute` risponde `200` se il database è leggibile (controllo per Docker e Render).

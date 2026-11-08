@@ -7,6 +7,7 @@ configurazione dell'app attiva.
 
 from __future__ import annotations
 
+import math
 import sqlite3
 from collections.abc import Mapping
 from datetime import datetime
@@ -18,32 +19,75 @@ import analisi
 import database
 import importazione
 import lingue
+import ricerca
+from lingue import N_
 
 Alimento = dict[str, Any]
 
 # Colonne lette da ogni query sugli alimenti, punteggio calcolato compreso
-SELECT_ALIMENTI = (
-    "SELECT *, punteggio(" + ", ".join(analisi.CAMPI_RISCHIO) + ") AS punteggio FROM alimenti"
+PUNTEGGIO_SQL = "punteggio(" + ", ".join(analisi.CAMPI_RISCHIO) + ")"
+SELECT_ALIMENTI = f"SELECT *, {PUNTEGGIO_SQL} AS punteggio FROM alimenti"
+
+# Livello di rischio come numero (Trascurabile 0 ... Alto 3, altri valori NULL)
+LIVELLO_SQL = (
+    "CASE LOWER(TRIM(COALESCE({campo}, '')))"
+    + "".join(f" WHEN '{liv['chiave']}' THEN {liv['punti']}" for liv in analisi.LIVELLI)
+    + " END"
 )
 
+# Espressioni di ordinamento: i valori NULL (dato mancante, rischio non
+# classificato) vanno sempre in fondo, in entrambe le direzioni
 SORT_EXPRESSIONS = {
     "alimento": "LOWER(alimento)",
-    "categoria": "LOWER(COALESCE(categoria, ''))",
-    "kcal": "COALESCE(kcal, 0)",
-    "tef_kcal": "COALESCE(tef_kcal, 0)",
-    "tef_percent": "COALESCE(tef_percent, 0)",
-    "kcal_nette": "COALESCE(kcal_nette, 0)",
-    "fruttosio": "COALESCE(fruttosio, 0)",
-    "fibre": "COALESCE(fibre, 0)",
-    "rapporto": "COALESCE(rapporto, 0)",
-    **{campo: f"LOWER(COALESCE({campo}, ''))" for campo in analisi.CAMPI_RISCHIO},
-    "punteggio": "COALESCE(punteggio(" + ", ".join(analisi.CAMPI_RISCHIO) + "), -1)",
+    "categoria": "NULLIF(LOWER(TRIM(COALESCE(categoria, ''))), '')",
+    "punteggio": PUNTEGGIO_SQL,
+    **{
+        campo: campo
+        for campo in (
+            "kcal", "kcal_nette", "tef_kcal", "tef_percent",
+            "fruttosio", "fibre", "rapporto", "zuccheri", "grassi_saturi", "sodio",
+        )
+    },
+    **{campo: LIVELLO_SQL.format(campo=campo) for campo in analisi.CAMPI_RISCHIO},
 }
 
-# Parametri di filtro della home (e di export e API), con le etichette per i file esportati
-ETICHETTE_FILTRI = {
+# Ordinamento per pertinenza alla ricerca: solo come primo criterio, con un testo cercato
+PERTINENZA = "pertinenza"
+ORDINAMENTI_MAX = 3
+
+# Filtri di uguaglianza (menu della home), con le etichette per i file esportati
+FILTRI_UGUALI = {
     "categoria": "Categoria",
     **{campo: f"Rischio {etichetta.lower()}" for campo, etichetta in analisi.RISCHI},
+}
+
+# Filtri a intervallo (da / fino a), per 100 g: campo -> etichetta
+CAMPI_INTERVALLO = {
+    "kcal": N_("Kcal"),
+    "zuccheri": N_("Zuccheri (g)"),
+    "fruttosio": N_("Fruttosio (g)"),
+    "fibre": N_("Fibre (g)"),
+    "grassi_saturi": N_("Grassi saturi (g)"),
+    "sodio": N_("Sodio (mg)"),
+    "rapporto": N_("Rapporto F/F"),
+    "punteggio": N_("Punteggio"),
+}
+
+LIMITI = (("min", ">=", "da"), ("max", "<=", "fino a"))
+
+# Alimenti «sicuri»: tutti e cinque i rischi classificati, al massimo Basso
+LIVELLI_SICURI = tuple(liv["chiave"] for liv in analisi.LIVELLI if liv["punti"] <= 1)
+
+# Tutti i parametri di filtro della home (e di export e API), con le etichette per i file esportati
+ETICHETTE_FILTRI = {
+    "q": "Ricerca",
+    **FILTRI_UGUALI,
+    "sicuri": "Solo alimenti sicuri",
+    **{
+        f"{campo}_{limite}": f"{etichetta} {parola}"
+        for campo, etichetta in CAMPI_INTERVALLO.items()
+        for limite, _operatore, parola in LIMITI
+    },
 }
 
 Filtri = dict[str, str]
@@ -53,19 +97,81 @@ def get_db() -> sqlite3.Connection:
     return database.connetti_alimenti(current_app.config["DATABASE_PATH"])
 
 
+def _numero_filtro(testo: object) -> str:
+    """
+    Limite di un filtro a intervallo, come testo normalizzato ("2.5"), o "" se non valido.
+    """
+    try:
+        valore = float(str(testo or "").strip().replace(",", "."))
+    except ValueError:
+        return ""
+
+    return f"{valore:g}" if math.isfinite(valore) and valore >= 0 else ""
+
+
+def _valori(args: Mapping[str, str], nome: str) -> list[str]:
+    """
+    Valori di un parametro: ripetuto (?sort=a&sort=b, dai menu) o separato da virgole.
+    """
+    getlist = getattr(args, "getlist", None)
+    valori = getlist(nome) if getlist else [args.get(nome) or ""]
+
+    if len(valori) == 1:
+        return [v.strip() for v in valori[0].split(",")]
+
+    return [v.strip() for v in valori]
+
+
+def ordinamenti(campi: list[str], direzioni: list[str], ricerca: bool) -> list[tuple[str, str]]:
+    """
+    Criteri di ordinamento validi, (campo, "asc"/"desc"), al massimo
+    ORDINAMENTI_MAX e senza ripetizioni. Senza criteri: per pertinenza se
+    c'è un testo cercato, altrimenti per nome.
+    """
+    scelti: list[tuple[str, str]] = []
+
+    for i, campo in enumerate(campi):
+        direzione = direzioni[i].lower() if i < len(direzioni) else ""
+
+        if campo == PERTINENZA:
+            valido = ricerca and not scelti
+            direzione = "desc"
+        else:
+            valido = campo in SORT_EXPRESSIONS
+
+        if valido and campo not in (c for c, _ in scelti):
+            scelti.append((campo, direzione if direzione in ("asc", "desc") else "asc"))
+
+    if not scelti:
+        scelti = [(PERTINENZA, "desc")] if ricerca else [("alimento", "asc")]
+
+    return scelti[:ORDINAMENTI_MAX]
+
+
 def leggi_filtri(args: Mapping[str, str]) -> tuple[Filtri, str, str]:
     """
-    (filtri, sort, direction) dalla query string, già validati.
+    (filtri, sort, direction) dalla query string, già validati. sort e
+    direction possono avere più criteri separati da virgole («categoria,kcal»
+    con «asc,desc»).
     """
-    filtri = {campo: (args.get(campo) or "").strip() for campo in ETICHETTE_FILTRI}
+    filtri = {campo: (args.get(campo) or "").strip() for campo in FILTRI_UGUALI}
+    q = " ".join((args.get("q") or "").split())[: ricerca.LUNGHEZZA_MASSIMA]
+    sicuri = (args.get("sicuri") or "").strip().lower() in ("1", "on", "true", "si", "sì")
 
-    sort = (args.get("sort") or "alimento").strip()
-    if sort not in SORT_EXPRESSIONS:
-        sort = "alimento"
+    filtri = {
+        "q": q,
+        **filtri,
+        "sicuri": "1" if sicuri else "",
+        **{
+            nome: _numero_filtro(args.get(nome))
+            for nome in ETICHETTE_FILTRI
+            if nome.endswith(("_min", "_max"))
+        },
+    }
 
-    direction = (args.get("dir") or "asc").strip().lower()
-    if direction not in ("asc", "desc"):
-        direction = "asc"
+    criteri = ordinamenti(_valori(args, "sort"), _valori(args, "dir"), bool(q))
+    sort = ",".join(campo for campo, _ in criteri)
+    direction = ",".join(direzione for _, direzione in criteri)
 
     return filtri, sort, direction
 
@@ -74,42 +180,71 @@ def get_alimenti(
     filtri: Mapping[str, str] | None = None,
     sort: str = "alimento",
     direction: str = "asc",
-    cerca: str = "",
 ) -> list[Alimento]:
     """
-    Alimenti filtrati (uguaglianza senza maiuscole per categoria e rischi,
-    testo contenuto nel nome per cerca) e ordinati.
+    Alimenti filtrati e ordinati: categoria e rischi uguali (maiuscole
+    indifferenti), «sicuri», intervalli di valori, ricerca nel nome
+    (ricerca.py). sort e direction come da leggi_filtri.
     """
-    sort_expr = SORT_EXPRESSIONS.get(sort, SORT_EXPRESSIONS["alimento"])
-    dir_sql = "DESC" if direction.lower() == "desc" else "ASC"
+    filtri = filtri or {}
+    q = (filtri.get("q") or "").strip()
+    criteri = ordinamenti(sort.split(","), direction.split(","), bool(q))
 
     clausole = []
-    parametri: list[str] = []
+    parametri: list[Any] = []
 
-    for campo in ETICHETTE_FILTRI:
-        valore = (filtri or {}).get(campo, "")
+    for campo in FILTRI_UGUALI:
+        valore = filtri.get(campo, "")
 
         if valore:
             clausole.append(f"LOWER(COALESCE({campo}, '')) = LOWER(?)")
             parametri.append(valore)
 
-    if cerca.strip():
-        clausole.append("instr(LOWER(alimento), LOWER(?)) > 0")
-        parametri.append(cerca.strip())
+    if filtri.get("sicuri"):
+        segnaposti = ", ".join("?" for _ in LIVELLI_SICURI)
+
+        for campo in analisi.CAMPI_RISCHIO:
+            clausole.append(f"LOWER(TRIM(COALESCE({campo}, ''))) IN ({segnaposti})")
+            parametri.extend(LIVELLI_SICURI)
+
+    for campo in CAMPI_INTERVALLO:
+        espressione = SORT_EXPRESSIONS[campo]
+
+        for limite, operatore, _parola in LIMITI:
+            valore = _numero_filtro(filtri.get(f"{campo}_{limite}"))
+
+            if valore:
+                clausole.append(f"({espressione}) IS NOT NULL AND ({espressione}) {operatore} ?")
+                parametri.append(float(valore))
 
     sql = SELECT_ALIMENTI
 
     if clausole:
         sql += " WHERE " + " AND ".join(clausole)
 
-    sql += f" ORDER BY {sort_expr} {dir_sql}, LOWER(alimento) ASC, id ASC"
+    ordine = [
+        f"({SORT_EXPRESSIONS[campo]}) IS NULL, ({SORT_EXPRESSIONS[campo]}) {direzione.upper()}"
+        for campo, direzione in criteri
+        if campo != PERTINENZA
+    ]
+    sql += " ORDER BY " + ", ".join([*ordine, "LOWER(alimento) ASC", "id ASC"])
 
     conn = get_db()
 
     try:
-        return [dict(riga) for riga in conn.execute(sql, parametri).fetchall()]
+        alimenti = [dict(riga) for riga in conn.execute(sql, parametri).fetchall()]
     finally:
         conn.close()
+
+    if not q:
+        return alimenti
+
+    trovati = ricerca.cerca(alimenti, q)
+
+    if criteri[0][0] == PERTINENZA:
+        trovati.sort(key=lambda coppia: -coppia[1])
+
+    return [alimento for alimento, _punti in trovati]
 
 
 def get_alimento(alimento_id: int) -> Alimento | None:
@@ -284,7 +419,7 @@ def get_filter_options() -> dict[str, list[Opzione]]:
                     f"WHERE TRIM(COALESCE({campo}, '')) <> '' ORDER BY {campo}"
                 ).fetchall()
             ]
-            for campo in ETICHETTE_FILTRI
+            for campo in FILTRI_UGUALI
         }
     finally:
         conn.close()

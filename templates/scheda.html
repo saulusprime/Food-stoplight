@@ -39,6 +39,10 @@
         📄 {{ _('Esporta PDF') }}
     </a>
 
+    <a href="{{ url_for('confronta', id=item.id) }}" class="btn btn-outline-primary btn-sm">
+        ⇄ {{ _('Confronta con altri') }}
+    </a>
+
     {% if current_user.is_admin %}
         <a href="{{ url_for('modifica', alimento_id=item.id) }}" class="btn btn-outline-primary btn-sm">
             ✏️ {{ _('Modifica') }}
