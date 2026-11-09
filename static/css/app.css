@@ -1818,6 +1818,24 @@ main:focus {
 }
 
 /* ---------------------------------------------------------------
+   Tabella offline (static/js/tabella.js): avviso; grafici,
+   classifiche ed export nascosti perché riferiti a tutta la tabella
+   --------------------------------------------------------------- */
+.avviso-offline {
+    margin: 0 0 0.75rem;
+    padding: 0.6rem 0.9rem;
+    border-left: 4px solid var(--stato-warning);
+    border-radius: 0.5rem;
+    background: var(--superficie);
+    color: var(--testo);
+    font-size: 0.9rem;
+}
+
+html.tabella-sul-dispositivo .solo-online {
+    display: none !important;
+}
+
+/* ---------------------------------------------------------------
    Barra del confronto: con JavaScript compare (fissa in basso)
    solo quando c'è almeno un alimento selezionato
    --------------------------------------------------------------- */

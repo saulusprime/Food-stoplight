@@ -167,15 +167,49 @@ def test_date_e_numeri_in_inglese(app, modulo):
         assert modulo.filtro_migliaia(20000) == "20.000"
 
 
-def test_export_e_api_restano_in_italiano(client):
+def test_export_in_inglese_e_reimport(client):
     in_inglese(client)
-    righe = list(csv.reader(io.StringIO(client.get("/esporta/csv").data.decode("utf-8-sig")), delimiter=";"))
+    risposta = client.get("/esporta/csv?categoria=Verdura&q=asparagi")
+    assert "foods_filtered_" in risposta.headers["Content-Disposition"]
+    testo = risposta.data.decode("utf-8-sig")
+    righe = list(csv.DictReader(io.StringIO(testo)))          # virgola come separatore
+    assert list(righe[0])[:4] == ["ID", "Food", "Category", "Score"]
+    asparagi = next(r for r in righe if r["ID"] == str(ASPARAGI))
+    assert asparagi["Category"] == "Vegetables"
+    assert asparagi["Diabetes risk"] in ("Negligible", "Low", "Medium", "High")
+    assert "." in asparagi["Kcal"] or asparagi["Kcal"].isdigit()   # punto decimale
+
+    # Il file inglese si reimporta: intestazioni e categoria tornano ai campi italiani
+    letto = importazione.leggi_file("foods.csv", risposta.data)
+    riga = next(r for r in letto["righe"] if r["id"] == ASPARAGI)
+    assert riga["valori"]["categoria"] == "Verdura"
+    assert riga["valori"]["kcal"] == float(asparagi["Kcal"])
+    assert not [a for r in letto["righe"] for a in r["avvisi"]]
+
+    xlsx = client.get("/esporta/xlsx")
+    assert "foods_" in xlsx.headers["Content-Disposition"]
+    pdf = client.get(f"/alimento/{ASPARAGI}/pdf")
+    assert pdf.data.startswith(b"%PDF") and "food_" in pdf.headers["Content-Disposition"]
+
+
+def test_export_italiano_predefinito(client):
+    risposta = client.get("/esporta/csv")
+    righe = list(csv.reader(io.StringIO(risposta.data.decode("utf-8-sig")), delimiter=";"))
     assert righe[0][:3] == ["ID", "Alimento", "Categoria"]
+    assert "alimenti_" in risposta.headers["Content-Disposition"]
 
-    dati = client.get(f"/api/alimenti/{ASPARAGI}").get_json()
-    assert dati["livello_medio"] == "Basso"
 
+def test_api_messaggi_nella_lingua_della_richiesta(client):
+    inglese = {"Accept-Language": "en"}
     assert client.get("/api/inesistente").get_json()["errore"] == "Risorsa non trovata."
+    assert client.get("/api/inesistente", headers=inglese).get_json()["errore"] == "Resource not found."
+    assert client.get("/api/alimenti?limit=abc", headers=inglese).get_json()["errore"] == "limit: an integer is required."
+    assert client.get("/api/alimenti/999999", headers=inglese).get_json()["errore"] == "Food 999999 not found."
+    assert "Accept-Language" in client.get("/api", headers=inglese).get_json()["lingua"]
+
+    # I dati restano in italiano: sono identificatori stabili
+    dati = client.get(f"/api/alimenti/{ASPARAGI}", headers=inglese).get_json()
+    assert dati["livello_medio"] == "Basso" and dati["categoria"] == "Verdura"
 
 
 def test_riga_di_comando_resta_in_italiano():

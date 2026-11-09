@@ -9,6 +9,10 @@ API REST in sola lettura (JSON).
 
 Stessi permessi della consultazione web: pubblica, oppure con login se
 ACCESSO_PUBBLICO=false (in quel caso senza sessione si riceve 401 JSON).
+
+I messaggi (errori, descrizione dei parametri) seguono la lingua della
+richiesta: intestazione Accept-Language o cookie della lingua scelta nel
+sito. Chiavi e valori dei dati (categorie, livelli) restano in italiano.
 """
 
 from __future__ import annotations
@@ -17,13 +21,16 @@ from typing import Any
 
 from flask import Blueprint, abort, jsonify, request, url_for
 from flask.typing import ResponseReturnValue
+from flask_babel import gettext as _
 from werkzeug.exceptions import HTTPException
 
 import analisi
 import archivio
 import importazione
+import lingue
 import nutrienti
 import ricette
+from lingue import N_
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -64,11 +71,15 @@ def _intero(nome: str, predefinito: int, minimo: int, massimo: int | None = None
     try:
         valore = int(testo)
     except ValueError:
-        abort(400, description=f"{nome}: serve un numero intero.")
+        abort(400, description=_("%(nome)s: serve un numero intero.", nome=nome))
 
     if valore < minimo or (massimo is not None and valore > massimo):
-        intervallo = f"tra {minimo} e {massimo}" if massimo is not None else f"da {minimo} in su"
-        abort(400, description=f"{nome}: valore fuori intervallo ({intervallo}).")
+        if massimo is not None:
+            intervallo = _("tra %(minimo)d e %(massimo)d", minimo=minimo, massimo=massimo)
+        else:
+            intervallo = _("da %(minimo)d in su", minimo=minimo)
+        abort(400, description=_("%(nome)s: valore fuori intervallo (%(intervallo)s).",
+                                 nome=nome, intervallo=intervallo))
 
     return valore
 
@@ -83,25 +94,27 @@ def indice() -> ResponseReturnValue:
             "categorie": url_for("api.elenco_categorie", _external=True),
         },
         "parametri_alimenti": {
-            "q": "testo cercato nel nome: anche parziale, senza accenti, singolare o plurale, "
-                 "con qualche errore di battitura",
-            "categoria": "categoria (uguale, maiuscole indifferenti)",
-            **dict.fromkeys(analisi.CAMPI_RISCHIO, "livello: Trascurabile, Basso, Medio, Alto"),
-            "sicuri": "1: solo alimenti con tutti i rischi classificati e al massimo Basso",
+            "q": _("testo cercato nel nome: anche parziale, senza accenti, singolare o plurale, "
+                   "con qualche errore di battitura"),
+            "categoria": _("categoria in italiano (uguale, maiuscole indifferenti)"),
+            **dict.fromkeys(analisi.CAMPI_RISCHIO, _("livello: Trascurabile, Basso, Medio, Alto")),
+            "sicuri": _("1: solo alimenti con tutti i rischi classificati e al massimo Basso"),
             **{
-                f"{campo}_{limite}": f"{'minimo' if limite == 'min' else 'massimo'} per 100 g (compreso)"
+                f"{campo}_{limite}": _("minimo per 100 g (compreso)") if limite == "min"
+                else _("massimo per 100 g (compreso)")
                 for campo in archivio.CAMPI_INTERVALLO
                 for limite, _operatore, _parola in archivio.LIMITI
             },
-            "sort": (
-                f"fino a {archivio.ORDINAMENTI_MAX} campi separati da virgole tra: "
-                + ", ".join(archivio.SORT_EXPRESSIONS)
-                + f"; con q anche {archivio.PERTINENZA} (predefinito)"
+            "sort": _(
+                "fino a %(n)d campi separati da virgole tra: %(campi)s; con q anche %(pertinenza)s (predefinito)",
+                n=archivio.ORDINAMENTI_MAX, campi=", ".join(archivio.SORT_EXPRESSIONS), pertinenza=archivio.PERTINENZA,
             ),
-            "dir": "asc oppure desc, una per campo separate da virgole",
-            "limit": f"risultati per pagina, 1-{LIMITE_MASSIMO} (default {LIMITE_PREDEFINITO})",
-            "offset": "risultati da saltare (default 0)",
+            "dir": _("asc oppure desc, una per campo separate da virgole"),
+            "limit": _("risultati per pagina, 1-%(massimo)d (predefinito %(predefinito)d)",
+                       massimo=LIMITE_MASSIMO, predefinito=LIMITE_PREDEFINITO),
+            "offset": _("risultati da saltare (predefinito 0)"),
         },
+        "lingua": _("Messaggi nella lingua di Accept-Language (it, en); chiavi e valori dei dati in italiano."),
     })
 
 
@@ -133,7 +146,7 @@ def alimento(alimento_id: int) -> ResponseReturnValue:
     trovato = archivio.get_alimento(alimento_id)
 
     if trovato is None:
-        abort(404, description=f"Alimento {alimento_id} non trovato.")
+        abort(404, description=_("Alimento %(id)d non trovato.", id=alimento_id))
 
     return jsonify(serializza(trovato))
 
@@ -151,23 +164,23 @@ def elenco_categorie() -> ResponseReturnValue:
 
 
 MESSAGGI = {
-    400: "Richiesta non valida.",
-    401: "Autenticazione richiesta.",
-    403: "Accesso negato.",
-    404: "Risorsa non trovata.",
-    405: "Metodo non consentito: l'API è in sola lettura.",
+    400: N_("Richiesta non valida."),
+    401: N_("Autenticazione richiesta."),
+    403: N_("Accesso negato."),
+    404: N_("Risorsa non trovata."),
+    405: N_("Metodo non consentito: l'API è in sola lettura."),
 }
 
 
 def errore_json(errore: HTTPException) -> ResponseReturnValue:
     """
     Errori dell'API in JSON: {"errore": ..., "stato": ...}. I messaggi generici
-    di Werkzeug (in inglese) diventano quelli italiani di MESSAGGI.
+    di Werkzeug diventano quelli di MESSAGGI, nella lingua della richiesta.
     """
     codice = errore.code or 500
     messaggio = errore.description
 
-    if messaggio == type(errore).description:
-        messaggio = MESSAGGI.get(codice, messaggio)
+    if messaggio == type(errore).description and codice in MESSAGGI:
+        messaggio = lingue.traduci(MESSAGGI[codice])
 
     return jsonify({"errore": messaggio, "stato": codice}), codice

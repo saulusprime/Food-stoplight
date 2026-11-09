@@ -227,8 +227,8 @@ def test_export_con_ricerca_e_intervalli(client):
         info = applicazione.info_export({"q": "mele", "sicuri": "1", "kcal_max": "60.5"}, "categoria,kcal", "asc,desc", 3)
     assert ("Ricerca", "mele") in info["filtri"]
     assert ("Solo alimenti sicuri", "sì") in info["filtri"]
-    assert ("Kcal fino a", "60,5") in info["filtri"]
-    assert info["ordinamento"] == "Categoria (crescente), poi Kcal (decrescente)"
+    assert ("Kcal", "≤ 60,5") in info["filtri"]
+    assert info["ordinamento"] == "Categoria (crescente), poi per Kcal (decrescente)"
 
 
 def test_api_ricerca_e_filtri(client):

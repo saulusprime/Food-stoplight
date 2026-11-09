@@ -13,7 +13,7 @@ from datetime import date, datetime, timedelta
 from functools import wraps
 from pathlib import Path
 from typing import Any, TypeVar, cast
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 
 import click
 from flask import (
@@ -199,6 +199,8 @@ def testi_js() -> dict[str, Any]:
         "confrontoPronti": _("Pronti per il confronto."),
         "confrontoTogli": _("Togli dal confronto:"),
         "confrontoMassimo": _("Puoi confrontare al massimo %(n)d alimenti.", n=CONFRONTO_MAX),
+        "tabellaUno": _("{n} alimento nella copia salvata"),
+        "tabellaMolti": _("{n} alimenti nella copia salvata"),
     }
 
 
@@ -277,7 +279,6 @@ get_alimento = archivio.get_alimento
 get_alimenti = archivio.get_alimenti
 get_stats = archivio.get_stats
 SORT_EXPRESSIONS = archivio.SORT_EXPRESSIONS
-ETICHETTE_FILTRI = archivio.ETICHETTE_FILTRI
 
 
 def leggi_filtri() -> tuple[archivio.Filtri, str, str]:
@@ -753,6 +754,11 @@ def index() -> ResponseReturnValue:
 
     for a in righe:
         a["medaglie"] = medaglie.get(a["id"], [])
+        # Valori per filtri e ordinamento sul dispositivo (static/js/tabella.js)
+        a["_rischi"] = "|".join(a.get(campo) or "" for campo in analisi.CAMPI_RISCHIO)
+        a["_valori"] = "|".join(
+            "" if a.get(campo) is None else repr(float(a[campo])) for campo in archivio.CAMPI_NUMERICI_ORDINABILI
+        )
 
     distribuzione_rischi = analisi.distribuzione_rischi(alimenti)
     opzioni = get_filter_options()
@@ -785,6 +791,14 @@ def index() -> ResponseReturnValue:
             "dir": direction,
         },
         parametri_tabella=g.parametri_tabella,
+        vista_dispositivo={
+            "parametri": urlencode({k: v for k, v in g.parametri_tabella.items() if k != "per_pagina"}),
+            "rischi": analisi.CAMPI_RISCHIO,
+            "valori": archivio.CAMPI_NUMERICI_ORDINABILI,
+            "intervalli": list(archivio.CAMPI_INTERVALLO),
+            "ordinabili": list(archivio.SORT_EXPRESSIONS),
+            "ordinamenti_max": archivio.ORDINAMENTI_MAX,
+        },
         criteri=criteri,
         colonne=ordine_colonne(criteri),
         opzioni_ordine=[
@@ -1157,24 +1171,51 @@ def nome_file_sicuro(testo: str | None, alternativa: str) -> str:
     return nome or alternativa
 
 
+def filtro_esportato(campo: str, valore: str) -> tuple[str, str]:
+    """
+    (nome, valore) di un filtro per l'intestazione dei file esportati, nella
+    lingua della richiesta: «Categoria Frutta», «Kcal ≤ 100», «Ricerca mele».
+    """
+    if campo == "q":
+        return _("Ricerca"), valore
+
+    if campo == "sicuri":
+        return _("Solo alimenti sicuri"), _("sì")
+
+    if campo in archivio.FILTRI_UGUALI:
+        nome = _("Categoria") if campo == "categoria" else lingue.traduci(importazione.ETICHETTE[campo])
+        return nome, lingue.traduci(valore)
+
+    base, limite = campo.rsplit("_", 1)
+    simbolo = "≥" if limite == "min" else "≤"
+    return lingue.traduci(archivio.CAMPI_INTERVALLO[base]), f"{simbolo} {lingue.decimale(valore)}"
+
+
 def info_export(filtri: archivio.Filtri, sort: str, direction: str, totale: int) -> esportazione.InfoExport:
     criteri = archivio.ordinamenti(sort.split(","), direction.split(","), bool(filtri.get("q")))
 
     def descrizione(campo: str, direzione: str) -> str:
+        etichetta = lingue.traduci(ETICHETTE_ORDINAMENTO.get(campo, campo))
+
         if campo == archivio.PERTINENZA:
-            return ETICHETTE_ORDINAMENTO[campo]
-        return f"{ETICHETTE_ORDINAMENTO.get(campo, campo)} ({'decrescente' if direzione == 'desc' else 'crescente'})"
+            return etichetta
+
+        verso = lingue.traduci("Decrescente" if direzione == "desc" else "Crescente").lower()
+        return f"{etichetta} ({verso})"
 
     return {
-        "filtri": [
-            (ETICHETTE_FILTRI[campo], "sì" if campo == "sicuri" else valore.replace(".", ","))
-            for campo, valore in filtri.items()
-            if valore
-        ],
-        "ordinamento": ", poi ".join(descrizione(campo, direzione) for campo, direzione in criteri),
+        "filtri": [filtro_esportato(campo, valore) for campo, valore in filtri.items() if valore],
+        "ordinamento": f", {_('poi per')} ".join(descrizione(campo, direzione) for campo, direzione in criteri),
         "data": datetime.now(),
         "totale": totale,
     }
+
+
+# Nomi dei file esportati: (tabella, tabella con filtri, scheda) per lingua
+NOMI_FILE = {
+    "it": ("alimenti", "alimenti_filtrati", "scheda"),
+    "en": ("foods", "foods_filtered", "food"),
+}
 
 
 @app.route("/esporta/<formato>")
@@ -1196,8 +1237,8 @@ def esporta(formato: str) -> ResponseReturnValue:
     else:
         dati = esportazione.pdf_tabella(alimenti, info)
 
-    suffisso = "_filtrati" if any(filtri.values()) else ""
-    nome = f"alimenti{suffisso}_{info['data']:%Y-%m-%d}.{formato}"
+    tutti, filtrati, _scheda = NOMI_FILE.get(lingue.corrente(), NOMI_FILE["it"])
+    nome = f"{filtrati if any(filtri.values()) else tutti}_{info['data']:%Y-%m-%d}.{formato}"
     return invia_file(dati, nome, FORMATI_EXPORT[formato])
 
 
@@ -1210,7 +1251,8 @@ def scheda_pdf(alimento_id: int) -> ResponseReturnValue:
 
     medaglie = analisi.medaglie_per_alimento(get_alimenti()).get(alimento_id, [])
     dati = esportazione.pdf_scheda(item, medaglie, analisi.POSTI_MEDAGLIA, datetime.now())
-    nome = f"scheda_{nome_file_sicuro(item['alimento'], str(alimento_id))}.pdf"
+    prefisso = NOMI_FILE.get(lingue.corrente(), NOMI_FILE["it"])[2]
+    nome = f"{prefisso}_{nome_file_sicuro(item['alimento'], str(alimento_id))}.pdf"
     return invia_file(dati, nome, FORMATI_EXPORT["pdf"])
 
 

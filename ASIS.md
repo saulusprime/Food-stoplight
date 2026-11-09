@@ -98,11 +98,18 @@ Commit `2ad9b63` — 8 novembre 2026 — la home mostra 50 righe per pagina (cir
 
 ## 🌐 Integrazione dati: fonti aggiuntive
 
-8 novembre 2026 — nuova fonte CoFID 2021 (tabella britannica, Open Government Licence v3.0), ricette calcolate dagli ingredienti, appendice di Atkinson 2008. Non classificati: colesterolo da 195 a 52 alimenti, malassorbimento da 217 a 79
+Commit `a8f0ea9` — 8 novembre 2026 — nuova fonte CoFID 2021 (tabella britannica, Open Government Licence v3.0), ricette calcolate dagli ingredienti, appendice di Atkinson 2008. Non classificati: colesterolo da 195 a 52 alimenti, malassorbimento da 217 a 79
 
 - [x] Grassi saturi per carni e pesci che il CREA pubblica senza percentuale degli acidi grassi: percentuale di saturi da un alimento CoFID simile (alimenti senza saturi da 281 a 134)
 - [x] Fruttosio per ricette, biscotti e prodotti da forno: profilo degli zuccheri da CoFID (anche al posto di 15 abbinamenti USDA con sciroppo di mais, come la cola) e ricette CREA calcolate dagli ingredienti (alimenti senza fruttosio da 229 a 82)
 - [x] Indice glicemico oltre le 62 voci della tabella di Atkinson 2008: appendice A1 (singoli studi), da 83 a 190 alimenti; le tabelle 2021 restano non accessibili (vedi TODO)
 - [x] Materiale per la revisione delle regole da parte di un nutrizionista: `docs/revisione_regole.md` (la revisione resta nel TODO)
 - [x] Corretta la sincronizzazione USDA: gli alimenti CREA abbinati a USDA senza campi presi da lì (3) non vengono più sovrascritti
+
+## 📱 Esperienza utente: export in inglese e tabella offline
+
+9 novembre 2026 — export e messaggi dell'API seguono la lingua; senza rete ricerca, filtri e ordinamento funzionano sulla copia salvata della tabella
+
+- [x] Export (CSV, Excel, PDF) e messaggi dell'API anche in inglese: intestazioni, categorie, livelli e testi nella lingua dell'interfaccia (CSV inglese con virgola e punto decimale); l'import riconosce intestazioni, categorie e livelli in entrambe le lingue; nell'API i messaggi seguono `Accept-Language`, chiavi e valori dei dati restano in italiano
+- [x] Filtri e ricerca anche offline: ricerca tollerante, filtri (anche per valori e «solo sicuri») e ordinamento multiplo applicati sul dispositivo alla copia salvata (`static/js/tabella.js`), con le stesse regole del server; un test confronta la ricerca JavaScript con quella Python
 

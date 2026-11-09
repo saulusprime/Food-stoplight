@@ -194,7 +194,7 @@
    ---------------------------------------------------------------- #}
 
 {% if alimenti %}
-<div class="row g-3 mb-3 align-items-start">
+<div class="row g-3 mb-3 align-items-start solo-online">
 
     <div class="col-lg-5">
         <section class="card grafico-card" aria-labelledby="titolo-categorie">
@@ -329,7 +329,7 @@
 
 </div>
 
-<div class="row g-3 mb-2">
+<div class="row g-3 mb-2 solo-online">
     {% for medaglia, voci in classifiche %}
         <div class="col-md-4">
             <section class="card grafico-card h-100" aria-labelledby="classifica-{{ medaglia.chiave }}">
@@ -357,7 +357,7 @@
     {% endfor %}
 </div>
 
-<p class="text-muted small mb-3">
+<p class="text-muted small mb-3 solo-online">
     {% set icone %}{% for medaglia, _voci in classifiche %}<span aria-hidden="true">{{ medaglia.icona }}</span> {% endfor %}{% endset %}
     {% trans icone=icone, n=posti_medaglia %}Nella tabella, le icone {{ icone }} accanto al nome segnalano gli alimenti tra i primi {{ n }} dell'intero database in ciascuna classifica.{% endtrans %}
 </p>
@@ -369,7 +369,7 @@
         {{ _('Tabella') }} <span class="text-muted fw-normal">· {{ ngettext('%(num)d alimento', '%(num)d alimenti', visualizzati) }}{% if paginazione.pagine > 1 %} · {{ _('righe %(da)d–%(a)d', da=paginazione.inizio + 1, a=paginazione.fine) }}{% endif %}</span>
     </h2>
 
-    <div class="d-flex flex-wrap align-items-center gap-2" role="group" aria-labelledby="etichetta-export">
+    <div class="d-flex flex-wrap align-items-center gap-2 solo-online" role="group" aria-labelledby="etichetta-export">
         <span class="small text-muted" id="etichetta-export">{% if filtri_attivi %}{{ _('Esporta con i filtri:') }}{% else %}{{ _('Esporta:') }}{% endif %}</span>
         <a href="{{ url_for('esporta', formato='csv', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>CSV</a>
         <a href="{{ url_for('esporta', formato='xlsx', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>Excel</a>
@@ -491,9 +491,15 @@
 }
 </style>
 
+{# Senza rete la tabella è la copia completa salvata: static/js/tabella.js vi applica
+   ricerca, filtri e ordinamento dell'indirizzo e mostra questo avviso #}
+<p class="avviso-offline" id="avviso-offline-tabella" role="status" hidden>
+    {{ _('Sei offline: ricerca, filtri e ordinamento sono applicati alla copia della tabella salvata sul dispositivo. Grafici, classifiche ed export tornano con la rete.') }}
+</p>
+
 <div class="card table-card">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 tabella-alimenti" aria-labelledby="titolo-tabella">
+        <table class="table table-hover align-middle mb-0 tabella-alimenti" aria-labelledby="titolo-tabella" data-vista='{{ vista_dispositivo|tojson }}'>
             <thead>
                 <tr>
                     {{ th_sortable('alimento', _('Alimento')) }}
@@ -526,7 +532,7 @@
                     {%- if a.categoria and a.categoria not in CATEGORIE_TRADOTTE %}
                         {%- set _aggiunta = CATEGORIE_TRADOTTE.update({a.categoria: a.categoria|traduci}) %}
                     {%- endif %}
-                    <tr>
+                    <tr data-id="{{ a.id }}" data-c="{{ a.categoria or '' }}" data-r="{{ a._rischi }}" data-v="{{ a._valori }}">
                         <td class="col-nome">
                             <div class="nome-cella">
                             <input type="checkbox" class="form-check-input seleziona-confronto" name="id" value="{{ a.id }}"
@@ -605,6 +611,13 @@
                         </td>
                     </tr>
                 {%- endfor %}
+                {%- if alimenti %}
+                    <tr id="tabella-vuota-offline" hidden>
+                        <td colspan="{{ 16 if current_user.is_admin else 15 }}" class="text-center py-4">
+                            {{ _('Nessun alimento trovato con i filtri correnti.') }}
+                        </td>
+                    </tr>
+                {%- endif %}
             </tbody>
         </table>
     </div>
@@ -655,4 +668,8 @@
         <button type="submit" class="btn btn-sm btn-primary">⇄ {{ _('Confronta') }}</button>
     </div>
 </form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tabella.js') }}"></script>
 {% endblock %}

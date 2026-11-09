@@ -10,6 +10,7 @@ from openpyxl import Workbook, load_workbook
 
 import esportazione
 import importazione
+import lingue
 from tests.aiuti import ASPARAGI, DB, applicazione, sql
 
 
@@ -56,9 +57,10 @@ def test_campo_colonna(intestazione, campo):
     assert importazione.campo_colonna(intestazione) == campo
 
 
-def test_tutte_le_colonne_esportate_si_reimportano():
-    derivate = {"punteggio", "carico_glicemico", "aggiornato_il"}
-    for campo, intestazione, _ in esportazione.COLONNE:
+@pytest.mark.parametrize("lingua", ["it", "en"])
+def test_tutte_le_colonne_esportate_si_reimportano(lingua):
+    derivate = set(esportazione.CAMPI_DERIVATI)
+    for campo, intestazione, _ in esportazione.intestazioni(lambda testo: lingue.traduci_in(testo, lingua)):
         atteso = None if campo in derivate else campo
         assert importazione.campo_colonna(intestazione) == atteso, intestazione
 
@@ -198,7 +200,7 @@ def test_xlsx_testo_non_diventa_formula_e_livelli_colorati():
     foglio = cartella["Alimenti"]
     intestazioni = [c.value for c in foglio[1]]
     assert foglio.cell(row=2, column=2).data_type == "s"
-    cella = foglio.cell(row=2, column=intestazioni.index("Rischio Diabete") + 1)
+    cella = foglio.cell(row=2, column=intestazioni.index("Rischio diabete") + 1)
     assert cella.fill.fgColor.rgb.upper().endswith("D03B3B")
     assert cartella.sheetnames == ["Alimenti", "Informazioni"]
 

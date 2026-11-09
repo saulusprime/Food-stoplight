@@ -1,8 +1,11 @@
 """
-Export della tabella alimenti (CSV, Excel, PDF) e della scheda alimento (PDF).
+Export della tabella alimenti (CSV, Excel, PDF) e della scheda alimento (PDF),
+nella lingua della richiesta: intestazioni, categorie, livelli e testi.
 
-I file CSV ed Excel usano le stesse intestazioni accettate dall'import,
-così si possono modificare e reimportare (le righe si abbinano per ID).
+I file CSV ed Excel usano le stesse intestazioni accettate dall'import (in
+entrambe le lingue), così si possono modificare e reimportare (le righe si
+abbinano per ID). Il CSV in italiano usa punto e virgola e virgola decimale,
+come lo apre Excel in italiano; in inglese virgola e punto decimale.
 """
 
 from __future__ import annotations
@@ -15,6 +18,8 @@ from collections.abc import Callable, Sequence
 from datetime import datetime
 from typing import Any, TypedDict
 
+from flask_babel import gettext as _
+from flask_babel import ngettext
 from fpdf import FPDF
 from openpyxl import Workbook
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
@@ -22,8 +27,10 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
 import analisi
+import lingue
 import nutrienti
 from analisi import Alimento
+from lingue import N_
 
 
 class InfoExport(TypedDict):
@@ -35,55 +42,65 @@ class InfoExport(TypedDict):
     data: datetime
     totale: int
 
-def _intestazione_nutriente(campo: str) -> str:
-    """
-    "Grassi saturi (g)", "Vitamina C (mg)": intestazioni riconosciute anche dall'import.
-    """
-    _, _, unita, _, _ = nutrienti.PER_CAMPO[campo]
-    return f"{nutrienti.ETICHETTE[campo]} ({unita})"
-
-
 def _formato_excel(decimali: int) -> str:
     return "0" if decimali == 0 else "0." + "0" * decimali
 
 
-# Colonne esportate: (campo, intestazione, formato numerico Excel)
+# Colonne esportate: (campo, intestazione da tradurre, formato numerico Excel, unità aggiunta all'intestazione)
 COLONNE = (
-    ("id", "ID", "0"),
-    ("alimento", "Alimento", None),
-    ("categoria", "Categoria", None),
-    ("punteggio", "Punteggio", "0"),
-    ("kcal", "Kcal", "0.0"),
-    ("tef_kcal", "TEF (Kcal)", "0.0"),
-    ("tef_percent", "TEF (%)", "0.0"),
-    ("kcal_nette", "Kcal Nette", "0.0"),
-    ("fruttosio", "Fruttosio (g/100g)", "0.00"),
-    ("fibre", "Fibre (g/100g)", "0.00"),
-    ("rapporto", "Rapporto F/Fibre", "0.000"),
-    *((campo, f"Rischio {etichetta}", None) for campo, etichetta in analisi.RISCHI),
-    # Dati nutrizionali per 100 g (vuoti = non disponibili)
-    *((campo, _intestazione_nutriente(campo), _formato_excel(decimali))
-      for campo, _, _, decimali, _ in nutrienti.NUTRIENTI),
-    ("indice_glicemico", "Indice glicemico", "0"),
-    ("carico_glicemico", "Carico glicemico (per 100 g)", "0.0"),
-    ("nova", "NOVA", "0"),
-    *((campo, nutrienti.ETICHETTE[campo], None) for campo in nutrienti.CAMPI_FODMAP),
-    ("fonte_nutrienti", "Fonte nutrienti", None),
-    ("url_fonte", "URL fonte", None),
-    ("fdc_id", "FDC ID", "0"),
-    ("codice_crea", "Codice CREA", None),
-    ("codice_barre", "Codice a barre", None),
-    ("campi_usda", "Campi da USDA", None),
-    ("codice_cofid", "Codice CoFID", None),
-    ("campi_cofid", "Campi da CoFID", None),
-    ("campi_ricetta", "Campi calcolati dagli ingredienti", None),
-    ("ingredienti", "Ingredienti della ricetta", None),
-    ("porzione", "Porzione tipica (g)", "0"),
-    ("note", "Note", None),
-    ("aggiornato_il", "Aggiornato il", None),
+    ("id", N_("ID"), "0", None),
+    ("alimento", N_("Alimento"), None, None),
+    ("categoria", N_("Categoria"), None, None),
+    ("punteggio", N_("Punteggio"), "0", None),
+    ("kcal", N_("Kcal"), "0.0", None),
+    ("tef_kcal", N_("TEF (Kcal)"), "0.0", None),
+    ("tef_percent", N_("TEF (%)"), "0.0", None),
+    ("kcal_nette", N_("Kcal Nette"), "0.0", None),
+    ("fruttosio", N_("Fruttosio (g/100g)"), "0.00", None),
+    ("fibre", N_("Fibre (g/100g)"), "0.00", None),
+    ("rapporto", N_("Rapporto F/Fibre"), "0.000", None),
+    *((campo, f"Rischio {etichetta.lower()}", None, None) for campo, etichetta in analisi.RISCHI),
+    # Dati nutrizionali per 100 g (vuoti = non disponibili): "Grassi saturi (g)", "Vitamina C (mg)"
+    *((campo, nutrienti.ETICHETTE[campo], _formato_excel(decimali), unita)
+      for campo, _, unita, decimali, _ in nutrienti.NUTRIENTI),
+    ("indice_glicemico", N_("Indice glicemico"), "0", None),
+    ("carico_glicemico", N_("Carico glicemico (per 100 g)"), "0.0", None),
+    ("nova", N_("NOVA"), "0", None),
+    *((campo, nutrienti.ETICHETTE[campo], None, None) for campo in nutrienti.CAMPI_FODMAP),
+    ("fonte_nutrienti", N_("Fonte nutrienti"), None, None),
+    ("url_fonte", N_("URL fonte"), None, None),
+    ("fdc_id", N_("FDC ID"), "0", None),
+    ("codice_crea", N_("Codice CREA"), None, None),
+    ("codice_barre", N_("Codice a barre"), None, None),
+    ("campi_usda", N_("Campi da USDA"), None, None),
+    ("codice_cofid", N_("Codice CoFID"), None, None),
+    ("campi_cofid", N_("Campi da CoFID"), None, None),
+    ("campi_ricetta", N_("Campi calcolati dagli ingredienti"), None, None),
+    ("ingredienti", N_("Ingredienti della ricetta"), None, None),
+    ("porzione", N_("Porzione tipica (g)"), "0", None),
+    ("note", N_("Note"), None, None),
+    ("aggiornato_il", N_("Aggiornato il"), None, None),
 )
 
-CAMPI_NUMERICI = {campo for campo, _, formato in COLONNE if formato}
+CAMPI_NUMERICI = {campo for campo, _, formato, _ in COLONNE if formato}
+
+# Campi derivati: si esportano ma l'import li ricalcola
+CAMPI_DERIVATI = ("punteggio", "carico_glicemico", "aggiornato_il")
+
+# Valori di testo scritti in italiano nel database e tradotti nell'export
+CAMPI_TRADOTTI = ("categoria", *analisi.CAMPI_RISCHIO, *nutrienti.CAMPI_FODMAP)
+
+
+def intestazioni(traduttore: Callable[[str], str] = lingue.traduci) -> list[tuple[str, str, str | None]]:
+    """
+    (campo, intestazione, formato Excel) delle colonne, con le intestazioni
+    tradotte da traduttore (predefinito: la lingua della richiesta).
+    """
+    return [
+        (campo, f"{traduttore(etichetta)} ({unita})" if unita else traduttore(etichetta), formato)
+        for campo, etichetta, formato, unita in COLONNE
+    ]
+
 
 # Colori dei livelli, gli stessi di static/css/app.css (--stato-*)
 COLORI_STATO = {
@@ -101,7 +118,7 @@ SFONDO_RIGA_ALTERNA = "f7f7f5"
 ACCENTO = "2a78d6"
 TRACCIA_METRO = "e3e2de"
 
-DISCLAIMER = (
+DISCLAIMER = N_(
     "Dati a scopo informativo e di studio: non sostituiscono "
     "il parere di un medico o di un nutrizionista."
 )
@@ -145,16 +162,34 @@ def colori_livello(valore: object) -> tuple[str, str] | None:
     return sfondo, colore_testo(sfondo)
 
 
-def numero_it(valore: float | str | None, decimali: int | None = None) -> str:
+def numero(valore: float | str | None, decimali: int | None = None) -> str:
     """
-    Numero con virgola decimale; senza decimali indicati usa la forma compatta.
+    Numero con il separatore decimale della lingua (virgola in italiano);
+    senza decimali indicati usa la forma compatta.
     """
     if valore is None or valore == "":
         return "–"
 
-    numero = float(valore)
-    testo = f"{numero:g}" if decimali is None else f"{numero:.{decimali}f}"
-    return testo.replace(".", ",")
+    cifra = float(valore)
+    testo = f"{cifra:g}" if decimali is None else f"{cifra:.{decimali}f}"
+    return lingue.decimale(testo)
+
+
+def data_ora(momento: datetime) -> str:
+    """
+    Data e ora dell'export: 07/11/2026 14:30 in italiano, 2026-11-07 14:30 in inglese.
+    """
+    return f"{momento:%d/%m/%Y %H:%M}" if lingue.corrente() == "it" else f"{momento:%Y-%m-%d %H:%M}"
+
+
+def valore_tradotto(campo: str, valore: object) -> object:
+    """
+    Categorie, livelli di rischio e FODMAP nella lingua dell'export.
+    """
+    if campo in CAMPI_TRADOTTI and isinstance(valore, str) and valore:
+        return lingue.traduci(valore)
+
+    return valore
 
 
 # ---------------------------------------------------------------
@@ -165,15 +200,15 @@ def descrivi(info: InfoExport) -> str:
     """
     Riga di contesto: numero di alimenti, filtri, ordinamento, data.
     """
-    parti = [f"{info['totale']} alimenti"]
+    parti = [ngettext("%(num)d alimento", "%(num)d alimenti", info["totale"])]
 
     if info["filtri"]:
-        parti.append("filtri: " + ", ".join(f"{nome} {valore}" for nome, valore in info["filtri"]))
+        parti.append(_("filtri: %(elenco)s", elenco=", ".join(f"{nome} {valore}" for nome, valore in info["filtri"])))
     else:
-        parti.append("nessun filtro")
+        parti.append(_("nessun filtro"))
 
-    parti.append(f"ordinati per {info['ordinamento']}")
-    parti.append(f"esportato il {info['data']:%d/%m/%Y %H:%M}")
+    parti.append(_("ordinati per %(criteri)s", criteri=info["ordinamento"]))
+    parti.append(_("esportato il %(data)s", data=data_ora(info["data"])))
     return " · ".join(parti)
 
 
@@ -207,25 +242,27 @@ def _valore_csv(campo: str, valore: object) -> str:
         return ""
 
     if campo in CAMPI_NUMERICI and isinstance(valore, (int, float)):
-        testo = f"{float(valore):.6f}".rstrip("0").rstrip(".")
-        return testo.replace(".", ",")
+        return lingue.decimale(f"{float(valore):.6f}".rstrip("0").rstrip("."))
 
-    return proteggi_formula(str(valore))
+    return proteggi_formula(str(valore_tradotto(campo, valore)))
 
 
 def csv_bytes(alimenti: list[Alimento]) -> bytes:
     """
-    CSV con separatore punto e virgola e virgola decimale, come lo apre
-    Excel in italiano; UTF-8 con BOM per gli accenti.
+    CSV come lo apre Excel nella lingua dell'export: in italiano punto e
+    virgola e virgola decimale, in inglese virgola e punto decimale.
+    UTF-8 con BOM per gli accenti.
     """
     buffer = io.StringIO()
-    scrittore = csv.writer(buffer, delimiter=";", lineterminator="\r\n")
-    scrittore.writerow([intestazione for _, intestazione, _ in COLONNE])
+    separatore = ";" if lingue.corrente() == "it" else ","
+    scrittore = csv.writer(buffer, delimiter=separatore, lineterminator="\r\n")
+    colonne = intestazioni()
+    scrittore.writerow([intestazione for _, intestazione, _ in colonne])
 
     for alimento in alimenti:
-        scrittore.writerow([_valore_csv(campo, valore_colonna(alimento, campo)) for campo, _, _ in COLONNE])
+        scrittore.writerow([_valore_csv(campo, valore_colonna(alimento, campo)) for campo, _, _ in colonne])
 
-    return ("﻿" + buffer.getvalue()).encode("utf-8")
+    return ("\ufeff" + buffer.getvalue()).encode("utf-8")
 
 
 # ---------------------------------------------------------------
@@ -258,7 +295,8 @@ def _scrivi_testo(cella: Any, valore: object) -> None:
 def xlsx_bytes(alimenti: list[Alimento], info: InfoExport) -> bytes:
     cartella = Workbook()
     foglio = cartella.worksheets[0]
-    foglio.title = "Alimenti"
+    foglio.title = _("Alimenti")
+    colonne = intestazioni()
 
     grassetto = Font(bold=True, color=INCHIOSTRO)
     sfondo_intestazione = PatternFill("solid", fgColor=SFONDO_INTESTAZIONE)
@@ -270,7 +308,7 @@ def xlsx_bytes(alimenti: list[Alimento], info: InfoExport) -> bytes:
         for stato, colore in COLORI_STATO.items()
     }
 
-    for colonna, (campo, intestazione, _) in enumerate(COLONNE, start=1):
+    for colonna, (campo, intestazione, _formato) in enumerate(colonne, start=1):
         cella = foglio.cell(row=1, column=colonna, value=intestazione)
         cella.font = grassetto
         cella.fill = sfondo_intestazione
@@ -283,7 +321,7 @@ def xlsx_bytes(alimenti: list[Alimento], info: InfoExport) -> bytes:
         )
 
     for riga, alimento in enumerate(alimenti, start=2):
-        for colonna, (campo, _, formato) in enumerate(COLONNE, start=1):
+        for colonna, (campo, _intestazione, formato) in enumerate(colonne, start=1):
             valore = valore_colonna(alimento, campo)
             cella_dato = foglio.cell(row=riga, column=colonna)
 
@@ -294,7 +332,7 @@ def xlsx_bytes(alimenti: list[Alimento], info: InfoExport) -> bytes:
                 cella_dato.value = valore
                 cella_dato.number_format = formato
             else:
-                _scrivi_testo(cella_dato, valore)
+                _scrivi_testo(cella_dato, valore_tradotto(campo, valore))
 
             if campo.startswith("rischio_"):
                 stato = analisi.stato(valore)
@@ -303,7 +341,7 @@ def xlsx_bytes(alimenti: list[Alimento], info: InfoExport) -> bytes:
                     cella_dato.fill, cella_dato.font = riempimenti[stato]
 
     foglio.freeze_panes = "C2"
-    foglio.auto_filter.ref = f"A1:{get_column_letter(len(COLONNE))}{max(len(alimenti) + 1, 2)}"
+    foglio.auto_filter.ref = f"A1:{get_column_letter(len(colonne))}{max(len(alimenti) + 1, 2)}"
     foglio.row_dimensions[1].height = 30
 
     _foglio_informazioni(cartella, info, riempimenti)
@@ -316,54 +354,55 @@ def xlsx_bytes(alimenti: list[Alimento], info: InfoExport) -> bytes:
 def _foglio_informazioni(
     cartella: Workbook, info: InfoExport, riempimenti: dict[str, tuple[PatternFill, Font]]
 ) -> None:
-    foglio = cartella.create_sheet("Informazioni")
+    foglio = cartella.create_sheet(_("Informazioni"))
     foglio.column_dimensions["A"].width = 22
     foglio.column_dimensions["B"].width = 90
 
-    righe = [
-        ("Food-stoplight", ""),
-        ("Esportato il", f"{info['data']:%d/%m/%Y %H:%M}"),
-        ("Alimenti", str(info["totale"])),
-        ("Filtri", "; ".join(f"{nome}: {valore}" for nome, valore in info["filtri"]) or "nessuno"),
-        ("Ordinamento", info["ordinamento"]),
-        ("", ""),
-        ("Livelli di rischio", ""),
+    # (etichetta, testo, stato del livello da colorare)
+    righe: list[tuple[str, str, str | None]] = [
+        ("Food-stoplight", "", None),
+        (_("Esportato il"), data_ora(info["data"]), None),
+        (_("Alimenti"), str(info["totale"]), None),
+        (_("Filtri"), "; ".join(f"{nome}: {valore}" for nome, valore in info["filtri"]) or _("nessuno"), None),
+        (_("Ordinamento"), info["ordinamento"], None),
+        ("", "", None),
+        (_("Livelli di rischio"), "", None),
     ]
 
     for liv in analisi.LIVELLI:
-        righe.append((liv["etichetta"], f"{liv['punti']} punti"))
+        righe.append((lingue.traduci(liv["etichetta"]), ngettext("%(num)d punto", "%(num)d punti", liv["punti"]),
+                      liv["stato"]))
 
     righe += [
-        ("", ""),
-        ("Punteggio", "100 × (1 − media dei punti ÷ 3), sui rischi disponibili: "
-                      "100 = tutti trascurabili, 0 = tutti alti."),
-        ("Rapporto F/Fibre", "Fruttosio ÷ fibre (0 se le fibre sono 0)."),
-        ("Nutrienti", "Valori per 100 g; celle vuote = dato non disponibile. "
-                      "Fonte e link nelle colonne Fonte nutrienti e URL fonte."),
-        ("Carico glicemico", "Indice glicemico × (carboidrati − fibre) ÷ 100, per 100 g."),
-        ("NOVA", "1 non trasformati, 2 ingredienti culinari, 3 trasformati, 4 ultra-trasformati."),
+        ("", "", None),
+        (_("Punteggio"), _("100 × (1 − media dei punti ÷ 3), sui rischi disponibili: "
+                           "100 = tutti trascurabili, 0 = tutti alti."), None),
+        (_("Rapporto F/Fibre"), _("Fruttosio ÷ fibre (0 se le fibre sono 0)."), None),
+        (_("Nutrienti"), _("Valori per 100 g; celle vuote = dato non disponibile. "
+                           "Fonte e link nelle colonne Fonte nutrienti e URL fonte."), None),
+        (_("Carico glicemico"), _("Indice glicemico × (carboidrati − fibre) ÷ 100, per 100 g."), None),
+        (_("NOVA"), _("1 non trasformati, 2 ingredienti culinari, 3 trasformati, 4 ultra-trasformati."), None),
         (
-            "Reimportare",
-            "Il foglio «Alimenti» si può modificare e reimportare da «Importa» con la modalità "
-            "«Aggiorna o aggiungi»: le righe si abbinano per ID. Le colonne Punteggio, "
-            "Rapporto F/Fibre, Carico glicemico e Aggiornato il vengono ricalcolate.",
+            _("Reimportare"),
+            _("Il foglio «Alimenti» si può modificare e reimportare da «Importa» con la modalità "
+              "«Aggiorna o aggiungi»: le righe si abbinano per ID. Le colonne Punteggio, "
+              "Rapporto F/Fibre, Carico glicemico e Aggiornato il vengono ricalcolate."),
+            None,
         ),
-        ("Nota", DISCLAIMER),
+        (_("Nota"), lingue.traduci(DISCLAIMER), None),
     ]
 
-    stati = {liv["etichetta"]: liv["stato"] for liv in analisi.LIVELLI}
-
-    for numero, (etichetta, valore) in enumerate(righe, start=1):
-        cella_a = foglio.cell(row=numero, column=1)
+    for numero_riga, (etichetta, valore, stato) in enumerate(righe, start=1):
+        cella_a = foglio.cell(row=numero_riga, column=1)
         _scrivi_testo(cella_a, etichetta)
-        cella_a.font = Font(bold=True, size=14 if numero == 1 else 11)
+        cella_a.font = Font(bold=True, size=14 if numero_riga == 1 else 11)
 
-        cella_b = foglio.cell(row=numero, column=2)
+        cella_b = foglio.cell(row=numero_riga, column=2)
         _scrivi_testo(cella_b, valore)
         cella_b.alignment = Alignment(wrap_text=True, vertical="top")
 
-        if etichetta in stati and valore.endswith("punti"):
-            cella_a.fill, font = riempimenti[stati[etichetta]]
+        if stato:
+            cella_a.fill, font = riempimenti[stato]
             cella_a.font = Font(bold=True, color=font.color)
 
 
@@ -427,9 +466,9 @@ class _Documento(FPDF):
         self.set_y(-11)
         self.set_font("Helvetica", size=7)
         self.set_text_color(*_rgb(INCHIOSTRO_SECONDARIO))
-        self.cell(0, 4, testo_pdf(f"Food-stoplight · {DISCLAIMER}"), align="L")
+        self.cell(0, 4, testo_pdf(f"Food-stoplight · {lingue.traduci(DISCLAIMER)}"), align="L")
         self.set_x(self.l_margin)
-        self.cell(0, 4, f"Pagina {self.page_no()} di {{nb}}", align="R")
+        self.cell(0, 4, testo_pdf(_("Pagina %(n)d di %(totale)s", n=self.page_no(), totale="{nb}")), align="R")
 
     def titolo(self, testo: str, sottotitolo: str | None = None, corpo: float = 16) -> None:
         self.set_text_color(*_rgb(INCHIOSTRO))
@@ -453,21 +492,21 @@ class _Documento(FPDF):
 
 # Colonne del PDF della tabella: (campo, intestazione, larghezza relativa, allineamento, decimali)
 COLONNE_PDF = (
-    ("alimento", "Alimento", 55, "LEFT", None),
-    ("categoria", "Categoria", 27, "LEFT", None),
-    ("punteggio", "Punt.", 10, "RIGHT", 0),
-    ("kcal", "Kcal", 10, "RIGHT", None),
-    ("tef_kcal", "TEF kcal", 12.5, "RIGHT", None),
-    ("tef_percent", "TEF %", 10.5, "RIGHT", None),
-    ("kcal_nette", "Kcal nette", 15, "RIGHT", None),
-    ("fruttosio", "Frutt. g", 12, "RIGHT", None),
-    ("fibre", "Fibre g", 11, "RIGHT", None),
-    ("rapporto", "F/F", 11, "RIGHT", 2),
-    ("rischio_diabete", "Diabete", 19.6, "CENTER", None),
-    ("rischio_colesterolo", "Colesterolo", 19.6, "CENTER", None),
-    ("rischio_malassorbimento", "Malassorb.", 19.6, "CENTER", None),
-    ("rischio_metabolico", "Metabolico", 19.6, "CENTER", None),
-    ("rischio_tumorale", "Tumorale", 19.6, "CENTER", None),
+    ("alimento", N_("Alimento"), 55, "LEFT", None),
+    ("categoria", N_("Categoria"), 27, "LEFT", None),
+    ("punteggio", N_("Punt."), 10, "RIGHT", 0),
+    ("kcal", N_("Kcal"), 10, "RIGHT", None),
+    ("tef_kcal", N_("TEF kcal"), 12.5, "RIGHT", None),
+    ("tef_percent", N_("TEF %"), 10.5, "RIGHT", None),
+    ("kcal_nette", N_("Kcal nette"), 15, "RIGHT", None),
+    ("fruttosio", N_("Frutt. g"), 12, "RIGHT", None),
+    ("fibre", N_("Fibre g"), 11, "RIGHT", None),
+    ("rapporto", N_("F/F"), 11, "RIGHT", 2),
+    ("rischio_diabete", N_("Diabete"), 19.6, "CENTER", None),
+    ("rischio_colesterolo", N_("Colesterolo"), 19.6, "CENTER", None),
+    ("rischio_malassorbimento", N_("Malassorb."), 19.6, "CENTER", None),
+    ("rischio_metabolico", N_("Metabolico"), 19.6, "CENTER", None),
+    ("rischio_tumorale", N_("Tumorale"), 19.6, "CENTER", None),
 )
 
 
@@ -512,15 +551,16 @@ def pdf_tabella(alimenti: list[Alimento], info: InfoExport) -> bytes:
     Disegnata cella per cella: il motore di tabelle di fpdf2 impiega
     decine di secondi su un migliaio di righe.
     """
-    pdf = _Documento("Food-stoplight - Tabella alimenti", orientation="L", format="A4")
+    titolo = _("Tabella alimenti")
+    pdf = _Documento(f"Food-stoplight - {titolo}", orientation="L", format="A4")
     pdf.set_auto_page_break(False)
     pdf.add_page()
-    pdf.titolo("Food-stoplight · Tabella alimenti", descrivi(info))
+    pdf.titolo(f"Food-stoplight · {titolo}", descrivi(info))
     pdf.ln(3)
 
     if not alimenti:
         pdf.set_font("Helvetica", size=10)
-        pdf.cell(0, 8, "Nessun alimento con i filtri correnti.")
+        pdf.cell(0, 8, testo_pdf(_("Nessun alimento con i filtri correnti.")))
         return bytes(pdf.output())
 
     corpo = 7
@@ -553,8 +593,8 @@ def pdf_tabella(alimenti: list[Alimento], info: InfoExport) -> bytes:
         pdf.set_font("Helvetica", "B", corpo)
         pdf.set_text_color(*_rgb(INCHIOSTRO))
 
-        for i, (_, etichetta, _, allineamento, _) in enumerate(COLONNE_PDF):
-            scrivi(etichetta, i, y + margine_v + linea_base, allineamento)
+        for i, (_campo, etichetta, _peso, allineamento, _decimali) in enumerate(COLONNE_PDF):
+            scrivi(testo_pdf(lingue.traduci(etichetta)), i, y + margine_v + linea_base, allineamento)
 
         pdf.set_draw_color(*_rgb(INCHIOSTRO_SECONDARIO))
         pdf.line(pdf.l_margin, y + altezza, pdf.l_margin + pdf.epw, y + altezza)
@@ -564,18 +604,18 @@ def pdf_tabella(alimenti: list[Alimento], info: InfoExport) -> bytes:
 
     intestazione()
 
-    for numero, alimento in enumerate(alimenti):
+    for indice_riga, alimento in enumerate(alimenti):
         celle = []
 
-        for i, (campo, _, _, allineamento, decimali) in enumerate(COLONNE_PDF):
+        for i, (campo, _etichetta, _peso, allineamento, decimali) in enumerate(COLONNE_PDF):
             valore = alimento.get(campo)
 
             if campo in ("alimento", "categoria"):
-                righe = _a_capo(pdf, testo_pdf(valore or ""), larghezze[i] - 2 * margine_o)
+                righe = _a_capo(pdf, testo_pdf(valore_tradotto(campo, valore) or ""), larghezze[i] - 2 * margine_o)
             elif campo.startswith("rischio_"):
-                righe = [testo_pdf(valore or "–")]
+                righe = [testo_pdf(valore_tradotto(campo, valore) or "–")]
             else:
-                righe = [numero_it(valore, decimali)]
+                righe = [numero(valore, decimali)]
 
             celle.append((righe, colori_livello(valore) if campo.startswith("rischio_") else None, allineamento))
 
@@ -588,7 +628,7 @@ def pdf_tabella(alimenti: list[Alimento], info: InfoExport) -> bytes:
 
         y = pdf.get_y()
 
-        if numero % 2:
+        if indice_riga % 2:
             pdf.set_fill_color(*_rgb(SFONDO_RIGA_ALTERNA))
             pdf.rect(pdf.l_margin, y, pdf.epw, altezza, style="F")
 
@@ -621,12 +661,12 @@ def pdf_scheda(item: Alimento, medaglie: list[dict[str, Any]], posti_medaglia: i
     pdf.set_margins(15, 14, 15)
     pdf.add_page()
 
-    sottotitolo = item.get("categoria") or "Senza categoria"
+    sottotitolo = lingue.traduci(item.get("categoria") or "Senza categoria")
 
     if item.get("aggiornato_il"):
-        sottotitolo += f" · aggiornato il {item['aggiornato_il']}"
+        sottotitolo += " · " + _("aggiornato il %(data)s", data=item["aggiornato_il"])
 
-    sottotitolo += f" · esportato il {data:%d/%m/%Y %H:%M}"
+    sottotitolo += " · " + _("esportato il %(data)s", data=data_ora(data))
     pdf.titolo(item["alimento"], sottotitolo, corpo=18)
     pdf.ln(5)
 
@@ -635,11 +675,11 @@ def pdf_scheda(item: Alimento, medaglie: list[dict[str, Any]], posti_medaglia: i
 
     # --- Punteggio complessivo -------------------------------------------
     pdf.set_y(y_riga)
-    pdf.sezione("Punteggio complessivo", x_sx, larghezza)
+    pdf.sezione(_("Punteggio complessivo"), x_sx, larghezza)
     pdf.set_x(x_sx)
     pdf.set_font("Helvetica", size=8)
     pdf.set_text_color(*_rgb(INCHIOSTRO_SECONDARIO))
-    pdf.multi_cell(larghezza, 4, "Sintesi dei cinque rischi: 100 = tutti trascurabili, 0 = tutti alti.",
+    pdf.multi_cell(larghezza, 4, testo_pdf(_("Sintesi dei cinque rischi: 100 = tutti trascurabili, 0 = tutti alti.")),
                    new_x="LEFT", new_y="NEXT")
     pdf.ln(2)
 
@@ -668,15 +708,16 @@ def pdf_scheda(item: Alimento, medaglie: list[dict[str, Any]], posti_medaglia: i
                      style="F", round_corners=True, corner_radius=1.5)
 
         pdf.set_y(y_metro + 6)
-        _etichetta_livello(pdf, x_sx, f"Livello medio: {livello['etichetta']}", livello["stato"])
+        _etichetta_livello(pdf, x_sx, _("Livello medio: %(livello)s", livello=lingue.traduci(livello["etichetta"])),
+                           livello["stato"])
     else:
         pdf.set_x(x_sx)
         pdf.set_font("Helvetica", size=9)
-        pdf.cell(larghezza, 6, "Nessun rischio classificato.", new_x="LEFT", new_y="NEXT")
+        pdf.cell(larghezza, 6, testo_pdf(_("Nessun rischio classificato.")), new_x="LEFT", new_y="NEXT")
 
     # --- Indice glicemico, NOVA, FODMAP ------------------------------------
     pdf.ln(5)
-    pdf.sezione("Indice glicemico, NOVA e FODMAP", x_sx, larghezza)
+    pdf.sezione(_("Indice glicemico, NOVA e FODMAP"), x_sx, larghezza)
     pdf.ln(0.5)
     _indicatori(pdf, x_sx, item)
 
@@ -684,21 +725,21 @@ def pdf_scheda(item: Alimento, medaglie: list[dict[str, Any]], posti_medaglia: i
 
     # --- Valori per 100 g ------------------------------------------------
     pdf.set_y(y_riga)
-    pdf.sezione("Valori per 100 g", x_dx, larghezza)
+    pdf.sezione(_("Valori per 100 g"), x_dx, larghezza)
     valori = [
-        ("Kcal", numero_it(item.get("kcal"))),
-        ("TEF (Kcal)", numero_it(item.get("tef_kcal"))),
-        ("TEF (%)", numero_it(item.get("tef_percent"))),
-        ("Kcal nette", numero_it(item.get("kcal_nette"))),
+        (_("Kcal"), numero(item.get("kcal"))),
+        (_("TEF (Kcal)"), numero(item.get("tef_kcal"))),
+        (lingue.traduci("TEF (%)"), numero(item.get("tef_percent"))),
+        (_("Kcal nette"), numero(item.get("kcal_nette"))),
     ]
     valori += [
-        (f"{etichetta} ({unita})", _valore_nutriente(item.get(campo), decimali))
-        for campo, etichetta, unita, decimali, _ in nutrienti.MACRO
+        (f"{lingue.traduci(etichetta)} ({unita})", _valore_nutriente(item.get(campo), decimali))
+        for campo, etichetta, unita, decimali, _codice in nutrienti.MACRO
     ]
     valori += [
-        ("Fibre (g)", numero_it(item.get("fibre"), 2)),
-        ("Fruttosio (g)", numero_it(item.get("fruttosio"), 2)),
-        ("Rapporto fruttosio/fibre", numero_it(item.get("rapporto"), 2)),
+        (_("Fibre (g)"), numero(item.get("fibre"), 2)),
+        (_("Fruttosio (g)"), numero(item.get("fruttosio"), 2)),
+        (_("Rapporto fruttosio/fibre"), numero(item.get("rapporto"), 2)),
     ]
     _tabella_chiave_valore(pdf, x_dx, larghezza, valori, altezza=5.3)
     y_fine_dx = pdf.get_y()
@@ -711,7 +752,7 @@ def pdf_scheda(item: Alimento, medaglie: list[dict[str, Any]], posti_medaglia: i
         y_riga = pdf.get_y()
 
     pdf.set_y(y_riga)
-    pdf.sezione("Profilo di rischio", x_sx, larghezza)
+    pdf.sezione(_("Profilo di rischio"), x_sx, larghezza)
     y_radar = pdf.get_y()
     _radar(pdf, item, centro=(x_sx + 45, y_radar + 34), raggio=26)
 
@@ -721,37 +762,37 @@ def pdf_scheda(item: Alimento, medaglie: list[dict[str, Any]], posti_medaglia: i
     pdf.set_text_color(*_rgb(INCHIOSTRO_SECONDARIO))
     pdf.multi_cell(
         larghezza, 3.6,
-        "Anelli dal centro verso l'esterno: Trascurabile, Basso, Medio, Alto. "
-        "I rischi non classificati restano al centro.",
+        testo_pdf(_("Anelli dal centro verso l'esterno: Trascurabile, Basso, Medio, Alto. "
+                    "I rischi non classificati restano al centro.")),
         align="L", new_x="LEFT", new_y="NEXT",
     )
     y_fine_radar = pdf.get_y()
 
     pdf.set_y(y_riga)
-    pdf.sezione("Livelli di rischio", x_dx, larghezza)
-    rischi = [(etichetta, item.get(campo)) for campo, etichetta in analisi.RISCHI]
+    pdf.sezione(_("Livelli di rischio"), x_dx, larghezza)
+    rischi = [(lingue.traduci(etichetta), item.get(campo)) for campo, etichetta in analisi.RISCHI]
     _tabella_rischi(pdf, x_dx, larghezza, rischi)
 
     if nutrienti.fodmap_complessivo(item):
         pdf.ln(4)
-        pdf.sezione("FODMAP per categoria", x_dx, larghezza)
+        pdf.sezione(_("FODMAP per categoria"), x_dx, larghezza)
         _tabella_rischi(pdf, x_dx, larghezza, [
-            (etichetta.split(" (")[0], item.get(campo)) for campo, etichetta in nutrienti.FODMAP
+            (lingue.traduci(etichetta).split(" (")[0], item.get(campo)) for campo, etichetta in nutrienti.FODMAP
         ], colori=_colori_fodmap)
 
     pdf.set_y(max(pdf.get_y(), y_fine_radar) + 6)
 
     # --- Micronutrienti e fonte -----------------------------------------
     micro = [
-        (f"{etichetta} ({unita})", _valore_nutriente(item.get(campo), decimali))
-        for campo, etichetta, unita, decimali, _ in nutrienti.MICRO
+        (f"{lingue.traduci(etichetta)} ({unita})", _valore_nutriente(item.get(campo), decimali))
+        for campo, etichetta, unita, decimali, _codice in nutrienti.MICRO
     ]
 
     if any(item.get(campo) is not None for campo in nutrienti.CAMPI_NUTRIENTI[len(nutrienti.MACRO):]):
         if pdf.get_y() > pdf.h - 60:
             pdf.add_page()
 
-        pdf.sezione("Vitamine e sali minerali per 100 g", x_sx, 180)
+        pdf.sezione(_("Vitamine e sali minerali per 100 g"), x_sx, 180)
         y_micro = pdf.get_y()
         meta = (len(micro) + 1) // 2
         _tabella_chiave_valore(pdf, x_sx, larghezza, micro[:meta], altezza=5.3)
@@ -764,34 +805,35 @@ def pdf_scheda(item: Alimento, medaglie: list[dict[str, Any]], posti_medaglia: i
         pdf.set_x(x_sx)
         pdf.set_font("Helvetica", size=7.5)
         pdf.set_text_color(*_rgb(INCHIOSTRO_SECONDARIO))
-        fonte = item.get("fonte_nutrienti") or "Fonte"
+        fonte = item.get("fonte_nutrienti") or _("Fonte")
         if item.get("fdc_id"):
             fonte += f" (FDC {item['fdc_id']})"
         if item.get("url_fonte"):
             fonte += f": {item['url_fonte']}"
-        pdf.multi_cell(180, 3.6, testo_pdf(f"Fonte dei nutrienti: {fonte}"), align="L",
+        pdf.multi_cell(180, 3.6, testo_pdf(_("Fonte dei nutrienti: %(fonte)s", fonte=fonte)), align="L",
                        new_x="LMARGIN", new_y="NEXT")
 
     pdf.ln(5)
 
     # --- Medaglie --------------------------------------------------------
     if medaglie:
-        pdf.sezione("Medaglie", x_sx, 180)
+        pdf.sezione(_("Medaglie"), x_sx, 180)
         pdf.set_x(x_sx)
         pdf.set_font("Helvetica", size=8)
         pdf.set_text_color(*_rgb(INCHIOSTRO_SECONDARIO))
-        pdf.cell(180, 4.5, f"Tra i primi {posti_medaglia} dell'intero database.", new_x="LEFT", new_y="NEXT")
+        pdf.cell(180, 4.5, testo_pdf(_("Tra i primi %(n)d dell'intero database.", n=posti_medaglia)),
+                 new_x="LEFT", new_y="NEXT")
         pdf.ln(1)
 
         for medaglia in medaglie:
             pdf.set_x(x_sx)
             pdf.set_text_color(*_rgb(INCHIOSTRO))
             pdf.set_font("Helvetica", "B", 9)
-            pdf.cell(0, 5, testo_pdf(medaglia["titolo"]), new_x="LMARGIN", new_y="NEXT")
+            pdf.cell(0, 5, testo_pdf(lingue.traduci(medaglia["titolo"])), new_x="LMARGIN", new_y="NEXT")
             pdf.set_x(x_sx)
             pdf.set_font("Helvetica", size=8)
             pdf.set_text_color(*_rgb(INCHIOSTRO_SECONDARIO))
-            pdf.cell(0, 4.5, testo_pdf(medaglia["descrizione"]), new_x="LMARGIN", new_y="NEXT")
+            pdf.cell(0, 4.5, testo_pdf(lingue.traduci(medaglia["descrizione"])), new_x="LMARGIN", new_y="NEXT")
             pdf.ln(1)
 
         pdf.ln(4)
@@ -810,7 +852,7 @@ def _come_leggere(pdf: _Documento, x: float, larghezza: float) -> None:
     pdf.set_draw_color(*_rgb(GRIGLIA))
     pdf.line(x, pdf.get_y(), x + larghezza, pdf.get_y())
     pdf.ln(4)
-    pdf.sezione("Come leggere la scheda", x, larghezza)
+    pdf.sezione(_("Come leggere la scheda"), x, larghezza)
     pdf.ln(1)
 
     # Livelli: pallino colorato + etichetta + punti, su una riga
@@ -822,25 +864,26 @@ def _come_leggere(pdf: _Documento, x: float, larghezza: float) -> None:
         pdf.set_fill_color(*_rgb(COLORI_STATO[liv["stato"]]))
         pdf.circle(posizione + 1.5, y + 2.4, 1.5, style="F")
         pdf.set_text_color(*_rgb(INCHIOSTRO))
-        testo = f"{liv['etichetta']} ({liv['punti']} punti)"
+        punti = ngettext("%(num)d punto", "%(num)d punti", liv["punti"])
+        testo = testo_pdf(f"{lingue.traduci(liv['etichetta'])} ({punti})")
         pdf.text(posizione + 4.5, y + 3.4, testo)
         posizione += 4.5 + pdf.get_string_width(testo) + 7
 
     pdf.set_y(y + 7)
 
     voci = (
-        ("Punteggio", "100 x (1 - media dei punti / 3), calcolato sui rischi classificati: "
-                      "100 = tutti trascurabili, 0 = tutti alti. Il colore segue il livello medio: "
-                      "oltre 83 Trascurabile, 51-83 Basso, 17-50 Medio, fino a 16 Alto."),
-        ("Valori", "Riferiti a 100 g di alimento. TEF = effetto termico del cibo, "
-                   "l'energia spesa per digerirlo; Kcal nette = Kcal - TEF."),
-        ("Fruttosio/fibre", "Fruttosio diviso fibre (0 se le fibre sono 0): più è basso, "
-                            "meglio è tollerato il fruttosio."),
-        ("Indice glicemico", "Basso fino a 55, medio 56-69, alto da 70. Carico glicemico = indice x "
-                             "carboidrati disponibili (carboidrati - fibre) / 100; per porzione basso "
-                             "fino a 10, medio 11-19, alto da 20."),
-        ("NOVA", "Grado di processazione: 1 non trasformati, 2 ingredienti culinari, "
-                 "3 trasformati, 4 ultra-trasformati."),
+        (_("Punteggio"), _("100 x (1 - media dei punti / 3), calcolato sui rischi classificati: "
+                           "100 = tutti trascurabili, 0 = tutti alti. Il colore segue il livello medio: "
+                           "oltre 83 Trascurabile, 51-83 Basso, 17-50 Medio, fino a 16 Alto.")),
+        (_("Valori"), _("Riferiti a 100 g di alimento. TEF = effetto termico del cibo, "
+                        "l'energia spesa per digerirlo; Kcal nette = Kcal - TEF.")),
+        (_("Fruttosio/fibre"), _("Fruttosio diviso fibre (0 se le fibre sono 0): più è basso, "
+                                 "meglio è tollerato il fruttosio.")),
+        (_("Indice glicemico"), _("Basso fino a 55, medio 56-69, alto da 70. Carico glicemico = indice x "
+                                  "carboidrati disponibili (carboidrati - fibre) / 100; per porzione basso "
+                                  "fino a 10, medio 11-19, alto da 20.")),
+        (_("NOVA"), _("Grado di processazione: 1 non trasformati, 2 ingredienti culinari, "
+                      "3 trasformati, 4 ultra-trasformati.")),
     )
 
     for titolo, testo in voci:
@@ -872,7 +915,7 @@ def _etichetta_livello(pdf: FPDF, x: float, testo: str, stato: str) -> None:
 
 
 def _valore_nutriente(valore: float | None, decimali: int) -> str:
-    return "–" if valore is None else numero_it(round(valore, decimali))
+    return "–" if valore is None else numero(round(valore, decimali))
 
 
 def _colori_fodmap(valore: object) -> tuple[str, str] | None:
@@ -901,22 +944,26 @@ def _indicatori(pdf: FPDF, x: float, item: Alimento) -> None:
     liv_cg = nutrienti.livello_carico_glicemico(cg)
 
     if ig is not None and liv_ig:
-        voci.append((f"Indice glicemico: {numero_it(ig)} ({liv_ig['etichetta'].lower()})", liv_ig["stato"]))
+        voci.append((_("Indice glicemico: %(valore)s (%(livello)s)", valore=numero(ig),
+                       livello=lingue.traduci(liv_ig["etichetta"]).lower()), liv_ig["stato"]))
     else:
-        voci.append(("Indice glicemico: non disponibile", None))
+        voci.append((_("Indice glicemico: non disponibile"), None))
 
     if cg is not None and liv_cg:
-        voci.append((f"Carico glicemico per 100 g: {numero_it(cg)} ({liv_cg['etichetta'].lower()})", liv_cg["stato"]))
+        voci.append((_("Carico glicemico per 100 g: %(valore)s (%(livello)s)", valore=numero(cg),
+                       livello=lingue.traduci(liv_cg["etichetta"]).lower()), liv_cg["stato"]))
 
     if nova:
-        voci.append((f"NOVA {nova['gruppo']}: {nova['etichetta']}", nova["stato"]))
+        voci.append((_("NOVA %(gruppo)s: %(etichetta)s", gruppo=nova["gruppo"],
+                       etichetta=lingue.traduci(nova["etichetta"])), nova["stato"]))
     else:
-        voci.append(("NOVA: non disponibile", None))
+        voci.append((_("NOVA: non disponibile"), None))
 
     if fodmap:
-        voci.append((f"FODMAP complessivo: {fodmap['etichetta']}", fodmap["stato"]))
+        voci.append((_("FODMAP complessivo: %(livello)s", livello=lingue.traduci(fodmap["etichetta"])),
+                     fodmap["stato"]))
     else:
-        voci.append(("FODMAP: non classificato", None))
+        voci.append((_("FODMAP: non classificato"), None))
 
     for testo, stato in voci:
         if stato:
@@ -956,7 +1003,7 @@ def _tabella_rischi(
         pdf.cell(larghezza * 0.55, 7, testo_pdf(etichetta), border="B")
 
         coppia = calcola_colori(valore)
-        testo = testo_pdf(valore) if valore else "Non classificato"
+        testo = testo_pdf(lingue.traduci(valore) if valore else _("Non classificato"))
 
         if coppia:
             sfondo, inchiostro = coppia
@@ -1022,7 +1069,7 @@ def _radar(pdf: FPDF, item: Alimento, centro: tuple[float, float], raggio: float
 
     for asse in geometria["assi"]:
         x, y = mm(*asse["etichetta_xy"])
-        testo = testo_pdf(asse["etichetta"])
+        testo = testo_pdf(lingue.traduci(asse["etichetta"]))
         larghezza = pdf.get_string_width(testo)
 
         if asse["ancora"] == "middle":

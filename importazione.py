@@ -20,6 +20,7 @@ import zipfile
 from collections import Counter
 from collections.abc import Callable, Mapping, Sequence
 from datetime import date, datetime, time
+from functools import cache
 from typing import Any
 
 from flask_babel import gettext
@@ -30,6 +31,8 @@ import analisi
 import calcoli
 import cofid
 import crea
+import esportazione
+import lingue
 import nutrienti
 import openfoodfacts
 import ricette
@@ -136,6 +139,29 @@ def normalize_header(value: object) -> str:
     return re.sub(r"[^a-z0-9]+", " ", value).strip()
 
 
+@cache
+def _alias_intestazioni() -> dict[str, str | None]:
+    """
+    {intestazione normalizzata: campo} con le intestazioni dei file esportati
+    dall'app in tutte le lingue (anche "Fructose (g/100g)", "Diabetes risk") e
+    le etichette dei nutrienti con e senza unità. I campi derivati valgono None.
+    """
+    alias: dict[str, str | None] = {}
+
+    for lingua in lingue.LINGUE:
+        def traduttore(testo: str, lingua: str = lingua) -> str:
+            return lingue.traduci_in(testo, lingua)
+
+        for campo, intestazione, _formato in esportazione.intestazioni(traduttore):
+            derivato = campo in esportazione.CAMPI_DERIVATI
+            alias.setdefault(normalize_header(intestazione), None if derivato else campo)
+
+        for campo, etichetta in nutrienti.ETICHETTE.items():
+            alias.setdefault(normalize_header(traduttore(etichetta)), campo)
+
+    return alias
+
+
 def campo_colonna(intestazione: object) -> str | None:
     """
     Campo del database corrispondente a un'intestazione, oppure None.
@@ -145,6 +171,9 @@ def campo_colonna(intestazione: object) -> str | None:
 
     if not norm:
         return None
+
+    if norm in _alias_intestazioni():
+        return _alias_intestazioni()[norm]
 
     if norm == "id":
         return "id"
@@ -552,6 +581,8 @@ def normalizza_riga(numero: int, celle: list[str], mappa: dict[str, int]) -> dic
 
         if campo == "alimento":
             testo = pulisci_nome(testo)
+        elif campo == "categoria":
+            testo = lingue.categoria_italiana(testo)
 
         if testo:
             valori[campo] = testo

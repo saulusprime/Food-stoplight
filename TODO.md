@@ -18,11 +18,6 @@ Le attività completate sono in [ASIS.md](ASIS.md).
 - [ ] Primo deploy su Render dal proprio account: configurazione pronta in `render.yaml` (vedi README, *Render*)
 - [ ] Dividere `app.py` in blueprint Flask (pagine, import/export, backup, pasto e diario)
 
-## 📱 Esperienza utente
-
-- [ ] Export (CSV, Excel, PDF) e messaggi dell'API anche in inglese (oggi restano in italiano, come le intestazioni che l'import riconosce)
-- [ ] Filtri e ricerca anche offline (senza rete oggi si vede la tabella completa salvata, senza filtri)
-
 ## 💡 Idee a lungo termine
 
 - [ ] Profili utente con preferenze e restrizioni (diabete, ipercolesterolemia, malassorbimento del fruttosio) e semaforo personalizzato in base al profilo

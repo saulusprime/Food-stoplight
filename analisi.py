@@ -7,6 +7,7 @@ e dati già pronti per i grafici della home e della scheda alimento.
 from __future__ import annotations
 
 import math
+from functools import cache
 from typing import Any
 
 import lingue
@@ -63,13 +64,31 @@ RISCHI = (
 CAMPI_RISCHIO = tuple(campo for campo, _ in RISCHI)
 
 
+@cache
+def _nomi_tradotti() -> dict[str, str]:
+    """
+    {nome del livello nelle altre lingue: chiave} ("low" -> "basso"), per
+    leggere i file esportati in inglese.
+    """
+    return {
+        lingue.traduci_in(liv["etichetta"], lingua).lower(): liv["chiave"]
+        for lingua in lingue.LINGUE
+        for liv in LIVELLI
+    }
+
+
 def livello(valore: object) -> Livello | None:
     """
     Livello canonico di un valore di rischio (dict di LIVELLI) oppure None.
     """
     chiave = str(valore or "").strip().lower()
     chiave = SINONIMI.get(chiave, chiave)
-    return _PER_CHIAVE.get(chiave)
+    livello_trovato = _PER_CHIAVE.get(chiave)
+
+    if livello_trovato is None and chiave:
+        livello_trovato = _PER_CHIAVE.get(_nomi_tradotti().get(chiave, ""))
+
+    return livello_trovato
 
 
 def stato(valore: object) -> str:

@@ -51,6 +51,11 @@ SORT_EXPRESSIONS = {
     **{campo: LIVELLO_SQL.format(campo=campo) for campo in analisi.CAMPI_RISCHIO},
 }
 
+# Campi numerici ordinabili (anche per la tabella offline, static/js/tabella.js)
+CAMPI_NUMERICI_ORDINABILI = tuple(
+    campo for campo in SORT_EXPRESSIONS if campo not in ("alimento", "categoria", *analisi.CAMPI_RISCHIO)
+)
+
 # Ordinamento per pertinenza alla ricerca: solo come primo criterio, con un testo cercato
 PERTINENZA = "pertinenza"
 ORDINAMENTI_MAX = 3

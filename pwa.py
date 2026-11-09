@@ -50,6 +50,7 @@ STATICI = (
     *(FONT.format(peso) for peso in ("300", "regular", "600", "700")),
     "css/app.css",
     "js/app.js",
+    "js/tabella.js",
     "icone/icona.svg",
     "icone/icona-192.png",
 )

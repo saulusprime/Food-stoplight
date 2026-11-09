@@ -3,13 +3,16 @@ Lingue dell'interfaccia web: italiano (lingua del codice) e inglese.
 
 I testi sono scritti in italiano nel codice e nei template; la traduzione
 inglese è in translations/en/LC_MESSAGES/messages.po, compilata in
-messages.mo. Export (CSV, Excel, PDF), API e riga di comando restano
-in italiano.
+messages.mo. Pagine, export (CSV, Excel, PDF) e messaggi dell'API seguono
+la lingua della richiesta; la riga di comando resta in italiano. Nell'API
+chiavi e valori dei dati (categorie, livelli) restano in italiano: sono
+identificatori stabili per chi la usa da programma.
 
 I testi definiti nei moduli di dati (livelli, rischi, medaglie, etichette
 dei campi) si segnano con N_() e si traducono solo dove vengono mostrati,
-con il filtro |traduci dei template: così export e API, che usano gli
-stessi moduli, restano in italiano.
+con traduci() o il filtro |traduci dei template. traduci_in() traduce in
+una lingua precisa anche fuori da una richiesta (es. per riconoscere le
+intestazioni inglesi di un file da importare).
 
 Dopo aver aggiunto o cambiato dei testi:
     pybabel extract -F babel.cfg -o messages.pot --no-location --sort-output .
@@ -21,6 +24,10 @@ Il test tests/test_lingue_pwa.py segnala i testi senza traduzione.
 
 from __future__ import annotations
 
+from functools import cache
+from pathlib import Path
+
+from babel.support import NullTranslations, Translations
 from flask import g, has_request_context, request
 from flask_babel import get_locale, gettext
 
@@ -29,9 +36,7 @@ PREDEFINITA = "it"
 COOKIE = "lingua"
 DURATA_COOKIE = 365 * 24 * 3600
 
-# Risorse che restano in italiano qualunque sia la lingua scelta
-BLUEPRINT_IN_ITALIANO = {"api"}
-ENDPOINT_IN_ITALIANO = {"esporta", "scheda_pdf"}
+CARTELLA_TRADUZIONI = Path(__file__).resolve().parent / "translations"
 
 
 def N_(testo: str) -> str:
@@ -48,9 +53,6 @@ def scegli_lingua() -> str:
     la preferita del browser tra quelle disponibili, altrimenti l'italiano.
     """
     if not has_request_context():
-        return PREDEFINITA
-
-    if request.blueprint in BLUEPRINT_IN_ITALIANO or request.endpoint in ENDPOINT_IN_ITALIANO:
         return PREDEFINITA
 
     scelta = request.cookies.get(COOKIE)
@@ -90,6 +92,38 @@ def traduci(testo: object) -> str:
 
     testo = str(testo)
     return gettext(testo) if testo else testo
+
+
+@cache
+def _catalogo(lingua: str) -> NullTranslations:
+    if lingua == PREDEFINITA:
+        return NullTranslations()
+
+    return Translations.load(str(CARTELLA_TRADUZIONI), [lingua])
+
+
+def traduci_in(testo: object, lingua: str) -> str:
+    """
+    Traduzione in una lingua precisa, anche fuori da una richiesta.
+    """
+    testo = "" if testo is None else str(testo)
+    return _catalogo(lingua).gettext(testo) if testo else testo
+
+
+def categoria_italiana(testo: object) -> str:
+    """
+    Nome italiano di una categoria scritta in una lingua dell'interfaccia
+    ("Fruit" -> "Frutta"); gli altri testi restano com'erano.
+    """
+    valore = str(testo or "").strip()
+    chiave = valore.casefold()
+
+    for lingua in LINGUE:
+        for categoria in CATEGORIE:
+            if traduci_in(categoria, lingua).casefold() == chiave:
+                return categoria
+
+    return valore
 
 
 def decimale(testo: str) -> str:

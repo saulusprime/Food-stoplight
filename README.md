@@ -45,7 +45,7 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 - **Alternative migliori**: nella scheda, gli alimenti della stessa categoria con punteggio più alto.
 - **Componi un pasto**: somma più alimenti con le loro porzioni e mostra totali e profilo di rischio del pasto.
 - **Diario alimentare** per ogni utente registrato: pasti del giorno, totali di Kcal, Kcal nette e TEF, profilo di rischio della giornata e riepilogo degli ultimi 7 giorni.
-- **Italiano e inglese**: la lingua segue il browser e si cambia dal menu (🌐). Export, API e riga di comando restano in italiano.
+- **Italiano e inglese**: la lingua segue il browser e si cambia dal menu (🌐). Anche export (CSV, Excel, PDF) e messaggi dell'API seguono la lingua; la riga di comando resta in italiano.
 - **App installabile** su telefono e computer: senza connessione restano consultabili la tabella, la guida e le schede già aperte.
 - **Guida ai dati** (livelli di rischio, soglie, punteggio, TEF, indice glicemico, FODMAP, NOVA, fonti) e legenda compatta sopra la tabella.
 - **Tabella su ogni schermo**: su telefono ogni alimento è una scheda compatta, ordinabile dai menu; da tablet in su si vedono le colonne principali e «Mostra tutte le colonne» aggiunge TEF, fruttosio, fibre e rapporto F/F.
@@ -204,7 +204,7 @@ flask --app app elimina-utente lucia                   # elimina anche il suo di
 
 ## 🌐 Lingue
 
-L'interfaccia è in italiano e in inglese. Al primo accesso la lingua segue le preferenze del browser; il link 🌐 nel menu la cambia e la scelta resta in un cookie per un anno. Si traducono pagine, messaggi, errori dei form, livelli, categorie e guida; i nomi degli alimenti restano quelli del database. Export (CSV, Excel, PDF), API e comandi da riga di comando restano in italiano, così i file esportati si reimportano senza cambiare intestazioni.
+L'interfaccia è in italiano e in inglese. Al primo accesso la lingua segue le preferenze del browser; il link 🌐 nel menu la cambia e la scelta resta in un cookie per un anno. Si traducono pagine, messaggi, errori dei form, livelli, categorie e guida; i nomi degli alimenti restano quelli del database. Anche gli export seguono la lingua: intestazioni, categorie, livelli e testi di Excel e PDF; il CSV in inglese usa la virgola come separatore e il punto decimale (in italiano punto e virgola e virgola decimale). L'import riconosce le intestazioni e le categorie in entrambe le lingue, quindi qualunque export si reimporta. L'API risponde con i messaggi (errori, descrizione dei parametri) nella lingua di `Accept-Language` o del cookie, mentre chiavi e valori dei dati restano in italiano. I comandi da riga di comando restano in italiano.
 
 I testi sono scritti in italiano nel codice e nei template (con `_()` e `{% trans %}`); la traduzione è in `translations/en/LC_MESSAGES/messages.po`. Dopo aver aggiunto o cambiato dei testi:
 
@@ -219,7 +219,7 @@ pybabel compile -d translations
 
 ## 📱 App installabile e offline
 
-Il sito si installa come app (Chrome, Edge, Safari su iPhone con «Aggiungi alla schermata Home»). Il service worker conserva sul dispositivo i file statici, la tabella completa (la versione con tutte le righe: online la tabella è divisa in pagine; la copia si riscarica in background al massimo una volta all'ora) e la guida; le schede degli alimenti restano disponibili dopo averle aperte una volta. Senza connessione la tabella mostra l'ultima copia salvata (senza filtri), e le pagine che richiedono la rete (pasto, diario, confronto, amministrazione) lasciano il posto a una pagina offline con l'elenco delle schede salvate.
+Il sito si installa come app (Chrome, Edge, Safari su iPhone con «Aggiungi alla schermata Home»). Il service worker conserva sul dispositivo i file statici, la tabella completa (la versione con tutte le righe: online la tabella è divisa in pagine; la copia si riscarica in background al massimo una volta all'ora) e la guida; le schede degli alimenti restano disponibili dopo averle aperte una volta. Senza connessione la tabella usa l'ultima copia salvata: ricerca, filtri (anche per valori e «solo sicuri») e ordinamento funzionano sul dispositivo (`static/js/tabella.js`), con le stesse regole del server (la ricerca è la stessa di `ricerca.py`, un test le confronta); grafici, classifiche ed export tornano con la rete. Le pagine che richiedono la rete (pasto, diario, confronto, amministrazione) lasciano il posto a una pagina offline con l'elenco delle schede salvate.
 
 All'uscita dall'account le pagine salvate vengono cancellate, perché possono contenere il nome dell'utente e i pulsanti di amministrazione. A ogni deploy che cambia CSS, JavaScript, icone o traduzioni il service worker si aggiorna da solo. L'app installabile richiede HTTPS (in locale va bene `http://localhost`).
 
@@ -262,7 +262,7 @@ Parametri di `/api/alimenti`: `q` (ricerca nel nome, tollerante come nella tabel
 curl "http://127.0.0.1:5000/api/alimenti?q=mele&rischio_diabete=Basso&kcal_max=60&sort=kcal&dir=desc&limit=5"
 ```
 
-Gli errori sono JSON: `{"errore": "...", "stato": 404}`. `GET /salute` risponde `200` se il database è leggibile (controllo per Docker e Render).
+Gli errori sono JSON: `{"errore": "...", "stato": 404}`, con il messaggio nella lingua di `Accept-Language` (italiano o inglese); chiavi e valori dei dati restano in italiano. `GET /salute` risponde `200` se il database è leggibile (controllo per Docker e Render).
 
 ## 🚢 Produzione
 
