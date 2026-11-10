@@ -1,7 +1,7 @@
 # Food-stoplight: regole dei rischi da rivedere
 
 Documento per la revisione da parte di un nutrizionista o di un medico.
-Dati e regole aggiornati all'8 novembre 2026 (900 alimenti delle Tabelle di composizione CREA).
+Dati e regole aggiornati al 10 novembre 2026 (900 alimenti delle Tabelle di composizione CREA).
 
 ## 1. Cosa Le chiediamo
 
@@ -43,17 +43,17 @@ Il filtro **«Solo alimenti sicuri»** mostra gli alimenti con tutti e cinque i 
 | Dato | Fonte |
 |---|---|
 | Valori nutrizionali, porzione tipica | CREA, Tabelle di composizione degli alimenti (aggiornamento 2019) |
-| Fruttosio, glucosio, lattosio dove il CREA non li pubblica | profilo degli zuccheri di un alimento simile della tabella britannica CoFID 2021 o di USDA FoodData Central, riportato agli zuccheri totali del CREA |
-| Grassi saturi dove il CREA non pubblica la composizione in acidi grassi | percentuale di acidi grassi saturi di un alimento simile di CoFID 2021, applicata ai grassi del CREA |
+| Fruttosio, glucosio, lattosio dove il CREA non li pubblica | profilo degli zuccheri di un alimento simile della tabella britannica CoFID 2021 o di USDA FoodData Central, riportato agli zuccheri totali del CREA (se il CREA non li pubblica, a quelli di USDA o, in mancanza, di CoFID) |
+| Grassi saturi dove il CREA non pubblica la composizione in acidi grassi | percentuale di acidi grassi saturi di un alimento simile di CoFID 2021 (o, se CoFID non la dà, la sua quota di saturi sui grassi), applicata ai grassi del CREA |
 | Ricette CREA senza dettaglio di zuccheri o saturi | composizione calcolata dagli ingredienti della ricetta, applicata a zuccheri e grassi del piatto |
 | Indice glicemico | Atkinson et al. 2008: tabella 1 (medie di più studi) e tabella A1 dell'appendice (singoli studi); 190 alimenti |
 | Gruppo NOVA, FODMAP | regole sul nome e sulla categoria (Monteiro 2019) e soglie FODMAP (Varney 2017, Sultan 2022) |
 
-Gli abbinamenti con gli alimenti simili sono scelti uno per uno. Dove non c'è un alimento davvero comparabile il dato resta mancante.
+Gli abbinamenti con gli alimenti simili sono scelti uno per uno. Dove non c'è un alimento davvero comparabile il dato resta mancante. Un alimento solo simile (per esempio la coscia di pollo per la faraona) si usa quando il livello di rischio non cambierebbe con nessuna composizione plausibile; se il risultato finirebbe a cavallo di una soglia, il dato resta mancante.
 
 Restano non classificati, per dati mancanti:
-- **colesterolo:** 52 alimenti, soprattutto carni rare e frattaglie (21), ricette e prodotti industriali;
-- **malassorbimento:** 79 alimenti, soprattutto verdure, ricette e cereali senza dettaglio degli zuccheri.
+- **colesterolo:** 29 alimenti: carni rare e frattaglie (9), biscotti, grissini e dolci industriali di cui non si conosce il tipo di grasso (10), ricette (6) e altri 4;
+- **malassorbimento:** 55 alimenti: verdure ed erbe senza un equivalente con il dettaglio degli zuccheri (13), ricette e piatti pronti (10), cereali e derivati (9), legumi e frutta secca (6), olive (4) e altri 13.
 
 ## 4. Le regole
 
@@ -84,8 +84,8 @@ Distribuzione:
 | Livello | Alimenti | Esempi |
 |---|---|---|
 | Trascurabile | 458 | latte intero, Parmigiano, olio extravergine, uova, petto di pollo, lombata di bovino |
-| Basso | 158 | mele, arance, yogurt intero, carote, pomodori |
-| Medio | 119 | ceci bolliti, cioccolato fondente, pizza margherita, lasagna, uva |
+| Basso | 157 | mele, arance, yogurt intero, carote, pomodori |
+| Medio | 120 | ceci bolliti, cioccolato fondente, pizza margherita, lasagna, uva |
 | Alto | 165 | pane bianco, pasta cotta, riso, patate bollite, miele, zucchero |
 
 ### Colesterolo
@@ -96,10 +96,10 @@ Distribuzione:
 | Livello | Alimenti | Esempi |
 |---|---|---|
 | Trascurabile | 239 | riso, mele, merluzzo, patate, carote, pomodori |
-| Basso | 264 | pane, pasta, arance, petto di pollo, ceci, lenticchie |
-| Medio | 169 | latte intero, yogurt intero, uova, lombata di bovino, salmone, mandorle |
-| Alto | 176 | Parmigiano, burro, olio extravergine, salame, noci, cioccolato fondente |
-| Non classificato | 52 | |
+| Basso | 271 | pane, pasta, arance, petto di pollo, ceci, lenticchie |
+| Medio | 175 | latte intero, yogurt intero, uova, lombata di bovino, salmone, mandorle |
+| Alto | 186 | Parmigiano, burro, olio extravergine, salame, noci, cioccolato fondente |
+| Non classificato | 29 | |
 
 ### Malassorbimento del fruttosio
 
@@ -117,11 +117,11 @@ Fruttani, GOS e polioli sono classificati a parte (sezione FODMAP della scheda) 
 
 | Livello | Alimenti | Esempi |
 |---|---|---|
-| Trascurabile | 529 | pane, pasta, riso, latte, yogurt, Parmigiano |
-| Basso | 164 | patate, carote, zucchine, pizza margherita, lasagna, pasta al pomodoro |
-| Medio | 27 | |
-| Alto | 101 | mele, arance, pomodori, miele, uva |
-| Non classificato | 79 | |
+| Trascurabile | 534 | pane, pasta, riso, latte, yogurt, Parmigiano |
+| Basso | 179 | patate, carote, zucchine, pizza margherita, lasagna, pasta al pomodoro |
+| Medio | 29 | |
+| Alto | 103 | mele, arance, pomodori, miele, uva |
+| Non classificato | 55 | |
 
 ### Metabolico
 

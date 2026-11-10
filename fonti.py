@@ -9,6 +9,8 @@ nette, rapporto F/F) e livelli di rischio calcolati.
 Per i valori che il CREA non pubblica, in quest'ordine:
 1. CoFID 2021 (dati/crea_cofid.csv): profilo degli zuccheri di prodotti
    europei e grassi saturi come percentuale degli acidi grassi (cofid.py);
+   il profilo si applica agli zuccheri totali del CREA, altrimenti a quelli
+   USDA, altrimenti a quelli CoFID;
 2. USDA FoodData Central (dati/crea_usda.csv): gli altri campi mancanti;
 3. ricette CREA: fruttosio, glucosio, lattosio e saturi dagli ingredienti
    (ricette.py), calcolati dopo aver costruito tutti gli alimenti.
@@ -173,6 +175,15 @@ def da_cofid(valori: dict[str, Any], scheda: Mapping[str, Any]) -> tuple[list[st
 
     zuccheri = cofid.alimenti().get(gruppi.get(cofid.ZUCCHERI, ""))
 
+    if zuccheri and valori.get("zuccheri") is None:
+        # Né il CREA né USDA pubblicano gli zuccheri totali: quelli CoFID
+        totale = cofid.zuccheri_totali(zuccheri, valori.get("carboidrati"))
+
+        if totale is not None:
+            valori["zuccheri"] = totale
+            presi.append("zuccheri")
+            riservati.add("zuccheri")
+
     if zuccheri and any(valori.get(c) is None for c in cofid.CAMPI_ZUCCHERI):
         profilo = cofid.profilo_zuccheri(zuccheri, valori.get("zuccheri"))
 
@@ -184,7 +195,7 @@ def da_cofid(valori: dict[str, Any], scheda: Mapping[str, Any]) -> tuple[list[st
                     valori[campo] = valore
                     presi.append(campo)
 
-        if profilo:
+        if profilo or "zuccheri" in presi:
             usati.append(zuccheri["codice"])
 
     saturi = cofid.alimenti().get(gruppi.get(cofid.SATURI, ""))
@@ -214,6 +225,13 @@ def da_crea(scheda: Mapping[str, Any], alimento_usda: Mapping[str, Any] | None =
     valori = crea.valori(dict(scheda))
     regole_zuccheri(valori, scheda["categoria"], scheda["nome"])
     fonti = [crea.FONTE]
+    da_usda = usda.valori(alimento_usda) if alimento_usda else {}
+    presi: set[str] = set()
+
+    if valori.get("zuccheri") is None and da_usda.get("zuccheri") is not None:
+        # Zuccheri totali da USDA prima di CoFID, perché il profilo CoFID si applichi a questi
+        valori["zuccheri"] = da_usda["zuccheri"]
+        presi.add("zuccheri")
 
     presi_cofid, riservati = da_cofid(valori, scheda)
 
@@ -221,19 +239,18 @@ def da_crea(scheda: Mapping[str, Any], alimento_usda: Mapping[str, Any] | None =
         fonti.extend(cofid.descrizione(cofid.alimenti()[c]) for c in cofid.leggi_codici(valori["codice_cofid"]))
 
     if alimento_usda:
-        da_usda = scala_zuccheri(usda.valori(alimento_usda), valori.get("zuccheri"))
-        presi = []
+        da_usda = scala_zuccheri(da_usda, valori.get("zuccheri"))
 
         for campo in usda.CAMPI_FORNIBILI:
             if campo not in riservati and valori.get(campo) is None and da_usda.get(campo) is not None:
                 valori[campo] = da_usda[campo]
-                presi.append(campo)
+                presi.add(campo)
 
         if valori.get("grassi_saturi") is not None and valori.get("grassi") is not None:
             valori["grassi_saturi"] = min(valori["grassi_saturi"], valori["grassi"])
 
         valori["fdc_id"] = int(alimento_usda["fdcId"])
-        valori["campi_usda"] = ",".join(presi) or None
+        valori["campi_usda"] = ",".join(c for c in usda.CAMPI_FORNIBILI if c in presi) or None
 
         if presi:
             fonti.append(usda.descrizione(alimento_usda))

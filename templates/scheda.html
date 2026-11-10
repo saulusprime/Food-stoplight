@@ -211,7 +211,7 @@
                         {% endif %}
                         {% if fonti_dati.cofid %}
                             {% set alimenti_cofid %}{% for codice, nome in fonti_dati.cofid %}{{ codice }} «{{ nome }}»{% if not loop.last %}, {% endif %}{% endfor %}{% endset %}
-                            <li>{% trans url=fonti_dati.cofid_url, alimenti=alimenti_cofid, campi=fonti_dati.campi_cofid|join(', ') %}Dalla tabella britannica <a href="{{ url }}" target="_blank" rel="noopener noreferrer">CoFID 2021</a> (alimento {{ alimenti }}), in proporzione agli zuccheri o ai grassi del CREA: {{ campi }}.{% endtrans %}</li>
+                            <li>{% trans url=fonti_dati.cofid_url, alimenti=alimenti_cofid, campi=fonti_dati.campi_cofid|join(', ') %}Dalla tabella britannica <a href="{{ url }}" target="_blank" rel="noopener noreferrer">CoFID 2021</a> (alimento {{ alimenti }}), dove mancano nel CREA: {{ campi }}. Fruttosio, glucosio e lattosio seguono le proporzioni dell'alimento CoFID sugli zuccheri totali, i grassi saturi la sua quota sui grassi.{% endtrans %}</li>
                         {% endif %}
                         {% if fonti_dati.campi_ricetta %}
                             <li>{% trans campi=fonti_dati.campi_ricetta|join(', ') %}Calcolati dagli ingredienti della ricetta CREA, in proporzione agli zuccheri o ai grassi del piatto: {{ campi }}.{% endtrans %}</li>

@@ -115,7 +115,14 @@ Commit `d1a74c3` — 9 novembre 2026 — export e messaggi dell'API seguono la l
 
 ## 🏗️ Architettura: blueprint
 
-9 novembre 2026 — `app.py` da 2.500 a circa 320 righe; gli indirizzi delle pagine non cambiano (41 regole, verificate prima e dopo)
+Commit `6b46f86` — 9 novembre 2026 — `app.py` da 2.500 a circa 320 righe; gli indirizzi delle pagine non cambiano (41 regole, verificate prima e dopo)
 
 - [x] Dividere `app.py` in blueprint Flask nel pacchetto `web/`: pagine (tabella, scheda, confronto, guida), alimenti (nuovo, modifica, elimina), import/export, backup, pasto e diario, accesso (login, lingua, ruoli), comandi da riga di comando e funzioni comuni; in `app.py` restano configurazione, template, errori e avvio
 
+## 🌐 Integrazione dati: rischi non classificati
+
+10 novembre 2026 — non classificati: colesterolo da 52 a 29 alimenti, malassorbimento da 79 a 55; un alimento solo simile si abbina quando il livello di rischio non dipende dalla scelta
+
+- [x] Grassi saturi da CoFID anche senza la percentuale sugli acidi grassi: quota dei saturi sui grassi dell'alimento CoFID (colonna «Satd FA /100g fd»), applicata ai grassi del CREA (alimenti senza saturi da 134 a 111)
+- [x] Profilo degli zuccheri CoFID applicato anche agli zuccheri totali USDA quando il CREA non li pubblica (carciofi e topinambur avevano l'abbinamento ma restavano senza fruttosio); se mancano anche in USDA, zuccheri totali CoFID, al massimo i carboidrati del CREA (alimenti senza fruttosio da 82 a 58)
+- [x] 40 nuovi abbinamenti in `dati/crea_cofid.csv`, ognuno con la nota sulla scelta: frattaglie, selvaggina, patè, mortadella, cheeseburger, caviale, minestre in scatola, gelati, piatti etnici, pizza, dolci, castagne, anona, germe di grano, grano saraceno, riso cotto e gnocchi (con le tre ricette di gnocchi)

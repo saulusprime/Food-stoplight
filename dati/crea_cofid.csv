@@ -3,12 +3,15 @@ codice_crea,alimento_crea,campi,codice_cofid,nome_cofid,nota
 000040,Frumento tenero,zuccheri,11-889,"Flour, wheat, wholemeal",chicco intero = farina integrale: saccarosio
 000045,"Couscous, crudo",zuccheri,11-901,"Couscous, plain, raw",stesso alimento (couscous crudo)
 000046,"Couscous, cotto",zuccheri,11-902,"Couscous, plain, cooked",stesso alimento (couscous cotto)
+000050,Grano saraceno,zuccheri,11-006,"Buckwheat, groats","stesso alimento (grano saraceno): zuccheri totali da CoFID, quasi solo saccarosio"
+000105,"Riso, brillato, cotto, bollito",zuccheri,11-878,"Rice, white, Italian Arborio risotto, raw","riso italiano: profilo del riso crudo (nel cotto CoFID solo tracce), fruttosio e glucosio in tracce"
 000150,Crusca di frumento,zuccheri,11-906,"Bran, wheat",stesso alimento (crusca di frumento): saccarosio
 000220,"Farina di frumento, tipo 00",zuccheri,11-886,"Flour, wheat, white, plain, soft",farina di grano tenero bianca (debole): saccarosio e maltosio
 000230,"Farina di frumento, tipo 0",zuccheri,11-887,"Flour, wheat, bread/strong, white","farina di grano tenero bianca (forte, da pane): saccarosio"
 000250,"Farina di frumento, duro",zuccheri,11-903,"Semolina, raw",semola/farina di grano duro: saccarosio
 000290,Farina di soia,zuccheri,11-898,"Flour, soya",stesso alimento (farina di soia): saccarosio
 000310,Semola,zuccheri,11-903,"Semolina, raw",stesso alimento (semola di grano duro)
+000330,Germe di frumento,zuccheri,11-907,Wheatgerm,"stesso alimento (germe di grano): zuccheri totali da CoFID, soprattutto saccarosio"
 000500,Pane al malto,saturi,11-972,"Bread, malted wheat",pane al malto
 000500,Pane al malto,zuccheri,11-462,"Bread, malt, fruited","pane al malto (approssimato, il CoFID contiene uvetta): maltosio, glucosio, fruttosio"
 000530,Pane bianco,zuccheri,11-969,"Bread, ciabatta",pane italiano senza zuccheri aggiunti: maltosio dall'amido
@@ -18,7 +21,9 @@ codice_crea,alimento_crea,campi,codice_cofid,nome_cofid,nota
 000570,Pangrattato,zuccheri,11-1001,"Bread, white, toasted",pane bianco tostato (approssimato per pangrattato): maltosio dall'amido
 000580,Panini al latte,zuccheri,11-1091,"Milk bread, homemade",pane al latte: lattosio dal latte (USDA senza lattosio)
 000590,Panini all'olio,zuccheri,11-1006,"Bread rolls, white, soft",panino bianco morbido: maltosio dall'amido
+000700,Pizza bianca,saturi,11-969,"Bread, ciabatta","grassi dall'olio d'oliva dell'impasto, come la ciabatta"
 000700,Pizza bianca,zuccheri,11-969,"Bread, ciabatta",impasto lievitato all'olio cotto (tipo ciabatta): maltosio dall'amido
+000710,Pizza con pomodoro,saturi,11-969,"Bread, ciabatta",approssimato: grassi dall'olio d'oliva dell'impasto (la pizza CoFID ha il formaggio)
 000710,Pizza con pomodoro,zuccheri,11-936,"Pizza, cheese and tomato, retail","pizza al pomodoro: F e G dal pomodoro, maltosio dall'impasto"
 000720,Pizza con pomodoro e mozzarella,zuccheri,11-936,"Pizza, cheese and tomato, retail","pizza pomodoro e formaggio europea: F e G dal pomodoro, maltosio dall'impasto"
 000875,"Ravioli, crudi, freschi",saturi,11-731,"Pasta, egg, fresh, filled with green vegetables/herbs and cheese, boiled in unsalted water",stesso prodotto: pasta ripiena verdure e formaggio
@@ -73,9 +78,13 @@ codice_crea,alimento_crea,campi,codice_cofid,nome_cofid,nota
 005465,Scarola,zuccheri,13-240,"Endive, raw","stesso vegetale (Cichorium endivia), crudo"
 005466,"Scarola IV gamma, fresca",zuccheri,13-240,"Endive, raw","stesso vegetale (Cichorium endivia), crudo"
 005690,"Sedano rapa, crudo",zuccheri,13-219,"Celeriac, raw","stesso vegetale, crudo"
+006590,"Gnocchi di patate, crudi",zuccheri,13-489,"Potatoes, old, raw, flesh only",approssimato: zuccheri dalla patata cruda (CoFID senza gnocchi)
+006591,"Gnocchi di patate, cotti",zuccheri,13-490,"Potatoes, old, boiled in unsalted water, flesh only",approssimato: zuccheri dalla patata bollita (CoFID senza gnocchi)
 006596,"Topinambur, cotto, bollito",zuccheri,13-156,"Artichoke, Jerusalem, boiled in unsalted water, flesh only","stesso vegetale, bollito"
 006620,"Pomodori, San Marzano, freschi",zuccheri,13-517,"Tomatoes, standard, raw","stesso vegetale (pomodoro), crudo"
 006830,"Peperoncini piccanti, freschi",zuccheri,13-317,"Peppers, capsicum, chilli, red, raw",peperoncino piccante rosso fresco (approssimato sul colore)
+006860,"Salvia, fresco",saturi,13-853,"Sage, fresh",stesso alimento (salvia fresca)
+006990,"Vegetali misti, surgelati",zuccheri,13-543,"Vegetables, mixed, frozen, boiled in unsalted water","verdure miste surgelate (piselli, carote, mais, fagiolini): zuccheri totali da CoFID"
 007053,"Fichi, seccati al forno e mandorlati",saturi,14-395,"Figs, ready-to-eat, semi-dried",fichi secchi (mandorle poco influenti)
 007060,"Fichi, canditi",zuccheri,14-338,"Peel, mixed","frutta candita: zuccheri quasi tutti dallo sciroppo di canditura (approssimato, profilo canditi misti)"
 007070,"Fichi, secchi",saturi,14-395,"Figs, ready-to-eat, semi-dried",stesso prodotto
@@ -84,17 +93,22 @@ codice_crea,alimento_crea,campi,codice_cofid,nome_cofid,nota
 007240,"Melone, d'inverno, fresco",zuccheri,14-328,"Melon, yellow flesh, flesh only","melone d'inverno a polpa chiara (tipo Honeydew), fresco"
 007250,"Nespole, fresche",zuccheri,14-140,"Loquats, flesh only, raw","stesso alimento, fresco"
 007270,"Pere, candite",zuccheri,14-338,"Peel, mixed","frutta candita: zuccheri quasi tutti dallo sciroppo di canditura (approssimato, profilo canditi misti)"
+007480,"Anona, fresca",zuccheri,14-075,"Custard apple/Bullock's heart, flesh only",stesso frutto (anona): zuccheri totali da CoFID
 007520,"Cocco, fresco",zuccheri,14-816,"Coconut, flesh only, fresh","stesso alimento, fresco: saccarosio"
 007560,"Guava, fresca",zuccheri,14-118,"Guava, flesh only, raw","stesso alimento, fresco"
 007580,"Litchi, freschi",zuccheri,14-142,"Lychees, raw, flesh only","stesso alimento, fresco"
 007610,"Passiflora, fresca",zuccheri,14-178,"Passion fruit, flesh and pips","stesso alimento, fresco"
 007720,"Ciliege, candite",zuccheri,14-338,"Peel, mixed","frutta candita: zuccheri quasi tutti dallo sciroppo di canditura (approssimato, profilo canditi misti)"
 008520,Castagne,zuccheri,14-813,"Chestnuts, kernel only, raw","stesso alimento, crudo: saccarosio"
+008521,"Castagne, arrostite",zuccheri,14-813,"Chestnuts, kernel only, raw","castagne: zuccheri quasi solo saccarosio, fruttosio e glucosio in tracce"
+008525,"Castagne, bollite",zuccheri,14-813,"Chestnuts, kernel only, raw","castagne: zuccheri quasi solo saccarosio, fruttosio e glucosio in tracce"
 008530,"Castagne, secche",zuccheri,14-815,"Chestnuts, dried","stesso alimento, secco: saccarosio"
 008940,Cocktail di frutta sciroppata,zuccheri,14-097,"Fruit cocktail, canned in syrup, whole contents",stesso alimento (macedonia sciroppata)
+009799,Oli vegetali,saturi,17-686,"Oil, vegetable, average",approssimato: olio di semi medio; con qualsiasi olio vegetale i saturi superano 5 g
 104029,"Agnello, cotto, al forno",saturi,18-479,"Lamb, leg, whole, roasted, lean only","stessa specie, magro arrosto (cosciotto)"
 105236,"Maiale, bistecca, cotto, in padella",saturi,18-526,"Pork, loin steaks, grilled, lean and fat","stessa specie: bistecca di lombo, magro e grasso"
 106010,"Anatra domestica, crudo",saturi,18-489,"Duck, meat only, raw","stessa specie, solo carne"
+106020,"Faraona, coscio, con pelle, crudo",saturi,18-293,"Chicken, leg quarter, raw, meat and skin",approssimato: coscia di pollo con pelle (grasso di gallinaceo)
 106100,"Gallina, crudo",saturi,18-297,"Chicken, whole, raw, meat and skin","stessa specie: pollo intero con pelle, crudo"
 106251,"Pollo, intero, con pelle, cotto, arrosto",saturi,18-341,"Chicken, whole, roasted, meat and skin","stesso taglio: intero con pelle, arrosto"
 106261,"Pollo, intero, senza pelle, cotto, arrosto",saturi,18-331,"Chicken, meat, average, roasted","stesso taglio: solo carne, arrosto"
@@ -113,9 +127,12 @@ codice_crea,alimento_crea,campi,codice_cofid,nome_cofid,nota
 107019,"Coniglio, intero, cotto",saturi,18-387,"Rabbit, raw, meat only","stessa specie, solo carne (stufato CoFID 57,5% misto selvatico, scartato)"
 107020,"Coniglio, intero surgelato, crudo",saturi,18-387,"Rabbit, raw, meat only","stessa specie, solo carne"
 108510,"Fagiano, crudo",saturi,18-383,"Pheasant, meat only, roasted",stessa specie
+108530,"Quaglia, crudo",saturi,18-383,"Pheasant, meat only, roasted",approssimato: fagiano (selvaggina da penna); livello Medio con qualsiasi pollame
+109010,"Lumaca, cruda",saturi,16-497,"Mussels, raw","approssimato: mollusco; con 1,7 g di grassi il livello resta Basso"
 110100,Capocollo,saturi,18-549,"Pork, shoulder joint (collar), raw, lean and fat","stesso taglio (collo/coppa suino), fresco"
 110110,Capocollo di Calabria,saturi,18-549,"Pork, shoulder joint (collar), raw, lean and fat","stesso taglio (collo/coppa suino), fresco"
 110190,"Cotechino, confezionato precotto",saturi,18-606,"Pork, mince, raw","incerto: insaccato di solo suino, proxy macinato suino"
+110210,Mortadella di bovini e suini,saturi,19-517,Salami,approssimato: insaccato di suino (CoFID senza mortadella); livello Alto con qualsiasi grasso animale
 110505,Prosciutto crudo di montagna,saturi,19-496,Ham,coscia suina salmistrata (ham UK)
 110526,"Prosciutto crudo, disossato, sgrassato",saturi,19-496,Ham,coscia suina salmistrata (ham UK)
 110530,"Prosciutto crudo, gambuccio",saturi,19-496,Ham,coscia suina salmistrata (ham UK)
@@ -124,6 +141,10 @@ codice_crea,alimento_crea,campi,codice_cofid,nome_cofid,nota
 110730,Salsiccia di Calabria,saturi,18-606,"Pork, mince, raw","incerto: insaccato di solo suino, proxy macinato suino"
 110740,Soppressata di Calabria,saturi,18-606,"Pork, mince, raw","incerto: insaccato di solo suino, proxy macinato suino"
 110950,"Zampone confezionato, precotto",saturi,18-606,"Pork, mince, raw","incerto: insaccato di solo suino, proxy macinato suino"
+114010,Patè di coniglio,saturi,19-145,"Pate, meat, reduced fat",approssimato: patè di carne; livello Alto con qualsiasi grasso animale
+114030,Patè di pollo,saturi,19-317,"Pate, liver",patè di fegato; livello Alto con qualsiasi grasso animale
+114040,Patè di prosciutto,saturi,19-145,"Pate, meat, reduced fat",approssimato: patè di carne; livello Alto con qualsiasi grasso animale
+115010,Animelle di bovini,saturi,18-421,"Sweetbread, lamb, raw",approssimato: animelle d'agnello (grasso di ruminante)
 115120,Coratella di agnello,saturi,18-396,"Heart, lamb, raw","incerto: coratella (polmone, cuore, fegato) d'agnello: cuore"
 115130,Coratella di vitello,saturi,18-409,"Liver, calf, raw",incerto: coratella di vitello: fegato di vitello
 115210,Cuore di bovini,saturi,18-398,"Heart, ox, raw",stessa specie e organo
@@ -135,8 +156,12 @@ codice_crea,alimento_crea,campi,codice_cofid,nome_cofid,nota
 115369,"Fegato di pollo, cotto",saturi,18-411,"Liver, chicken, raw",stessa specie e organo
 115370,Fegato di suini,saturi,18-417,"Liver, pig, raw",stessa specie e organo
 115379,"Fegato di suini, cotto",saturi,18-418,"Liver, pig, stewed",stessa specie e organo
+115400,Lingua di bovini,saturi,18-469,"Beef, mince, raw",approssimato: grasso di bovino (CoFID senza saturi per la lingua)
+115409,"Lingua di bovini, cotta, fritta",saturi,18-469,"Beef, mince, raw",approssimato: grasso di bovino (CoFID senza saturi per la lingua); livello Alto anche con l'olio di frittura
+115600,Polmone di bovini,saturi,18-398,"Heart, ox, raw","approssimato: frattaglia di bovino (cuore); con 2,1 g di grassi il livello resta Basso"
 115710,Rene di bovini,saturi,18-404,"Kidney, ox, raw",stessa specie e organo
 115800,Trippa di bovini,saturi,18-428,"Tripe, dressed, raw",stessa specie e organo
+119020,"Cheese burger, fast food",saturi,19-545,"Burger, cheeseburger, takeaway",stesso prodotto (cheeseburger da asporto)
 120020,"Acciuga o alice, sott'olio",saturi,16-448,"Anchovies, canned in oil, drained","stessa specie, sott'olio"
 120030,"Acciuga o alice, sotto sale",saturi,16-401,"Sardines, flesh only, raw",pesce azzurro: sardina (acciuga non sott'olio assente)
 120220,"Anguilla, marinata",saturi,16-393,"Mackerel, flesh only, raw",incerto: anguilla assente; pesce grasso: sgombro
@@ -159,6 +184,7 @@ codice_crea,alimento_crea,campi,codice_cofid,nome_cofid,nota
 122430,"Salmone, in salamoia",saturi,16-418,"Salmon, red, canned in brine, drained","stessa specie, in salamoia"
 122500,Salpa,saturi,16-372,"Cod, flesh only, raw",pesce bianco magro: merluzzo
 123010,"Sgombro o maccarello, in salamoia",saturi,16-393,"Mackerel, flesh only, raw",stessa specie: sgombro
+123390,"Caviale, storione",saturi,16-272,"Caviare, bottled in brine, drained",stesso alimento (caviale)
 123610,"Tonno sott'olio, sgocciolato",saturi,16-417,"Tuna, canned in sunflower oil, drained",stesso prodotto (olio di girasole invece che d'oliva)
 123900,Triglia,saturi,16-401,"Sardines, flesh only, raw",incerto: pesce di mare semigrasso (6 g): sardina
 128055,"Aragosta, bollita",saturi,16-425,"Langoustine, boiled",crostacei: scampo bollito (aragosta senza sat%)
@@ -189,6 +215,7 @@ codice_crea,alimento_crea,campi,codice_cofid,nome_cofid,nota
 202020,"""|Caramelle tipo """"mou""""|""",zuccheri,17-646,"Toffees, mixed",caramelle mou/toffee industriali: saccarosio + sciroppo di glucosio
 202030,Lenti colorate ripiene di cioccolato,saturi,17-648,"Chocolate, milk",confetti di cioccolato al latte (Smarties senza sat%)
 202030,Lenti colorate ripiene di cioccolato,zuccheri,17-096,Smartie-type sweets,stesso prodotto (confetti di cioccolato tipo Smarties): saccarosio + lattosio
+202800,Torrone alla mandorla,saturi,17-814,"Nougat, homemade",torrone (nougat): grassi da mandorle e albume
 202800,Torrone alla mandorla,zuccheri,17-814,"Nougat, homemade",torrone (nougat): saccarosio con un po' di miele/glucosio
 203010,"Cioccolato, al latte",zuccheri,17-648,"Chocolate, milk",stesso alimento: saccarosio + lattosio
 203030,"Cioccolato, al latte con nocciole",zuccheri,17-648,"Chocolate, milk",cioccolato al latte (le nocciole non cambiano il profilo): saccarosio + lattosio
@@ -206,9 +233,12 @@ codice_crea,alimento_crea,campi,codice_cofid,nome_cofid,nota
 206100,"Gelato confezionato, vaniglia, in vaschetta",zuccheri,12-508,"Ice cream, dairy, vanilla, soft scoop",stesso alimento (gelato alla vaniglia confezionato)
 206260,"Gelato confezionato, biscotto con crema, zabaione e cioccolato",saturi,12-508,"Ice cream, dairy, vanilla, soft scoop",incerto: gelato al latte (biscotto escluso)
 206270,"Gelato confezionato, cono con panna e cioccolato",saturi,12-507,Cornetto type ice cream cone,stesso prodotto
+206270,"Gelato confezionato, cono con panna e cioccolato",zuccheri,12-507,Cornetto type ice cream cone,stesso prodotto: zuccheri totali da CoFID
 206280,"Gelato confezionato, cono con panna, scaglie di cioccolato e noccioline",saturi,12-507,Cornetto type ice cream cone,stesso prodotto
+206280,"Gelato confezionato, cono con panna, scaglie di cioccolato e noccioline",zuccheri,12-507,Cornetto type ice cream cone,stesso prodotto: zuccheri totali da CoFID
 206800,"Gelato confezionato, sorbetto al limone, in vaschetta",zuccheri,12-393,"Sorbet, fruit",sorbetto alla frutta: saccarosio + sciroppo di glucosio
 207010,Baba' al rhum,zuccheri,11-1111,"Rum baba, homemade",stesso dolce (babà al rum): zuccheri dallo sciroppo di saccarosio
+207020,"Cannoli alla crema, industriale",saturi,11-843,"Pastries, cream filled, retail",sfoglia farcita con crema: livello Alto con qualsiasi grasso da pasticceria
 207020,"Cannoli alla crema, industriale",zuccheri,11-843,"Pastries, cream filled, retail","sfoglia farcita con crema (cream horns): saccarosio, poco lattosio"
 208510,"Crostata, con marmellata, industriale",saturi,11-846,"Jam tarts, retail",crostata industriale
 208520,"Crostata, con marmellata di albicocche, industriale",saturi,11-846,"Jam tarts, retail",crostata industriale
@@ -222,6 +252,7 @@ codice_crea,alimento_crea,campi,codice_cofid,nome_cofid,nota
 210060,"Merendine, tipo brioche, industriale",zuccheri,11-828,"Iced buns, retail",dolce lievitato zuccherato tipo brioche: saccarosio in parte invertito dal lievito
 210070,"Merendine, tipo pasta frolla, industriale",zuccheri,11-796,"Biscuits, short, sweet",frolla industriale (shortcake): zuccheri da saccarosio
 214000,"Barretta al cocco ricoperta di cioccolato, industriale",zuccheri,17-766,Bounty bar and own brand equivalents,"stesso prodotto (barretta al cocco ricoperta di cioccolato al latte, tipo Bounty)"
+215000,"Savoiardi, industriali",saturi,11-957,"Cake, sponge, fatless, homemade",savoiardi = pan di Spagna senza grassi aggiunti: grassi dalle uova
 215000,"Savoiardi, industriali",zuccheri,11-957,"Cake, sponge, fatless, homemade","savoiardi = impasto di pan di Spagna: saccarosio (approssimato, CoFID senza savoiardi)"
 216000,Panettone,zuccheri,11-1009,"Currant buns, retail","lievitato dolce con uvetta (approssimato, CoFID senza panettone): F e G da uvetta e saccarosio invertito"
 217000,Pasta di mandorle,zuccheri,14-893,"Marzipan, homemade","pasta di mandorle (marzapane), composizione simile: saccarosio"
@@ -235,7 +266,12 @@ codice_crea,alimento_crea,campi,codice_cofid,nome_cofid,nota
 409000,"Bevanda alcolica, Spumante",zuccheri,17-757,"Wine, white, sparkling",stesso alimento (vino bianco spumante)
 502260,"Ketchup, salsa",zuccheri,17-709,Tomato ketchup,ketchup europeo con saccarosio (USDA con sciroppo di mais ad alto fruttosio)
 504010,Farina di castagne,zuccheri,14-815,"Chestnuts, dried",farina = castagne secche macinate: saccarosio
+900210,"Minestre in scatola, crema di funghi",saturi,17-713,"Soup, mushroom, cream of, canned",stesso prodotto (crema di funghi in scatola)
+900210,"Minestre in scatola, crema di funghi",zuccheri,17-713,"Soup, mushroom, cream of, canned",stesso prodotto (crema di funghi in scatola): zuccheri totali da CoFID
+900310,"Minestre in scatola, crema di pollo",saturi,17-695,"Soup, chicken, cream of, canned",stesso prodotto (crema di pollo in scatola)
 900310,"Minestre in scatola, crema di pollo",zuccheri,17-695,"Soup, chicken, cream of, canned",stesso prodotto (crema di pollo in scatola)
+900410,"Minestre in scatola, crema di pomodori",zuccheri,17-652,"Soup, cream of tomato, canned",stesso prodotto (crema di pomodoro in scatola): zuccheri totali da CoFID
+905010,"Minestrone, cotto",zuccheri,17-810,"Soup, minestrone, homemade",stesso piatto (minestrone casalingo): zuccheri totali da CoFID
 905100,Minestrone liofilizzato,zuccheri,17-653,"Soup, instant, dried, as purchased","minestra disidratata in busta (approssimato): maltodestrine, saccarosio, verdure"
 PE0004,Falafel,zuccheri,15-795,"Falafel, fried in rapeseed oil, homemade",stesso piatto (falafel fritti)
 PE0006,Involtini Primavera,saturi,19-327,"Spring rolls, meat, takeaway",stesso prodotto
@@ -244,6 +280,10 @@ PE0007,Nuvole di gamberi,saturi,11-1023,"Prawn crackers, takeaway",stesso prodot
 PE0007,Nuvole di gamberi,zuccheri,11-1023,"Prawn crackers, takeaway",stesso alimento (nuvole di gamberi / prawn crackers)
 PE0009,Spaghetti fritti,saturi,19-321,"Chow mein, chicken, takeaway",noodles fritti con pollo (chow mein)
 PE0010,Pollo all'ananas,saturi,19-324,"Sweet and sour chicken, takeaway",pollo in agrodolce da asporto
+PE0010,Pollo all'ananas,zuccheri,19-324,"Sweet and sour chicken, takeaway",pollo in agrodolce da asporto: zuccheri da salsa e frutta
+PE0011,Pollo alle mandorle,saturi,19-569,"Chicken, stir-fried with mushrooms and cashew nuts, homemade",approssimato: pollo saltato con funghi e anacardi (invece delle mandorle)
+PE0011,Pollo alle mandorle,zuccheri,19-569,"Chicken, stir-fried with mushrooms and cashew nuts, homemade",approssimato: pollo saltato con funghi e anacardi (invece delle mandorle)
 PE0012,Maiale in agrodolce,saturi,19-304,"Sweet and sour pork, battered, takeaway",stesso piatto
 PE0012,Maiale in agrodolce,zuccheri,19-304,"Sweet and sour pork, battered, takeaway",stesso piatto da asporto cinese: salsa agrodolce con saccarosio e frutta
 PE0013,Gamberetti con funghi e bambù,saturi,16-335,"Szechuan prawns with vegetables, takeaway",stesso tipo di piatto: gamberi saltati con verdure
+PE0013,Gamberetti con funghi e bambù,zuccheri,16-335,"Szechuan prawns with vegetables, takeaway",stesso tipo di piatto: gamberi saltati con verdure

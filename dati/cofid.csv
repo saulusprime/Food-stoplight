@@ -1,166 +1,187 @@
-codice,nome,zuccheri,glucosio,fruttosio,saccarosio,maltosio,lattosio,grassi,saturi_su_acidi
-11-1001,"Bread, white, toasted",4.1,Tr,0.2,Tr,3.9,0.0,2.0,
-11-1006,"Bread rolls, white, soft",2.6,0.2,0.2,Tr,2.2,0.0,2.6,29.40
-11-1009,"Currant buns, retail",16.0,8.2,7.0,Tr,0.9,Tr,5.6,36.60
-11-1023,"Prawn crackers, takeaway",2.2,Tr,Tr,1.9,0.3,0.0,39.0,9.75
-11-1091,"Milk bread, homemade",2.1,Tr,Tr,0.2,Tr,1.8,7.0,
-11-1111,"Rum baba, homemade",19.7,Tr,Tr,19.7,0.0,Tr,7.7,
-11-462,"Bread, malt, fruited",22.6,7.4,6.3,1.0,7.2,0.7,2.3,20.00
-11-728,"Pasta, egg, fresh, filled with cheese only, boiled in unsalted water",2.2,Tr,Tr,Tr,1.4,0.8,6.7,56.09
-11-731,"Pasta, egg, fresh, filled with green vegetables/herbs and cheese, boiled in unsalted water",0.1,Tr,0.1,Tr,Tr,Tr,5.8,58.50
-11-732,"Pasta, egg, fresh, filled with meat, boiled in unsalted water",1.0,Tr,0.1,Tr,0.6,0.3,4.7,42.78
-11-740,"Cake bars, chocolate",41.5,2.1,1.0,33.3,1.2,4.0,21.6,48.08
-11-742,"Breakfast cereal, cornflakes, fortified",7.3,1.7,1.5,4.1,Tr,0.0,0.8,25.70
-11-750,"Breakfast cereal, rice, toasted/crisp, fortified",12.4,0.3,0.5,11.6,Tr,0.0,1.0,28.70
-11-767,"Breakfast cereal, bran type cereal, fortified",20.0,0.7,0.7,17.5,1.1,0.0,3.4,18.80
-11-780,"Muesli, Swiss style, unfortified",21.3,4.9,5.0,7.4,Tr,4.0,6.3,21.40
-11-796,"Biscuits, short, sweet",23.8,0.6,0.6,22.0,0.6,Tr,20.9,50.30
-11-797,"Biscuits, semi-sweet",20.3,0.6,Tr,19.7,Tr,Tr,15.1,35.20
-11-799,"Biscuits, digestive, plain",17.5,Tr,Tr,17.5,Tr,Tr,21.3,42.29
-11-813,"Biscuits, sandwich, cream",29.9,1.6,Tr,27.2,Tr,1.1,23.3,59.80
-11-826,"Breadsticks, plain",3.3,Tr,Tr,Tr,3.3,Tr,8.1,79.20
-11-828,"Iced buns, retail",25.8,6.4,7.0,11.4,1.0,Tr,7.8,48.40
-11-831,"Cake, sponge, with jam and butter cream, retail",37.6,3.5,1.0,28.2,4.9,Tr,14.8,49.80
-11-832,"Cake, sponge, soft iced, retail",39.0,Tr,Tr,35.5,3.5,Tr,15.8,41.10
-11-834,"Cake, Swiss rolls, chocolate covered and filled, retail",41.2,4.1,Tr,33.8,3.4,Tr,22.7,54.40
-11-843,"Pastries, cream filled, retail",27.3,2.7,1.0,20.8,1.6,1.2,27.4,62.00
-11-846,"Jam tarts, retail",32.1,9.4,3.7,10.9,8.2,Tr,13.5,42.90
-11-886,"Flour, wheat, white, plain, soft",0.6,Tr,Tr,0.5,0.1,0.0,1.4,48.68
-11-887,"Flour, wheat, bread/strong, white",0.5,Tr,Tr,0.4,Tr,0.0,1.2,37.40
-11-889,"Flour, wheat, wholemeal",1.4,Tr,Tr,1.0,0.3,0.0,2.0,21.39
-11-898,"Flour, soya",6.4,Tr,Tr,6.4,Tr,0.0,22.4,15.29
-11-901,"Couscous, plain, raw",2.3,Tr,Tr,0.8,1.4,0.0,2.1,21.27
-11-902,"Couscous, plain, cooked",1.0,Tr,Tr,0.2,0.8,0.0,1.0,
-11-903,"Semolina, raw",0.6,Tr,Tr,0.4,0.1,0.0,1.6,22.46
-11-906,"Bran, wheat",2.3,Tr,Tr,2.3,Tr,0.0,5.5,19.83
-11-936,"Pizza, cheese and tomato, retail",3.9,0.8,0.9,Tr,2.1,Tr,9.8,44.51
-11-957,"Cake, sponge, fatless, homemade",30.6,Tr,Tr,30.6,0.0,0.0,5.6,
-11-969,"Bread, ciabatta",3.1,Tr,0.1,0.3,2.7,0.0,3.9,
-11-971,"Bread, brown, average",3.4,Tr,0.3,Tr,3.0,0.0,2.0,27.74
-11-972,"Bread, malted wheat",2.9,0.1,0.3,Tr,2.5,0.0,2.3,29.62
-11-981,"Bread, wholemeal, average",2.8,0.2,0.4,Tr,2.2,0.0,2.5,24.10
-11-982,"Bread, wholemeal, toasted",3.2,0.2,0.5,Tr,2.5,0.0,2.9,28.20
-11-985,"Bread rolls, white, crusty",2.7,Tr,0.2,Tr,2.6,0.0,2.2,28.73
-11-988,Croissants,5.3,1.2,2.0,Tr,1.9,0.2,19.7,54.93
-12-357,"Cheese, goats milk, full fat, soft, white rind",1.0,0.0,0.0,0.0,0.0,0.9,25.8,70.47
-12-358,"Cheese, Gouda",Tr,0.0,0.0,0.0,0.0,Tr,30.6,70.35
-12-360,"Cheese, Mozzarella, fresh",Tr,0.0,0.0,0.0,0.0,Tr,20.3,68.35
-12-375,"Yogurt, whole milk, fruit",16.6,3.3,2.2,6.2,0.2,4.0,3.0,70.93
-12-377,"Yogurt, Greek style, fruit",10.5,Tr,1.0,3.8,0.4,4.0,8.4,
-12-390,"Lollies, containing ice-cream",20.9,2.9,0.4,12.6,0.0,5.0,3.8,56.90
-12-393,"Sorbet, fruit",23.3,3.6,1.6,17.2,0.8,0.0,0.3,
-12-490,"Cheese, Mascarpone",4.3,0.0,0.0,0.0,0.0,4.3,44.5,68.00
-12-492,"Cheese, Port Salut, St Paulin type",Tr,0.0,0.0,0.0,0.0,Tr,25.7,69.86
-12-494,"Cheese, Dolcelatte, rind removed",Tr,0.0,0.0,0.0,0.0,Tr,35.8,66.98
-12-496,"Cheese, Halloumi",1.7,0.0,0.0,0.0,0.0,1.5,23.5,70.70
-12-507,Cornetto type ice cream cone,27.9,2.0,1.5,19.1,2.0,3.3,14.4,80.22
-12-508,"Ice cream, dairy, vanilla, soft scoop",22.0,2.7,0.9,11.9,1.5,5.1,8.2,67.03
-12-510,"Ice cream bars/choc ices, chocolate coated, luxury",32.9,1.4,1.5,23.9,Tr,6.2,21.1,70.46
-12-551,"Cheese, spreadable, full fat, soft, white",3.0,0.0,0.0,0.0,0.0,3.0,24.4,69.23
-13-062,"Beans, blackeye, whole, dried, raw",2.9,0.2,0.1,2.5,0.1,0.0,1.6,
-13-064,"Beans, broad, whole, raw",1.3,0.1,0.3,0.9,0.0,0.0,1.0,
-13-067,"Beans, broad, dried, raw",5.9,0.6,1.5,3.8,0.0,0.0,2.1,
-13-074,"Beans, chick peas, Kabuli, whole, dried, raw",2.6,Tr,0.2,2.4,0.0,0.0,5.4,
-13-086,"Beans, haricot, whole, dried, raw",2.8,0.2,0.1,2.5,0.0,0.0,1.6,
-13-087,"Beans, haricot, whole, dried, boiled in unsalted water",0.8,0.1,Tr,0.7,0.0,0.0,0.5,
-13-109,"Beans, red kidney, dried, raw",2.5,0.2,0.1,2.2,0.0,0.0,1.4,
-13-115,"Beans, soya, dried, raw",5.5,0.2,0.5,4.8,0.0,0.0,18.6,
-13-153,"Artichoke, globe, raw",1.3,0.8,0.4,0.1,0.0,0.0,0.2,
-13-156,"Artichoke, Jerusalem, boiled in unsalted water, flesh only",1.6,0.1,0.2,1.3,0.0,0.0,0.1,
-13-219,"Celeriac, raw",1.8,0.3,0.4,1.2,0.0,0.0,0.4,
-13-225,"Chicory, pale variety, raw",0.7,0.3,0.4,Tr,0.0,0.0,0.6,
-13-240,"Endive, raw",1.0,0.4,0.5,0.1,0.0,0.0,0.2,
-13-317,"Peppers, capsicum, chilli, red, raw",4.2,1.9,2.3,Tr,0.0,0.0,0.3,
-13-426,"Beansprouts, mung, raw",2.2,1.1,1.1,Tr,0.0,0.0,0.5,
-13-515,"Beans, green, boiled in unsalted water",3.0,1.3,1.2,0.5,0.0,0.0,0.3,
-13-517,"Tomatoes, standard, raw",3.0,1.4,1.6,Tr,0.0,0.0,0.1,
-13-648,"Beans, broad, whole, boiled in unsalted water",1.1,Tr,Tr,1.1,0,0,1,
-13-659,"Beans, red kidney, dried, boiled in unsalted water",0.8,Tr,Tr,0.8,0,0,1,
-13-660,"Beans, red kidney, canned in water, re-heated, drained",0.8,Tr,Tr,0.8,0,0,1,
-13-662,"Beans, chick peas, Kabuli, whole, dried, boiled in unsalted water",0.7,Tr,Tr,0.7,0,0,3,
-13-666,"Beans, cannellini, canned, re-heated, drained",0.7,Tr,Tr,0.7,0,0,1.6,
-13-670,"Beans, chick peas, canned, re-heated, drained",0.7,Tr,Tr,0.7,0,0,3,
-14-016,"Apples, eating, dried",60.1,8.6,31.7,19.9,0.0,0.0,0.5,
-14-097,"Fruit cocktail, canned in syrup, whole contents",14.8,6.1,6.4,1.9,0.3,0.0,Tr,
-14-118,"Guava, flesh only, raw",4.9,2.1,2.3,0.5,0.0,0.0,0.5,
-14-140,"Loquats, flesh only, raw",6.3,2.7,3.0,0.6,0.0,0.0,0.2,
-14-142,"Lychees, raw, flesh only",14.3,7.0,7.3,Tr,0.0,0.0,0.1,
-14-178,"Passion fruit, flesh and pips",5.8,2.2,1.9,1.7,0.0,0.0,0.4,
-14-241,"Quinces, flesh only",6.3,2.3,3.7,0.3,0.0,0.0,0.1,
-14-328,"Melon, yellow flesh, flesh only",6.8,1.7,2.5,2.6,0.0,0.0,0.1,
-14-338,"Peel, mixed",51.2,16.7,3.8,8.1,22.6,0.0,0.9,
-14-395,"Figs, ready-to-eat, semi-dried",43.3,21.2,22.1,Tr,0,0,1.2,13.08
-14-813,"Chestnuts, kernel only, raw",7.0,Tr,Tr,7.0,0.0,0.0,2.7,
-14-815,"Chestnuts, dried",13.2,Tr,Tr,13.2,0.0,0.0,5.1,
-14-816,"Coconut, flesh only, fresh",3.7,Tr,Tr,3.7,0.0,0.0,36.0,
-14-893,"Marzipan, homemade",48.7,0.0,0.0,48.6,0.0,0.0,25.7,
-15-795,"Falafel, fried in rapeseed oil, homemade",2.7,0.8,0.6,1.3,0.0,0.0,11.2,
-16-335,"Szechuan prawns with vegetables, takeaway",0.8,0.4,0.4,Tr,Tr,Tr,4.7,14.66
-16-372,"Cod, flesh only, raw",0.0,0.0,0.0,0.0,0.0,0.0,0.6,37.15
-16-381,"Plaice, flesh only, raw",0.0,0.0,0.0,0.0,0.0,0.0,1.2,27.15
-16-393,"Mackerel, flesh only, raw",0.0,0.0,0.0,0.0,0.0,0.0,17.9,23.92
-16-395,"Trout, rainbow, flesh only, raw",0.0,0.0,0.0,0.0,0.0,0.0,5.3,25.33
-16-397,"Kippers, flesh only, grilled",0.0,0.0,0.0,0.0,0.0,0.0,17.6,23.64
-16-401,"Sardines, flesh only, raw",0.0,0.0,0.0,0.0,0.0,0.0,6.1,33.36
-16-405,"Fish fingers, cod, grilled/baked",1.5,Tr,Tr,0.2,1.3,Tr,9.2,13.49
-16-417,"Tuna, canned in sunflower oil, drained",0.0,0.0,0.0,0.0,0.0,0.0,6.4,12.77
-16-418,"Salmon, red, canned in brine, drained",0.0,0.0,0.0,0.0,0.0,0.0,7.3,21.73
-16-425,"Langoustine, boiled",0.0,0.0,0.0,0.0,0.0,0.0,0.8,28.36
-16-448,"Anchovies, canned in oil, drained",0.0,0.0,0.0,0.0,0.0,0.0,10.0,16.10
-17-096,Smartie-type sweets,70.8,0.3,Tr,65.6,0.1,4.8,17.5,
-17-101,"Sweets, boiled",86.7,8.5,1.4,67.5,9.3,0.0,Tr,
-17-175,Cola,10.9,3.5,3.4,4.0,0.0,0.0,0.0,
-17-179,Lemonade,5.8,1.5,1.4,2.8,0.1,0.0,0.0,
-17-234,Port,12.0,4.6,4.6,2.8,0.0,0.0,0.0,
-17-239,"Vermouth, dry",3.0,1.1,1.2,0.7,0.0,0.0,0.0,
-17-245,"Liqueurs, low-medium strength",32.8,6.3,6.1,20.4,0.0,0.0,0.0,
-17-646,"Toffees, mixed",39.1,5.9,Tr,29.9,3.3,Tr,15.9,56.60
-17-648,"Chocolate, milk",56.0,Tr,Tr,46.8,Tr,9.2,31.1,63.67
-17-653,"Soup, instant, dried, as purchased",17.4,2.1,1.7,6.7,6.3,0.6,13.4,67.88
-17-661,"Butter, unsalted",0.6,0.0,0.0,0.0,0.0,0.6,82.2,68.68
-17-687,Chocolate nut spread,59.7,Tr,Tr,56.7,0.0,3.0,33.0,29.61
-17-688,"Jam, stone fruit",69.3,27.5,14.9,18.8,8.0,0.0,0.0,
-17-695,"Soup, chicken, cream of, canned",1.1,Tr,0.1,0.6,0.0,0.4,3.8,
-17-709,Tomato ketchup,27.5,5.9,6.4,15.2,0.0,0.0,0.1,
-17-757,"Wine, white, sparkling",5.1,2.2,2.8,0.1,0.0,0.0,0.0,
-17-766,Bounty bar and own brand equivalents,50.4,3.2,0.1,41.7,3.0,2.4,26.3,
-17-814,"Nougat, homemade",79.6,3.2,3.8,72.6,Tr,0.0,10.2,
-18-289,"Chicken, dark meat, raw",0.0,0.0,0.0,0.0,0.0,0.0,2.8,28.40
-18-293,"Chicken, leg quarter, raw, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,13.3,28.70
-18-295,"Chicken, wing quarter, raw, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,12.4,29.70
-18-297,"Chicken, whole, raw, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,13.8,29.20
-18-313,"Chicken, leg quarter, casseroled, meat only",0.0,0.0,0.0,0.0,0.0,0.0,8.4,28.70
-18-331,"Chicken, meat, average, roasted",0.0,0.0,0.0,0.0,0.0,0.0,7.5,29.10
-18-334,"Chicken, drumsticks, roasted, meat only",0.0,0.0,0.0,0.0,0.0,0.0,5.1,28.40
-18-335,"Chicken, drumsticks, roasted, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,9.1,28.60
-18-337,"Chicken, leg quarter, roasted, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,16.9,28.70
-18-341,"Chicken, whole, roasted, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,12.5,29.20
-18-348,"Turkey, dark meat, raw",0.0,0.0,0.0,0.0,0.0,0.0,2.5,31.80
-18-350,"Turkey, meat, average, raw",0.0,0.0,0.0,0.0,0.0,0.0,1.6,33.40
-18-355,"Turkey, thighs, diced, casseroled, meat only",0.0,0.0,0.0,0.0,0.0,0.0,7.5,35.00
-18-361,"Turkey, meat, average, roasted",0.0,0.0,0.0,0.0,0.0,0.0,4.6,33.20
-18-365,"Turkey, drumsticks, roasted, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,8.5,32.00
-18-383,"Pheasant, meat only, roasted",0.0,0.0,0.0,0.0,0.0,0.0,12.0,36.20
-18-387,"Rabbit, raw, meat only",0.0,0.0,0.0,0.0,0.0,0.0,5.5,41.20
-18-396,"Heart, lamb, raw",0.0,0.0,0.0,0.0,0.0,0.0,6.8,48.80
-18-398,"Heart, ox, raw",0.0,0.0,0.0,0.0,0.0,0.0,3.5,62.00
-18-399,"Heart, ox, stewed",0.0,0.0,0.0,0.0,0.0,0.0,5.1,62.00
-18-400,"Heart, pig, raw",0.0,0.0,0.0,0.0,0.0,0.0,3.2,47.90
-18-404,"Kidney, ox, raw",0.0,0.0,0.0,0.0,0.0,0.0,2.1,48.80
-18-409,"Liver, calf, raw",0.0,0.0,0.0,0.0,0.0,0.0,3.4,41.20
-18-411,"Liver, chicken, raw",0.0,0.0,0.0,0.0,0.0,0.0,2.3,42.10
-18-413,"Liver, lamb, raw",0.0,0.0,0.0,0.0,0.0,0.0,6.2,38.10
-18-416,"Liver, ox, stewed",Tr,Tr,Tr,Tr,Tr,0.0,9.5,49.60
-18-417,"Liver, pig, raw",0.0,0.0,0.0,0.0,0.0,0.0,3.1,41.60
-18-418,"Liver, pig, stewed",0.0,0.0,0.0,0.0,0.0,0.0,8.1,41.60
-18-428,"Tripe, dressed, raw",0.0,0.0,0.0,0.0,0.0,0.0,0.5,48.40
-18-479,"Lamb, leg, whole, roasted, lean only",0.0,0.0,0.0,0.0,0.0,0.0,9.4,43.90
-18-489,"Duck, meat only, raw",0.0,0.0,0.0,0.0,0.0,0.0,6.5,32.70
-18-526,"Pork, loin steaks, grilled, lean and fat",0,0,0,0,0,0,12.9,40
-18-549,"Pork, shoulder joint (collar), raw, lean and fat",0,0,0,0,0,0,16.4,39.3
-18-606,"Pork, mince, raw",0.0,0.0,0.0,0.0,0.0,0.0,9.7,39.56
-19-304,"Sweet and sour pork, battered, takeaway",11.5,3.7,3.6,4.2,Tr,Tr,13.9,17.51
-19-321,"Chow mein, chicken, takeaway",0.3,Tr,0.3,Tr,Tr,Tr,7.2,17.03
-19-324,"Sweet and sour chicken, takeaway",10.7,3.4,3.2,4.1,Tr,Tr,10.0,13.51
-19-327,"Spring rolls, meat, takeaway",1.8,0.4,0.6,0.5,0.3,Tr,16.4,24.30
-19-496,Ham,1.0,N,N,N,N,0.0,3.3,36.60
+codice,nome,zuccheri,glucosio,fruttosio,saccarosio,maltosio,lattosio,grassi,saturi_su_acidi,saturi
+11-006,"Buckwheat, groats",0.4,Tr,Tr,Tr,Tr,0.0,1.5,,
+11-1001,"Bread, white, toasted",4.1,Tr,0.2,Tr,3.9,0.0,2.0,,0.35
+11-1006,"Bread rolls, white, soft",2.6,0.2,0.2,Tr,2.2,0.0,2.6,29.40,0.62
+11-1009,"Currant buns, retail",16.0,8.2,7.0,Tr,0.9,Tr,5.6,36.60,1.86
+11-1023,"Prawn crackers, takeaway",2.2,Tr,Tr,1.9,0.3,0.0,39.0,9.75,3.64
+11-1091,"Milk bread, homemade",2.1,Tr,Tr,0.2,Tr,1.8,7.0,,2.47
+11-1111,"Rum baba, homemade",19.7,Tr,Tr,19.7,0.0,Tr,7.7,,1.94
+11-462,"Bread, malt, fruited",22.6,7.4,6.3,1.0,7.2,0.7,2.3,20.00,0.52
+11-728,"Pasta, egg, fresh, filled with cheese only, boiled in unsalted water",2.2,Tr,Tr,Tr,1.4,0.8,6.7,56.09,3.54
+11-731,"Pasta, egg, fresh, filled with green vegetables/herbs and cheese, boiled in unsalted water",0.1,Tr,0.1,Tr,Tr,Tr,5.8,58.50,3.22
+11-732,"Pasta, egg, fresh, filled with meat, boiled in unsalted water",1.0,Tr,0.1,Tr,0.6,0.3,4.7,42.78,1.81
+11-740,"Cake bars, chocolate",41.5,2.1,1.0,33.3,1.2,4.0,21.6,48.08,9.90
+11-742,"Breakfast cereal, cornflakes, fortified",7.3,1.7,1.5,4.1,Tr,0.0,0.8,25.70,0.14
+11-750,"Breakfast cereal, rice, toasted/crisp, fortified",12.4,0.3,0.5,11.6,Tr,0.0,1.0,28.70,0.22
+11-767,"Breakfast cereal, bran type cereal, fortified",20.0,0.7,0.7,17.5,1.1,0.0,3.4,18.80,0.53
+11-780,"Muesli, Swiss style, unfortified",21.3,4.9,5.0,7.4,Tr,4.0,6.3,21.40,1.27
+11-796,"Biscuits, short, sweet",23.8,0.6,0.6,22.0,0.6,Tr,20.9,50.30,10.05
+11-797,"Biscuits, semi-sweet",20.3,0.6,Tr,19.7,Tr,Tr,15.1,35.20,5.08
+11-799,"Biscuits, digestive, plain",17.5,Tr,Tr,17.5,Tr,Tr,21.3,42.29,7.71
+11-813,"Biscuits, sandwich, cream",29.9,1.6,Tr,27.2,Tr,1.1,23.3,59.80,13.31
+11-826,"Breadsticks, plain",3.3,Tr,Tr,Tr,3.3,Tr,8.1,79.20,6.01
+11-828,"Iced buns, retail",25.8,6.4,7.0,11.4,1.0,Tr,7.8,48.40,3.62
+11-831,"Cake, sponge, with jam and butter cream, retail",37.6,3.5,1.0,28.2,4.9,Tr,14.8,49.80,6.96
+11-832,"Cake, sponge, soft iced, retail",39.0,Tr,Tr,35.5,3.5,Tr,15.8,41.10,6.21
+11-834,"Cake, Swiss rolls, chocolate covered and filled, retail",41.2,4.1,Tr,33.8,3.4,Tr,22.7,54.40,11.68
+11-843,"Pastries, cream filled, retail",27.3,2.7,1.0,20.8,1.6,1.2,27.4,62.00,16.05
+11-846,"Jam tarts, retail",32.1,9.4,3.7,10.9,8.2,Tr,13.5,42.90,5.54
+11-878,"Rice, white, Italian Arborio risotto, raw",0.2,Tr,Tr,0.2,0.0,0.0,1.0,25.49,0.21
+11-886,"Flour, wheat, white, plain, soft",0.6,Tr,Tr,0.5,0.1,0.0,1.4,48.68,0.44
+11-887,"Flour, wheat, bread/strong, white",0.5,Tr,Tr,0.4,Tr,0.0,1.2,37.40,0.31
+11-889,"Flour, wheat, wholemeal",1.4,Tr,Tr,1.0,0.3,0.0,2.0,21.39,0.29
+11-898,"Flour, soya",6.4,Tr,Tr,6.4,Tr,0.0,22.4,15.29,2.74
+11-901,"Couscous, plain, raw",2.3,Tr,Tr,0.8,1.4,0.0,2.1,21.27,0.30
+11-902,"Couscous, plain, cooked",1.0,Tr,Tr,0.2,0.8,0.0,1.0,,0.18
+11-903,"Semolina, raw",0.6,Tr,Tr,0.4,0.1,0.0,1.6,22.46,0.23
+11-906,"Bran, wheat",2.3,Tr,Tr,2.3,Tr,0.0,5.5,19.83,0.89
+11-907,Wheatgerm,16.0,0.7,0.5,14.8,0.0,0.0,8.4,18.64,1.13
+11-936,"Pizza, cheese and tomato, retail",3.9,0.8,0.9,Tr,2.1,Tr,9.8,44.51,4.12
+11-957,"Cake, sponge, fatless, homemade",30.6,Tr,Tr,30.6,0.0,0.0,5.6,,1.59
+11-969,"Bread, ciabatta",3.1,Tr,0.1,0.3,2.7,0.0,3.9,,0.57
+11-971,"Bread, brown, average",3.4,Tr,0.3,Tr,3.0,0.0,2.0,27.74,0.43
+11-972,"Bread, malted wheat",2.9,0.1,0.3,Tr,2.5,0.0,2.3,29.62,0.58
+11-981,"Bread, wholemeal, average",2.8,0.2,0.4,Tr,2.2,0.0,2.5,24.10,0.46
+11-982,"Bread, wholemeal, toasted",3.2,0.2,0.5,Tr,2.5,0.0,2.9,28.20,0.54
+11-985,"Bread rolls, white, crusty",2.7,Tr,0.2,Tr,2.6,0.0,2.2,28.73,0.51
+11-988,Croissants,5.3,1.2,2.0,Tr,1.9,0.2,19.7,54.93,9.76
+12-357,"Cheese, goats milk, full fat, soft, white rind",1.0,0.0,0.0,0.0,0.0,0.9,25.8,70.47,17.91
+12-358,"Cheese, Gouda",Tr,0.0,0.0,0.0,0.0,Tr,30.6,70.35,20.33
+12-360,"Cheese, Mozzarella, fresh",Tr,0.0,0.0,0.0,0.0,Tr,20.3,68.35,13.75
+12-375,"Yogurt, whole milk, fruit",16.6,3.3,2.2,6.2,0.2,4.0,3.0,70.93,2.01
+12-377,"Yogurt, Greek style, fruit",10.5,Tr,1.0,3.8,0.4,4.0,8.4,,5.57
+12-390,"Lollies, containing ice-cream",20.9,2.9,0.4,12.6,0.0,5.0,3.8,56.90,2.07
+12-393,"Sorbet, fruit",23.3,3.6,1.6,17.2,0.8,0.0,0.3,,N
+12-490,"Cheese, Mascarpone",4.3,0.0,0.0,0.0,0.0,4.3,44.5,68.00,29.48
+12-492,"Cheese, Port Salut, St Paulin type",Tr,0.0,0.0,0.0,0.0,Tr,25.7,69.86,18.06
+12-494,"Cheese, Dolcelatte, rind removed",Tr,0.0,0.0,0.0,0.0,Tr,35.8,66.98,22.23
+12-496,"Cheese, Halloumi",1.7,0.0,0.0,0.0,0.0,1.5,23.5,70.70,16.58
+12-507,Cornetto type ice cream cone,27.9,2.0,1.5,19.1,2.0,3.3,14.4,80.22,11.04
+12-508,"Ice cream, dairy, vanilla, soft scoop",22.0,2.7,0.9,11.9,1.5,5.1,8.2,67.03,5.19
+12-510,"Ice cream bars/choc ices, chocolate coated, luxury",32.9,1.4,1.5,23.9,Tr,6.2,21.1,70.46,14.21
+12-551,"Cheese, spreadable, full fat, soft, white",3.0,0.0,0.0,0.0,0.0,3.0,24.4,69.23,15.97
+13-062,"Beans, blackeye, whole, dried, raw",2.9,0.2,0.1,2.5,0.1,0.0,1.6,,0.50
+13-064,"Beans, broad, whole, raw",1.3,0.1,0.3,0.9,0.0,0.0,1.0,,0.10
+13-067,"Beans, broad, dried, raw",5.9,0.6,1.5,3.8,0.0,0.0,2.1,,0.30
+13-074,"Beans, chick peas, Kabuli, whole, dried, raw",2.6,Tr,0.2,2.4,0.0,0.0,5.4,,0.50
+13-086,"Beans, haricot, whole, dried, raw",2.8,0.2,0.1,2.5,0.0,0.0,1.6,,0.30
+13-087,"Beans, haricot, whole, dried, boiled in unsalted water",0.8,0.1,Tr,0.7,0.0,0.0,0.5,,0.10
+13-109,"Beans, red kidney, dried, raw",2.5,0.2,0.1,2.2,0.0,0.0,1.4,,0.20
+13-115,"Beans, soya, dried, raw",5.5,0.2,0.5,4.8,0.0,0.0,18.6,,2.30
+13-153,"Artichoke, globe, raw",1.3,0.8,0.4,0.1,0.0,0.0,0.2,,0.10
+13-156,"Artichoke, Jerusalem, boiled in unsalted water, flesh only",1.6,0.1,0.2,1.3,0.0,0.0,0.1,,Tr
+13-219,"Celeriac, raw",1.8,0.3,0.4,1.2,0.0,0.0,0.4,,N
+13-225,"Chicory, pale variety, raw",0.7,0.3,0.4,Tr,0.0,0.0,0.6,,0.20
+13-240,"Endive, raw",1.0,0.4,0.5,0.1,0.0,0.0,0.2,,0.10
+13-317,"Peppers, capsicum, chilli, red, raw",4.2,1.9,2.3,Tr,0.0,0.0,0.3,,Tr
+13-426,"Beansprouts, mung, raw",2.2,1.1,1.1,Tr,0.0,0.0,0.5,,0.10
+13-489,"Potatoes, old, raw, flesh only",0.9,0.5,0.4,Tr,0.0,0.0,0.1,53.24,0.03
+13-490,"Potatoes, old, boiled in unsalted water, flesh only",0.8,0.3,0.3,0.2,0.0,0.0,0.1,,0.03
+13-515,"Beans, green, boiled in unsalted water",3.0,1.3,1.2,0.5,0.0,0.0,0.3,,0.06
+13-517,"Tomatoes, standard, raw",3.0,1.4,1.6,Tr,0.0,0.0,0.1,,0.03
+13-543,"Vegetables, mixed, frozen, boiled in unsalted water",3.6,0.4,0.4,2.8,0.0,0.0,0.5,,N
+13-648,"Beans, broad, whole, boiled in unsalted water",1.1,Tr,Tr,1.1,0,0,1,,0.13
+13-659,"Beans, red kidney, dried, boiled in unsalted water",0.8,Tr,Tr,0.8,0,0,1,,0.2
+13-660,"Beans, red kidney, canned in water, re-heated, drained",0.8,Tr,Tr,0.8,0,0,1,,0.2
+13-662,"Beans, chick peas, Kabuli, whole, dried, boiled in unsalted water",0.7,Tr,Tr,0.7,0,0,3,,0.29
+13-666,"Beans, cannellini, canned, re-heated, drained",0.7,Tr,Tr,0.7,0,0,1.6,,0.27
+13-670,"Beans, chick peas, canned, re-heated, drained",0.7,Tr,Tr,0.7,0,0,3,,0.29
+13-853,"Sage, fresh",N,N,N,N,0.0,0.0,4.6,,2.60
+14-016,"Apples, eating, dried",60.1,8.6,31.7,19.9,0.0,0.0,0.5,,0.10
+14-075,"Custard apple/Bullock's heart, flesh only",14.9,5.4,5.6,3.9,0.0,0.0,0.4,,N
+14-097,"Fruit cocktail, canned in syrup, whole contents",14.8,6.1,6.4,1.9,0.3,0.0,Tr,,Tr
+14-118,"Guava, flesh only, raw",4.9,2.1,2.3,0.5,0.0,0.0,0.5,,N
+14-140,"Loquats, flesh only, raw",6.3,2.7,3.0,0.6,0.0,0.0,0.2,,Tr
+14-142,"Lychees, raw, flesh only",14.3,7.0,7.3,Tr,0.0,0.0,0.1,,Tr
+14-178,"Passion fruit, flesh and pips",5.8,2.2,1.9,1.7,0.0,0.0,0.4,,0.10
+14-241,"Quinces, flesh only",6.3,2.3,3.7,0.3,0.0,0.0,0.1,,Tr
+14-328,"Melon, yellow flesh, flesh only",6.8,1.7,2.5,2.6,0.0,0.0,0.1,,0.03
+14-338,"Peel, mixed",51.2,16.7,3.8,8.1,22.6,0.0,0.9,,N
+14-395,"Figs, ready-to-eat, semi-dried",43.3,21.2,22.1,Tr,0,0,1.2,13.08,0.13
+14-813,"Chestnuts, kernel only, raw",7.0,Tr,Tr,7.0,0.0,0.0,2.7,,0.50
+14-815,"Chestnuts, dried",13.2,Tr,Tr,13.2,0.0,0.0,5.1,,0.90
+14-816,"Coconut, flesh only, fresh",3.7,Tr,Tr,3.7,0.0,0.0,36.0,,31.39
+14-893,"Marzipan, homemade",48.7,0.0,0.0,48.6,0.0,0.0,25.7,,2.17
+15-795,"Falafel, fried in rapeseed oil, homemade",2.7,0.8,0.6,1.3,0.0,0.0,11.2,,0.74
+16-272,"Caviare, bottled in brine, drained",0.0,0.0,0.0,0.0,0.0,0.0,5.4,,0.80
+16-335,"Szechuan prawns with vegetables, takeaway",0.8,0.4,0.4,Tr,Tr,Tr,4.7,14.66,0.66
+16-372,"Cod, flesh only, raw",0.0,0.0,0.0,0.0,0.0,0.0,0.6,37.15,0.16
+16-381,"Plaice, flesh only, raw",0.0,0.0,0.0,0.0,0.0,0.0,1.2,27.15,0.22
+16-393,"Mackerel, flesh only, raw",0.0,0.0,0.0,0.0,0.0,0.0,17.9,23.92,3.85
+16-395,"Trout, rainbow, flesh only, raw",0.0,0.0,0.0,0.0,0.0,0.0,5.3,25.33,1.21
+16-397,"Kippers, flesh only, grilled",0.0,0.0,0.0,0.0,0.0,0.0,17.6,23.64,3.74
+16-401,"Sardines, flesh only, raw",0.0,0.0,0.0,0.0,0.0,0.0,6.1,33.36,1.83
+16-405,"Fish fingers, cod, grilled/baked",1.5,Tr,Tr,0.2,1.3,Tr,9.2,13.49,1.19
+16-417,"Tuna, canned in sunflower oil, drained",0.0,0.0,0.0,0.0,0.0,0.0,6.4,12.77,0.78
+16-418,"Salmon, red, canned in brine, drained",0.0,0.0,0.0,0.0,0.0,0.0,7.3,21.73,1.43
+16-425,"Langoustine, boiled",0.0,0.0,0.0,0.0,0.0,0.0,0.8,28.36,0.15
+16-448,"Anchovies, canned in oil, drained",0.0,0.0,0.0,0.0,0.0,0.0,10.0,16.10,1.60
+16-497,"Mussels, raw",Tr,0.0,0.0,0.0,0.0,0.0,1.8,,0.40
+17-096,Smartie-type sweets,70.8,0.3,Tr,65.6,0.1,4.8,17.5,,10.40
+17-101,"Sweets, boiled",86.7,8.5,1.4,67.5,9.3,0.0,Tr,,0.00
+17-175,Cola,10.9,3.5,3.4,4.0,0.0,0.0,0.0,,0.00
+17-179,Lemonade,5.8,1.5,1.4,2.8,0.1,0.0,0.0,,0.00
+17-234,Port,12.0,4.6,4.6,2.8,0.0,0.0,0.0,,0.00
+17-239,"Vermouth, dry",3.0,1.1,1.2,0.7,0.0,0.0,0.0,,0.00
+17-245,"Liqueurs, low-medium strength",32.8,6.3,6.1,20.4,0.0,0.0,0.0,,0.00
+17-646,"Toffees, mixed",39.1,5.9,Tr,29.9,3.3,Tr,15.9,56.60,8.60
+17-648,"Chocolate, milk",56.0,Tr,Tr,46.8,Tr,9.2,31.1,63.67,18.71
+17-652,"Soup, cream of tomato, canned",5.5,1.3,1.5,2.2,Tr,0.5,2.0,14.03,0.27
+17-653,"Soup, instant, dried, as purchased",17.4,2.1,1.7,6.7,6.3,0.6,13.4,67.88,8.70
+17-661,"Butter, unsalted",0.6,0.0,0.0,0.0,0.0,0.6,82.2,68.68,52.09
+17-686,"Oil, vegetable, average",0.0,0.0,0.0,0.0,0.0,0.0,99.9,6.90,6.60
+17-687,Chocolate nut spread,59.7,Tr,Tr,56.7,0.0,3.0,33.0,29.61,9.34
+17-688,"Jam, stone fruit",69.3,27.5,14.9,18.8,8.0,0.0,0.0,,0.00
+17-695,"Soup, chicken, cream of, canned",1.1,Tr,0.1,0.6,0.0,0.4,3.8,,0.60
+17-709,Tomato ketchup,27.5,5.9,6.4,15.2,0.0,0.0,0.1,,Tr
+17-713,"Soup, mushroom, cream of, canned",0.8,Tr,0.1,0.3,0.0,0.4,3.0,,0.50
+17-757,"Wine, white, sparkling",5.1,2.2,2.8,0.1,0.0,0.0,0.0,,0.00
+17-766,Bounty bar and own brand equivalents,50.4,3.2,0.1,41.7,3.0,2.4,26.3,,20.50
+17-810,"Soup, minestrone, homemade",1.4,0.5,0.5,0.4,0.1,0.0,2.3,,0.64
+17-814,"Nougat, homemade",79.6,3.2,3.8,72.6,Tr,0.0,10.2,,1.61
+18-289,"Chicken, dark meat, raw",0.0,0.0,0.0,0.0,0.0,0.0,2.8,28.40,0.80
+18-293,"Chicken, leg quarter, raw, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,13.3,28.70,3.60
+18-295,"Chicken, wing quarter, raw, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,12.4,29.70,3.50
+18-297,"Chicken, whole, raw, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,13.8,29.20,3.80
+18-313,"Chicken, leg quarter, casseroled, meat only",0.0,0.0,0.0,0.0,0.0,0.0,8.4,28.70,2.30
+18-331,"Chicken, meat, average, roasted",0.0,0.0,0.0,0.0,0.0,0.0,7.5,29.10,2.10
+18-334,"Chicken, drumsticks, roasted, meat only",0.0,0.0,0.0,0.0,0.0,0.0,5.1,28.40,1.40
+18-335,"Chicken, drumsticks, roasted, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,9.1,28.60,2.50
+18-337,"Chicken, leg quarter, roasted, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,16.9,28.70,4.60
+18-341,"Chicken, whole, roasted, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,12.5,29.20,3.40
+18-348,"Turkey, dark meat, raw",0.0,0.0,0.0,0.0,0.0,0.0,2.5,31.80,0.80
+18-350,"Turkey, meat, average, raw",0.0,0.0,0.0,0.0,0.0,0.0,1.6,33.40,0.50
+18-355,"Turkey, thighs, diced, casseroled, meat only",0.0,0.0,0.0,0.0,0.0,0.0,7.5,35.00,2.50
+18-361,"Turkey, meat, average, roasted",0.0,0.0,0.0,0.0,0.0,0.0,4.6,33.20,1.40
+18-365,"Turkey, drumsticks, roasted, meat and skin",0.0,0.0,0.0,0.0,0.0,0.0,8.5,32.00,2.60
+18-383,"Pheasant, meat only, roasted",0.0,0.0,0.0,0.0,0.0,0.0,12.0,36.20,4.10
+18-387,"Rabbit, raw, meat only",0.0,0.0,0.0,0.0,0.0,0.0,5.5,41.20,2.10
+18-396,"Heart, lamb, raw",0.0,0.0,0.0,0.0,0.0,0.0,6.8,48.80,2.10
+18-398,"Heart, ox, raw",0.0,0.0,0.0,0.0,0.0,0.0,3.5,62.00,1.70
+18-399,"Heart, ox, stewed",0.0,0.0,0.0,0.0,0.0,0.0,5.1,62.00,2.50
+18-400,"Heart, pig, raw",0.0,0.0,0.0,0.0,0.0,0.0,3.2,47.90,1.20
+18-404,"Kidney, ox, raw",0.0,0.0,0.0,0.0,0.0,0.0,2.1,48.80,0.80
+18-409,"Liver, calf, raw",0.0,0.0,0.0,0.0,0.0,0.0,3.4,41.20,1.00
+18-411,"Liver, chicken, raw",0.0,0.0,0.0,0.0,0.0,0.0,2.3,42.10,0.70
+18-413,"Liver, lamb, raw",0.0,0.0,0.0,0.0,0.0,0.0,6.2,38.10,1.70
+18-416,"Liver, ox, stewed",Tr,Tr,Tr,Tr,Tr,0.0,9.5,49.60,3.50
+18-417,"Liver, pig, raw",0.0,0.0,0.0,0.0,0.0,0.0,3.1,41.60,1.00
+18-418,"Liver, pig, stewed",0.0,0.0,0.0,0.0,0.0,0.0,8.1,41.60,2.50
+18-421,"Sweetbread, lamb, raw",0.0,0.0,0.0,0.0,0.0,0.0,7.8,51.40,3.00
+18-428,"Tripe, dressed, raw",0.0,0.0,0.0,0.0,0.0,0.0,0.5,48.40,0.20
+18-469,"Beef, mince, raw",0.0,0.0,0.0,0.0,0.0,0.0,16.2,48.20,6.94
+18-479,"Lamb, leg, whole, roasted, lean only",0.0,0.0,0.0,0.0,0.0,0.0,9.4,43.90,3.80
+18-489,"Duck, meat only, raw",0.0,0.0,0.0,0.0,0.0,0.0,6.5,32.70,2.00
+18-526,"Pork, loin steaks, grilled, lean and fat",0,0,0,0,0,0,12.9,40,4.83
+18-549,"Pork, shoulder joint (collar), raw, lean and fat",0,0,0,0,0,0,16.4,39.3,6
+18-606,"Pork, mince, raw",0.0,0.0,0.0,0.0,0.0,0.0,9.7,39.56,3.57
+19-145,"Pate, meat, reduced fat",1.3,1.1,0.0,0.1,0.0,0.1,12.0,,3.50
+19-304,"Sweet and sour pork, battered, takeaway",11.5,3.7,3.6,4.2,Tr,Tr,13.9,17.51,2.33
+19-317,"Pate, liver",0.4,0.4,0.0,0.0,0.0,0.0,32.7,,9.50
+19-321,"Chow mein, chicken, takeaway",0.3,Tr,0.3,Tr,Tr,Tr,7.2,17.03,1.17
+19-324,"Sweet and sour chicken, takeaway",10.7,3.4,3.2,4.1,Tr,Tr,10.0,13.51,1.29
+19-327,"Spring rolls, meat, takeaway",1.8,0.4,0.6,0.5,0.3,Tr,16.4,24.30,3.81
+19-496,Ham,1.0,N,N,N,N,0.0,3.3,36.60,1.10
+19-517,Salami,0.5,0.1,0.0,0.0,0.0,0.4,39.2,,14.60
+19-545,"Burger, cheeseburger, takeaway",5.7,N,N,N,N,N,10.4,,4.90
+19-569,"Chicken, stir-fried with mushrooms and cashew nuts, homemade",2.2,0.7,0.6,0.8,0.0,0.0,7.0,,1.31

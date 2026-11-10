@@ -6,9 +6,12 @@ Serve per i valori che il CREA non pubblica, presi da un alimento simile
 scelto a mano (dati/crea_cofid.csv):
 - profilo degli zuccheri: fruttosio, glucosio e lattosio in proporzione agli
   zuccheri totali dell'alimento CoFID, riportati agli zuccheri del CREA
-  (prodotti europei, senza lo sciroppo di mais dei prodotti USA);
+  (prodotti europei, senza lo sciroppo di mais dei prodotti USA); se il CREA
+  non pubblica gli zuccheri totali si usano quelli USDA o, in mancanza,
+  quelli CoFID (al massimo i carboidrati del CREA);
 - grassi saturi come percentuale degli acidi grassi, lo stesso formato del
-  CREA, convertiti con i grassi totali del CREA.
+  CREA, convertiti con i grassi totali del CREA; dove CoFID dà solo i saturi
+  per 100 g, in proporzione ai grassi dell'alimento CoFID.
 
 In dati/cofid.csv ci sono solo gli alimenti CoFID usati; si rigenera dal
 file Excel ufficiale con «flask cofid-estrai».
@@ -42,7 +45,7 @@ SATURI = "saturi"
 GRUPPI = (ZUCCHERI, SATURI)
 CAMPI_ZUCCHERI = ("fruttosio", "glucosio", "lattosio")
 CAMPI_GRUPPO = {ZUCCHERI: CAMPI_ZUCCHERI, SATURI: ("grassi_saturi",)}
-CAMPI_FORNIBILI = (*CAMPI_ZUCCHERI, "grassi_saturi")
+CAMPI_FORNIBILI = ("zuccheri", *CAMPI_ZUCCHERI, "grassi_saturi")
 
 # Colonne del foglio «1.3 Proximates» -> colonne di dati/cofid.csv
 COLONNE_EXCEL = {
@@ -56,6 +59,7 @@ COLONNE_EXCEL = {
     "Lactose (g)": "lattosio",
     "Fat (g)": "grassi",
     "Satd FA /100g FA (g)": "saturi_su_acidi",
+    "Satd FA /100g fd (g)": "saturi",
 }
 COLONNE = tuple(COLONNE_EXCEL.values())
 NUMERICHE = COLONNE[2:]
@@ -124,6 +128,19 @@ def leggi_codici(testo: object) -> list[str]:
     return [c for c in (p.strip() for p in str(testo or "").split(",")) if CODICE_RE.match(c)]
 
 
+def zuccheri_totali(alimento: Mapping[str, Any], carboidrati: float | None) -> float | None:
+    """
+    Zuccheri totali dell'alimento CoFID, per un alimento CREA che non li
+    pubblica: al massimo i carboidrati del CREA.
+    """
+    zuccheri = alimento.get("zuccheri")
+
+    if zuccheri is None:
+        return None
+
+    return round(min(zuccheri, carboidrati) if carboidrati is not None else zuccheri, 2)
+
+
 def profilo_zuccheri(alimento: Mapping[str, Any], zuccheri: float | None) -> dict[str, float | None]:
     """
     Fruttosio, glucosio e lattosio per gli zuccheri totali indicati, con le
@@ -147,13 +164,24 @@ def saturi(alimento: Mapping[str, Any], grassi: float | None, fattore: float) ->
     """
     Grassi saturi (g/100 g) dai grassi totali, dal fattore di conversione in
     acidi grassi (FAO/INFOODS, lo stesso del CREA) e dalla percentuale CoFID.
+    Senza la percentuale: con la quota dei saturi sui grassi dell'alimento
+    CoFID (saturi per 100 g diviso grassi per 100 g).
     """
-    percentuale = alimento.get("saturi_su_acidi")
-
-    if grassi is None or percentuale is None:
+    if grassi is None:
         return None
 
-    return round(min(grassi * fattore * percentuale / 100, grassi), 2)
+    percentuale = alimento.get("saturi_su_acidi")
+
+    if percentuale is not None:
+        return round(min(grassi * fattore * percentuale / 100, grassi), 2)
+
+    saturi_cofid = alimento.get("saturi")
+    grassi_cofid = alimento.get("grassi")
+
+    if saturi_cofid is None or not grassi_cofid or grassi_cofid <= 0:
+        return None
+
+    return round(min(grassi * saturi_cofid / grassi_cofid, grassi), 2)
 
 
 def descrizione(alimento: Mapping[str, Any]) -> str:

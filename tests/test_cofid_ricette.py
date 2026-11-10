@@ -49,6 +49,24 @@ def test_cofid_profilo_e_saturi():
     assert cofid.saturi({"saturi_su_acidi": 90}, 1.0, 1.0) == 0.9
 
 
+def test_cofid_saturi_per_100_g_senza_percentuale():
+    # CoFID con i soli saturi per 100 g: quota dei saturi sui grassi CoFID, applicata ai grassi del CREA
+    salvia = {"grassi": 4.6, "saturi": 2.6, "saturi_su_acidi": None}
+    assert cofid.saturi(salvia, 9.2, 0.8) == 5.2
+    assert cofid.saturi({**salvia, "saturi": None}, 9.2, 0.8) is None
+    assert cofid.saturi({**salvia, "grassi": 0.0}, 9.2, 0.8) is None      # grassi in tracce: quota non calcolabile
+    assert cofid.saturi(salvia, None, 0.8) is None
+    # La percentuale sugli acidi grassi, se c'è, ha la precedenza
+    assert cofid.saturi({**salvia, "saturi_su_acidi": 50.0}, 9.2, 0.8) == 3.68
+
+
+def test_cofid_zuccheri_totali():
+    assert cofid.zuccheri_totali(ALBICOCCHE_COFID, 15.0) == 8.0
+    assert cofid.zuccheri_totali(ALBICOCCHE_COFID, 6.0) == 6.0              # non oltre i carboidrati del CREA
+    assert cofid.zuccheri_totali(ALBICOCCHE_COFID, None) == 8.0
+    assert cofid.zuccheri_totali({**ALBICOCCHE_COFID, "zuccheri": None}, 15.0) is None
+
+
 def test_crea_con_cofid_prima_di_usda(con_cofid):
     scheda = crea.leggi_scheda(SCHEDA_CREA, "007000")
     scheda["valori"].pop("Acidi grassi Saturi (%)")
@@ -65,6 +83,34 @@ def test_crea_con_cofid_prima_di_usda(con_cofid):
     assert "CoFID 2021" in alimento["fonte_nutrienti"] and "USDA" in alimento["fonte_nutrienti"]
 
 
+def scheda_senza_zuccheri():
+    scheda = crea.leggi_scheda(SCHEDA_CREA, "007000")
+    scheda["valori"].pop("Zuccheri solubili (g)")
+    return scheda
+
+
+def test_cofid_zuccheri_totali_se_mancano_in_crea_e_usda(con_cofid):
+    usda_senza_zuccheri = {**USDA_ALBICOCCHE, "foodNutrients": [
+        n for n in USDA_ALBICOCCHE["foodNutrients"] if n["number"] not in ("269", "212")
+    ]}
+    alimento = fonti.da_crea(scheda_senza_zuccheri(), usda_senza_zuccheri)
+
+    assert alimento["zuccheri"] == 8.0
+    assert (alimento["fruttosio"], alimento["glucosio"]) == (2.0, 2.0)
+    assert alimento["campi_cofid"] == "zuccheri,fruttosio,glucosio"
+    assert "zuccheri" not in (alimento["campi_usda"] or "")
+
+
+def test_cofid_profilo_sugli_zuccheri_usda_se_il_crea_non_li_pubblica(con_cofid):
+    alimento = fonti.da_crea(scheda_senza_zuccheri(), USDA_ALBICOCCHE)
+
+    # Zuccheri totali USDA (9,24 g), con il profilo CoFID (25% fruttosio, 25% glucosio)
+    assert alimento["zuccheri"] == 9.24
+    assert (alimento["fruttosio"], alimento["glucosio"]) == (2.31, 2.31)
+    assert alimento["campi_usda"].split(",")[0] == "zuccheri"
+    assert alimento["campi_cofid"] == "fruttosio,glucosio"
+
+
 def test_cofid_non_sostituisce_i_valori_crea(con_cofid):
     alimento = fonti.da_crea(crea.leggi_scheda(SCHEDA_CREA, "007000"))
     assert alimento["grassi_saturi"] == round(0.1 * 0.80 * 20 / 100, 2)   # dal CREA
@@ -77,8 +123,8 @@ def test_cofid_estrai_excel(tmp_path):
     foglio = libro.active
     foglio.title = "1.3 Proximates"
     foglio.append(["Food Code", "Food Name", "Description", *list(cofid.COLONNE_EXCEL)[2:]])
-    foglio.append(["11-1145", "Bread, white, average", "x", "3.0", "Tr", "0.2", "Tr", "2.8", "0", "1.9", "N"])
-    foglio.append(["99-999", "Altro", "x", *["1"] * 8])
+    foglio.append(["11-1145", "Bread, white, average", "x", "3.0", "Tr", "0.2", "Tr", "2.8", "0", "1.9", "N", "0.4"])
+    foglio.append(["99-999", "Altro", "x", *["1"] * 9])
     percorso = tmp_path / "cofid.xlsx"
     libro.save(percorso)
 
@@ -86,7 +132,7 @@ def test_cofid_estrai_excel(tmp_path):
     assert righe == [{
         "codice": "11-1145", "nome": "Bread, white, average", "zuccheri": "3.0", "glucosio": "Tr",
         "fruttosio": "0.2", "saccarosio": "Tr", "maltosio": "2.8", "lattosio": "0", "grassi": "1.9",
-        "saturi_su_acidi": "N",
+        "saturi_su_acidi": "N", "saturi": "0.4",
     }]
 
 
