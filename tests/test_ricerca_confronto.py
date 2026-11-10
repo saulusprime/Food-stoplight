@@ -10,6 +10,7 @@ from werkzeug.datastructures import MultiDict
 import archivio
 import ricerca
 from tests.aiuti import ASPARAGI, applicazione, conta, id_di, messaggi, solo_testo
+from web import import_export, pagine
 
 NOMI = [
     {"id": 1, "alimento": "Melanzane, crude"},
@@ -224,7 +225,7 @@ def test_export_con_ricerca_e_intervalli(client):
     assert kcal == sorted(kcal, reverse=True) and max(kcal) <= 60
 
     with applicazione.app.test_request_context():
-        info = applicazione.info_export({"q": "mele", "sicuri": "1", "kcal_max": "60.5"}, "categoria,kcal", "asc,desc", 3)
+        info = import_export.info_export({"q": "mele", "sicuri": "1", "kcal_max": "60.5"}, "categoria,kcal", "asc,desc", 3)
     assert ("Ricerca", "mele") in info["filtri"]
     assert ("Solo alimenti sicuri", "sì") in info["filtri"]
     assert ("Kcal", "≤ 60,5") in info["filtri"]
@@ -261,7 +262,7 @@ def test_confronto_massimo_e_mancanti(client):
     ids = [ASPARAGI, *(id_di(n) for n in ("Burro", "Pane bianco", "Mele, fresche, golden", "Aranciata"))]
     risposta = client.get("/confronta?" + "&".join(f"id={i}" for i in ids))
     assert risposta.status_code == 302
-    assert risposta.headers["Location"].count("id=") == applicazione.CONFRONTO_MAX
+    assert risposta.headers["Location"].count("id=") == pagine.CONFRONTO_MAX
 
     risposta = client.get(f"/confronta?id={ASPARAGI}&id=999999")
     assert risposta.headers["Location"] == f"/confronta?id={ASPARAGI}"

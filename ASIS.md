@@ -108,8 +108,14 @@ Commit `a8f0ea9` — 8 novembre 2026 — nuova fonte CoFID 2021 (tabella britann
 
 ## 📱 Esperienza utente: export in inglese e tabella offline
 
-9 novembre 2026 — export e messaggi dell'API seguono la lingua; senza rete ricerca, filtri e ordinamento funzionano sulla copia salvata della tabella
+Commit `d1a74c3` — 9 novembre 2026 — export e messaggi dell'API seguono la lingua; senza rete ricerca, filtri e ordinamento funzionano sulla copia salvata della tabella
 
 - [x] Export (CSV, Excel, PDF) e messaggi dell'API anche in inglese: intestazioni, categorie, livelli e testi nella lingua dell'interfaccia (CSV inglese con virgola e punto decimale); l'import riconosce intestazioni, categorie e livelli in entrambe le lingue; nell'API i messaggi seguono `Accept-Language`, chiavi e valori dei dati restano in italiano
 - [x] Filtri e ricerca anche offline: ricerca tollerante, filtri (anche per valori e «solo sicuri») e ordinamento multiplo applicati sul dispositivo alla copia salvata (`static/js/tabella.js`), con le stesse regole del server; un test confronta la ricerca JavaScript con quella Python
+
+## 🏗️ Architettura: blueprint
+
+9 novembre 2026 — `app.py` da 2.500 a circa 320 righe; gli indirizzi delle pagine non cambiano (41 regole, verificate prima e dopo)
+
+- [x] Dividere `app.py` in blueprint Flask nel pacchetto `web/`: pagine (tabella, scheda, confronto, guida), alimenti (nuovo, modifica, elimina), import/export, backup, pasto e diario, accesso (login, lingua, ruoli), comandi da riga di comando e funzioni comuni; in `app.py` restano configurazione, template, errori e avvio
 

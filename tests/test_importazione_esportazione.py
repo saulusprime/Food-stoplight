@@ -8,15 +8,17 @@ from datetime import datetime
 import pytest
 from openpyxl import Workbook, load_workbook
 
+import archivio
+import database
 import esportazione
 import importazione
 import lingue
-from tests.aiuti import ASPARAGI, DB, applicazione, sql
+from tests.aiuti import ASPARAGI, DB, sql
 
 
 def piano(contenuto, nome="prova.csv", modalita="aggiorna"):
     letto = importazione.leggi_file(nome, contenuto)
-    conn = applicazione.database.connetti_alimenti(str(DB))
+    conn = database.connetti_alimenti(str(DB))
 
     try:
         voci = importazione.pianifica(conn, letto, modalita)
@@ -110,7 +112,7 @@ def test_avvisi_di_normalizzazione():
 
 def test_round_trip_export_import_invariato(app):
     with app.test_request_context():
-        alimenti = applicazione.get_alimenti()
+        alimenti = archivio.get_alimenti()
     _, _, sommario = piano(esportazione.csv_bytes(alimenti))
     assert sommario["invariato"] == len(alimenti)
     assert sommario["scritture"] == 0
@@ -123,7 +125,7 @@ def test_round_trip_export_import_invariato(app):
 
 def test_aggiornamento_per_id_e_derivati(app):
     with app.test_request_context():
-        alimenti = applicazione.get_alimenti()[:2]
+        alimenti = archivio.get_alimenti()[:2]
     righe = list(csv.reader(io.StringIO(esportazione.csv_bytes(alimenti).decode("utf-8-sig")), delimiter=";"))
     h = righe[0]
     righe[1][h.index("Kcal")] = "999"
@@ -207,8 +209,8 @@ def test_xlsx_testo_non_diventa_formula_e_livelli_colorati():
 
 def test_pdf_tabella_e_scheda(app):
     with app.test_request_context():
-        alimenti = applicazione.get_alimenti()
-        asparagi = applicazione.get_alimento(ASPARAGI)
+        alimenti = archivio.get_alimenti()
+        asparagi = archivio.get_alimento(ASPARAGI)
     info = {"filtri": [], "ordinamento": "Alimento (crescente)", "data": datetime.now(),
             "totale": len(alimenti)}
     assert esportazione.pdf_tabella(alimenti, info).startswith(b"%PDF")

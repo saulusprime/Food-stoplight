@@ -16,7 +16,6 @@ Le attività completate sono in [ASIS.md](ASIS.md).
 ## 🏗️ Architettura e qualità del codice
 
 - [ ] Primo deploy su Render dal proprio account: configurazione pronta in `render.yaml` (vedi README, *Render*)
-- [ ] Dividere `app.py` in blueprint Flask (pagine, import/export, backup, pasto e diario)
 
 ## 💡 Idee a lungo termine
 

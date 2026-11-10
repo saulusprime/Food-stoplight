@@ -18,7 +18,7 @@
         <span class="me-auto">
             {% trans nome=in_attesa.nome_file %}Il file <strong>{{ nome }}</strong> è in attesa di conferma.{% endtrans %}
         </span>
-        <a href="{{ url_for('importa_anteprima') }}" class="btn btn-primary btn-sm">{{ _("Riprendi l'anteprima") }}</a>
+        <a href="{{ url_for('import_export.importa_anteprima') }}" class="btn btn-primary btn-sm">{{ _("Riprendi l'anteprima") }}</a>
     </div>
 {% endif %}
 
@@ -54,7 +54,7 @@
             {{ _("Carica e mostra l'anteprima") }}
         </button>
 
-        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+        <a href="{{ url_for('pagine.index') }}" class="btn btn-secondary">
             {{ _('Annulla') }}
         </a>
     </div>
@@ -162,7 +162,7 @@ Miele;Dolci e Snack;304;40,9;35,8;0,2;82;82;0;20</pre>
             </table>
         {% endif %}
 
-        <form method="post" action="{{ url_for('sincronizza') }}">
+        <form method="post" action="{{ url_for('import_export.sincronizza') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-primary"{% if not sincro.chiave or sincro.in_corso %} disabled{% endif %}>
                 {{ _('Sincronizzazione in corso…') if sincro.in_corso else _('Sincronizza ora') }}

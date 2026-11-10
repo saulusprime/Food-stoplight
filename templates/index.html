@@ -69,7 +69,7 @@
 <h1 class="visually-hidden">{{ _('Database alimenti') }}</h1>
 
 
-<form method="get" action="{{ url_for('index') }}" class="filtri mb-3" role="search" aria-label="{{ _('Cerca e filtra gli alimenti') }}">
+<form method="get" action="{{ url_for('pagine.index') }}" class="filtri mb-3" role="search" aria-label="{{ _('Cerca e filtra gli alimenti') }}">
 
     {# Ordinamento e righe per pagina restano; senza un ordinamento scelto
        la ricerca ordina per pertinenza #}
@@ -119,7 +119,7 @@
             {{ _('Filtra') }}
         </button>
 
-        <a href="{{ url_for('index') }}" class="btn btn-link">
+        <a href="{{ url_for('pagine.index') }}" class="btn btn-link">
             {{ _('Reset') }}
         </a>
     </div>
@@ -343,7 +343,7 @@
                         <ol class="classifica">
                             {% for a, valore in voci %}
                                 <li>
-                                    <a class="nome-alimento" href="{{ url_for('scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
+                                    <a class="nome-alimento" href="{{ url_for('pagine.scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
                                     <span class="classifica-valore">{{ valore }}</span>
                                 </li>
                             {% endfor %}
@@ -371,9 +371,9 @@
 
     <div class="d-flex flex-wrap align-items-center gap-2 solo-online" role="group" aria-labelledby="etichetta-export">
         <span class="small text-muted" id="etichetta-export">{% if filtri_attivi %}{{ _('Esporta con i filtri:') }}{% else %}{{ _('Esporta:') }}{% endif %}</span>
-        <a href="{{ url_for('esporta', formato='csv', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>CSV</a>
-        <a href="{{ url_for('esporta', formato='xlsx', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>Excel</a>
-        <a href="{{ url_for('esporta', formato='pdf', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>PDF</a>
+        <a href="{{ url_for('import_export.esporta', formato='csv', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>CSV</a>
+        <a href="{{ url_for('import_export.esporta', formato='xlsx', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>Excel</a>
+        <a href="{{ url_for('import_export.esporta', formato='pdf', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>PDF</a>
     </div>
 </div>
 
@@ -412,14 +412,14 @@
             <dd>{{ _('seleziona da 2 a %(n)d alimenti con le caselle accanto al nome, anche da pagine o ricerche diverse.', n=confronto_max) }}</dd>
         </dl>
         <p class="mb-0">
-            <a href="{{ url_for('guida') }}">{{ _('Guida completa: soglie, calcoli e fonti') }}</a>
+            <a href="{{ url_for('pagine.guida') }}">{{ _('Guida completa: soglie, calcoli e fonti') }}</a>
         </p>
     </div>
 </details>
 
 {# Ordinamento (fino a tre criteri) e righe per pagina. Su schermi piccoli
    la tabella diventa un elenco di schede senza intestazioni: si ordina da qui #}
-<form method="get" action="{{ url_for('index') }}" class="vista-form" aria-label="{{ _('Ordinamento e righe per pagina') }}">
+<form method="get" action="{{ url_for('pagine.index') }}" class="vista-form" aria-label="{{ _('Ordinamento e righe per pagina') }}">
     {% for nome, valore in parametri_tabella.items() if nome not in ('sort', 'dir', 'per_pagina') %}
         <input type="hidden" name="{{ nome }}" value="{{ valore }}">
     {% endfor %}
@@ -538,7 +538,7 @@
                             <input type="checkbox" class="form-check-input seleziona-confronto" name="id" value="{{ a.id }}"
                                    form="form-confronto" aria-label="{{ T.confronta }} {{ a.alimento }}">
                             <div>
-                            <a class="nome-alimento" href="{{ url_for('scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
+                            <a class="nome-alimento" href="{{ url_for('pagine.scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
                             {%- if a.medaglie %}
                                 {% set titoli = a.medaglie|map(attribute='titolo')|map('traduci')|join(', ') %}
                                 {% set descrizione_medaglie = _('Tra i primi %(n)d: %(titoli)s', n=posti_medaglia, titoli=titoli) %}
@@ -575,13 +575,13 @@
                         <td class="text-end actions-cell col-azioni">
                             <div class="d-inline-flex gap-1">
                                 <a
-                                    href="{{ url_for('modifica', alimento_id=a.id) }}"
+                                    href="{{ url_for('alimenti.modifica', alimento_id=a.id) }}"
                                     class="btn btn-sm btn-outline-primary"
                                     title="{{ T.modifica }}"
                                     aria-label="{{ _('Modifica %(nome)s', nome=a.alimento) }}"
                                 >✏️</a>
                                 <form
-                                    action="{{ url_for('elimina', alimento_id=a.id) }}"
+                                    action="{{ url_for('alimenti.elimina', alimento_id=a.id) }}"
                                     method="post"
                                     class="d-inline"
                                     data-conferma="{{ _('Eliminare «%(nome)s» dal database? Puoi recuperarlo solo da un backup.', nome=a.alimento) }}"
@@ -658,7 +658,7 @@
 {# Confronto: le caselle della tabella appartengono a questo form (attributo form).
    Con JavaScript la selezione resta anche cambiando pagina o ricerca e la barra
    compare solo quando c'è qualcosa di selezionato #}
-<form method="get" action="{{ url_for('confronta') }}" id="form-confronto" class="barra-confronto" data-massimo="{{ confronto_max }}" aria-label="{{ _('Confronto tra alimenti') }}">
+<form method="get" action="{{ url_for('pagine.confronta') }}" id="form-confronto" class="barra-confronto" data-massimo="{{ confronto_max }}" aria-label="{{ _('Confronto tra alimenti') }}">
     <p class="barra-confronto-testo mb-0" aria-live="polite">
         <span data-confronto-stato>{{ _('Seleziona da 2 a %(n)d alimenti con le caselle accanto al nome.', n=confronto_max) }}</span>
     </p>

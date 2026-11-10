@@ -31,26 +31,26 @@
 </div>
 
 <div class="d-flex flex-wrap gap-2 mb-3">
-    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
+    <a href="{{ url_for('pagine.index') }}" class="btn btn-outline-secondary btn-sm">
         ← {{ _('Torna alla tabella') }}
     </a>
 
-    <a href="{{ url_for('scheda_pdf', alimento_id=item.id) }}" class="btn btn-outline-primary btn-sm" download>
+    <a href="{{ url_for('import_export.scheda_pdf', alimento_id=item.id) }}" class="btn btn-outline-primary btn-sm" download>
         📄 {{ _('Esporta PDF') }}
     </a>
 
-    <a href="{{ url_for('confronta', id=item.id) }}" class="btn btn-outline-primary btn-sm">
+    <a href="{{ url_for('pagine.confronta', id=item.id) }}" class="btn btn-outline-primary btn-sm">
         ⇄ {{ _('Confronta con altri') }}
     </a>
 
     {% if current_user.is_admin %}
-        <a href="{{ url_for('modifica', alimento_id=item.id) }}" class="btn btn-outline-primary btn-sm">
+        <a href="{{ url_for('alimenti.modifica', alimento_id=item.id) }}" class="btn btn-outline-primary btn-sm">
             ✏️ {{ _('Modifica') }}
         </a>
 
         <form
             method="post"
-            action="{{ url_for('elimina', alimento_id=item.id) }}"
+            action="{{ url_for('alimenti.elimina', alimento_id=item.id) }}"
             data-conferma="{{ _('Eliminare «%(nome)s» dal database? Puoi recuperarlo solo da un backup.', nome=item.alimento) }}"
             data-conferma-titolo="{{ _('Elimina alimento') }}"
             data-conferma-pulsante="{{ _('Elimina') }}"
@@ -151,7 +151,7 @@
                         <div class="porzione-rapide" role="group" aria-label="{{ _('Porzioni rapide') }}">
                             {% for g in (50, 100, 150, 200) %}
                                 <a
-                                    href="{{ url_for('scheda', alimento_id=item.id, grammi=g) }}"
+                                    href="{{ url_for('pagine.scheda', alimento_id=item.id, grammi=g) }}"
                                     class="btn btn-sm btn-outline-secondary"
                                     data-grammi="{{ g }}"
                                     {% if g == grammi %}aria-current="true"{% endif %}
@@ -233,7 +233,7 @@
                         {% endif %}
                     </ul>
                     {{ _('I valori indicati con «–» non sono disponibili.') }}
-                    <a href="{{ url_for('guida') }}#tef">{{ _('Come si calcolano TEF e Kcal nette') }}</a>
+                    <a href="{{ url_for('pagine.guida') }}#tef">{{ _('Come si calcolano TEF e Kcal nette') }}</a>
 
                     {% if fonti_dati.ingredienti %}
                         <details class="mt-2">
@@ -251,7 +251,7 @@
                     <p class="small mb-3 nota-alimento"><strong>{{ _('Note:') }}</strong> {{ item.note }}</p>
                 {% endif %}
 
-                <form method="post" action="{{ url_for('pasto_aggiungi') }}" class="d-flex flex-wrap align-items-center gap-2">
+                <form method="post" action="{{ url_for('pasto_diario.pasto_aggiungi') }}" class="d-flex flex-wrap align-items-center gap-2">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="alimento_id" value="{{ item.id }}">
                     <input type="hidden" name="grammi" value="{{ grammi }}" data-grammi-campo>
@@ -259,7 +259,7 @@
                     <button type="submit" class="btn btn-primary btn-sm">
                         {% trans grammi=grammi_testo %}➕ Aggiungi al pasto ({{ grammi }} g){% endtrans %}
                     </button>
-                    <a href="{{ url_for('pasto') }}" class="btn btn-link btn-sm">{{ _('Vai al pasto') }}</a>
+                    <a href="{{ url_for('pasto_diario.pasto') }}" class="btn btn-link btn-sm">{{ _('Vai al pasto') }}</a>
                 </form>
             </div>
         </section>
@@ -283,7 +283,7 @@
                 {% include "_rischi_motivi.html" %}
                 <p class="small text-muted mb-0">
                     {{ _('Livelli calcolati dai valori nutrizionali con regole documentate.') }}
-                    <a href="{{ url_for('guida') }}#rischi">{{ _('Le regole nella guida') }}</a>
+                    <a href="{{ url_for('pagine.guida') }}#rischi">{{ _('Le regole nella guida') }}</a>
                 </p>
             </div>
         </section>
@@ -383,7 +383,7 @@
                 <p class="small text-muted mt-2 mb-0">
                     {{ _('Indice glicemico: basso fino a 55, medio 56–69, alto da 70. Carico glicemico per porzione: basso fino a 10, medio 11–19, alto da 20.') }}
                     {% if item.codice_crea %}{{ _('NOVA e FODMAP classificati con regole documentate, dove le fonti lo permettono.') }}{% endif %}
-                    <a href="{{ url_for('guida') }}#glicemico">{{ _('Dettagli nella guida') }}</a>
+                    <a href="{{ url_for('pagine.guida') }}#glicemico">{{ _('Dettagli nella guida') }}</a>
                 </p>
             </div>
         </section>
@@ -402,7 +402,7 @@
                             {% for a in alternative %}
                                 {% set liv_a = livello_punteggio(a.punteggio) %}
                                 <li>
-                                    <a href="{{ url_for('scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
+                                    <a href="{{ url_for('pagine.scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
                                     <span class="elenco-alternative-dati">
                                         <span class="punteggio stato-{{ liv_a.stato }}" title="{{ _('Livello medio: %(livello)s', livello=liv_a.etichetta|traduci) }}">{{ a.punteggio }}</span>
                                         <span class="text-muted">{{ ngettext('+%(num)d punto', '+%(num)d punti', a.guadagno) }} · {{ a.kcal|numero }} Kcal</span>

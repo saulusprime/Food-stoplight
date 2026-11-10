@@ -15,7 +15,7 @@
     <div class="col-md-6 col-lg-5">
         <form
             method="post"
-            action="{{ url_for('login', next=request.args.get('next')) }}"
+            action="{{ url_for('accesso.login', next=request.args.get('next')) }}"
             class="card shadow-sm p-4"
         >
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

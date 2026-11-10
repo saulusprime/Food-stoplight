@@ -55,7 +55,16 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 
 ```
 Food-stoplight/
-├── app.py              # Applicazione Flask: pagine web, login e ruoli, comandi da riga di comando
+├── app.py              # Applicazione Flask (app:app): configurazione, template, errori, blueprint, avvio
+├── web/                # Pagine web divise in blueprint Flask
+│   ├── pagine.py       # Tabella, scheda, confronto, guida
+│   ├── alimenti.py     # Nuovo, modifica, elimina (amministratori)
+│   ├── import_export.py  # Export CSV/Excel/PDF, import con anteprima, sincronizzazione USDA
+│   ├── backup.py       # Backup e ripristino (amministratori)
+│   ├── pasto_diario.py # Pasto e diario alimentare
+│   ├── accesso.py      # Login, logout, lingua, ruoli e controllo dell'accesso
+│   ├── comandi.py      # Comandi da riga di comando (flask --app app …)
+│   └── comune.py       # Funzioni condivise (database, file da scaricare, ricerca da un campo)
 ├── api.py              # API REST in sola lettura (/api/alimenti, /api/categorie)
 ├── archivio.py         # Query sugli alimenti (filtri, intervalli, ordinamento multiplo), condivise da pagine e API
 ├── ricerca.py          # Ricerca per nome tollerante (varianti, errori di battitura) e paginazione

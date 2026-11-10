@@ -35,7 +35,7 @@ ignore = [
 known-first-party = [
     "analisi", "api", "app", "archivio", "backup", "calcoli", "classificazioni", "cofid", "config", "crea",
     "database", "esportazione", "fonti", "importazione", "lingue", "nutrienti", "openfoodfacts", "pwa", "ricerca", "ricette", "rischi",
-    "sincronizzazione", "update", "usda",
+    "sincronizzazione", "update", "usda", "web",
 ]
 
 # ---------------------------------------------------------------
@@ -43,7 +43,7 @@ known-first-party = [
 # ---------------------------------------------------------------
 [tool.mypy]
 python_version = "3.11"
-files = ["*.py", "tests"]
+files = ["*.py", "web", "tests"]
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true

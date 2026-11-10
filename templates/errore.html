@@ -8,9 +8,9 @@
     <h1>{{ titolo }}</h1>
     <p class="lead">{{ messaggio }}</p>
     <p class="d-flex flex-wrap gap-2">
-        <a class="btn btn-primary" href="{{ url_for('index') }}">{{ _('Torna alla tabella') }}</a>
+        <a class="btn btn-primary" href="{{ url_for('pagine.index') }}">{{ _('Torna alla tabella') }}</a>
         {% if codice == 403 and not current_user.is_authenticated %}
-            <a class="btn btn-outline-primary" href="{{ url_for('login', next=request.full_path.rstrip('?')) }}">{{ _('Accedi') }}</a>
+            <a class="btn btn-outline-primary" href="{{ url_for('accesso.login', next=request.full_path.rstrip('?')) }}">{{ _('Accedi') }}</a>
         {% endif %}
     </p>
 </section>

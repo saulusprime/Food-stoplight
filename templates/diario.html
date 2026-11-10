@@ -12,7 +12,7 @@
 </div>
 
 <nav class="barra-giorni mb-3" aria-label="{{ _('Scegli il giorno') }}">
-    <a href="{{ url_for('diario', data=precedente.isoformat()) }}" class="btn btn-sm btn-outline-secondary">← {{ precedente|data_breve }}</a>
+    <a href="{{ url_for('pasto_diario.diario', data=precedente.isoformat()) }}" class="btn btn-sm btn-outline-secondary">← {{ precedente|data_breve }}</a>
 
     <form method="get" class="d-flex gap-2 align-items-center">
         <label for="data-diario" class="visually-hidden">{{ _('Giorno') }}</label>
@@ -20,10 +20,10 @@
         <button type="submit" class="btn btn-sm btn-outline-primary">{{ _('Vai') }}</button>
     </form>
 
-    <a href="{{ url_for('diario', data=successivo.isoformat()) }}" class="btn btn-sm btn-outline-secondary">{{ successivo|data_breve }} →</a>
+    <a href="{{ url_for('pasto_diario.diario', data=successivo.isoformat()) }}" class="btn btn-sm btn-outline-secondary">{{ successivo|data_breve }} →</a>
 
     {% if giorno != oggi %}
-        <a href="{{ url_for('diario') }}" class="btn btn-sm btn-link">{{ _('Oggi') }}</a>
+        <a href="{{ url_for('pasto_diario.diario') }}" class="btn btn-sm btn-link">{{ _('Oggi') }}</a>
     {% endif %}
 </nav>
 
@@ -32,7 +32,7 @@
 <section class="card card-form shadow-sm p-4 mb-3" aria-labelledby="titolo-aggiungi-diario">
     <h2 class="grafico-titolo" id="titolo-aggiungi-diario">{{ _('Aggiungi al diario') }}</h2>
 
-    <form method="post" action="{{ url_for('diario_aggiungi') }}" class="row g-2 align-items-end">
+    <form method="post" action="{{ url_for('pasto_diario.diario_aggiungi') }}" class="row g-2 align-items-end">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="data" value="{{ giorno.isoformat() }}">
 
@@ -63,7 +63,7 @@
     </form>
 
     <p class="small text-muted mt-2 mb-0">
-        {% trans url=url_for('pasto') %}Puoi anche comporre un pasto in <a href="{{ url }}">Pasto</a> e salvarlo qui in un colpo solo.{% endtrans %}
+        {% trans url=url_for('pasto_diario.pasto') %}Puoi anche comporre un pasto in <a href="{{ url }}">Pasto</a> e salvarlo qui in un colpo solo.{% endtrans %}
     </p>
 </section>
 
@@ -103,13 +103,13 @@
                             <tr>
                                 <td>
                                     {% if v.alimento_id in collegati %}
-                                        <a href="{{ url_for('scheda', alimento_id=v.alimento_id, grammi=v.grammi) }}">{{ v.alimento }}</a>
+                                        <a href="{{ url_for('pagine.scheda', alimento_id=v.alimento_id, grammi=v.grammi) }}">{{ v.alimento }}</a>
                                     {% else %}
                                         {{ v.alimento }} <small class="text-muted">{{ _('(non più nel database)') }}</small>
                                     {% endif %}
                                 </td>
                                 <td class="text-end">
-                                    <form method="post" action="{{ url_for('diario_aggiorna', voce_id=v.id) }}" class="modulo-grammi">
+                                    <form method="post" action="{{ url_for('pasto_diario.diario_aggiorna', voce_id=v.id) }}" class="modulo-grammi">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <label class="visually-hidden" for="grammi-voce-{{ v.id }}">{{ _('Grammi di %(nome)s', nome=v.alimento) }}</label>
                                         <input type="number" class="form-control form-control-sm campo-grammi" id="grammi-voce-{{ v.id }}"
@@ -124,7 +124,7 @@
                                 <td class="text-end">
                                     <form
                                         method="post"
-                                        action="{{ url_for('diario_elimina', voce_id=v.id) }}"
+                                        action="{{ url_for('pasto_diario.diario_elimina', voce_id=v.id) }}"
                                         data-conferma="{{ _('Eliminare «%(nome)s» (%(grammi)s g) dal diario di questo giorno?', nome=v.alimento, grammi=v.grammi|numero) }}"
                                         data-conferma-titolo="{{ _('Elimina dal diario') }}"
                                         data-conferma-pulsante="{{ _('Elimina') }}"
@@ -170,7 +170,7 @@
                 {% for s in settimana %}
                     <tr {% if s.giorno == giorno %}class="giorno-corrente"{% endif %}>
                         <th scope="row" class="fw-normal">
-                            <a href="{{ url_for('diario', data=s.giorno.isoformat()) }}" {% if s.giorno == giorno %}aria-current="date"{% endif %}>{{ s.giorno|data_breve }}</a>
+                            <a href="{{ url_for('pasto_diario.diario', data=s.giorno.isoformat()) }}" {% if s.giorno == giorno %}aria-current="date"{% endif %}>{{ s.giorno|data_breve }}</a>
                         </th>
                         <td aria-hidden="true">
                             {% if s.voci and massimo_settimana %}

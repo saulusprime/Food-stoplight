@@ -58,7 +58,7 @@ def serializza(alimento: archivio.Alimento) -> dict[str, Any]:
         "carico_glicemico": nutrienti.carico_glicemico(alimento),
         "fodmap_complessivo": fodmap["etichetta"] if fodmap else None,
         "nova_descrizione": nova["etichetta"] if nova else None,
-        "url": url_for("scheda", alimento_id=alimento["id"], _external=True),
+        "url": url_for("pagine.scheda", alimento_id=alimento["id"], _external=True),
     }
 
 

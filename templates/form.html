@@ -218,7 +218,7 @@
     <h2 class="h5 mb-1">{{ _('Profilo di rischio') }}</h2>
     <p class="text-muted small mb-3">
         {% trans %}I livelli si calcolano dai valori nutrizionali quando salvi: non si scrivono a mano.{% endtrans %}
-        <a href="{{ url_for('guida') }}#rischi">{{ _('Come si calcolano') }}</a>
+        <a href="{{ url_for('pagine.guida') }}#rischi">{{ _('Come si calcolano') }}</a>
     </p>
 
     {% if item %}
@@ -239,7 +239,7 @@
             {{ _('Salva') }}
         </button>
 
-        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+        <a href="{{ url_for('pagine.index') }}" class="btn btn-secondary">
             {{ _('Annulla') }}
         </a>
     </div>

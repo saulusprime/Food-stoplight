@@ -105,9 +105,9 @@ def manifest() -> ResponseReturnValue:
         "description": _("Database degli alimenti con semaforo dei rischi per la salute, valori nutrizionali e TEF."),
         "lang": lingue.corrente(),
         "dir": "ltr",
-        "id": url_for("index"),
-        "start_url": url_for("index"),
-        "scope": url_for("index"),
+        "id": url_for("pagine.index"),
+        "start_url": url_for("pagine.index"),
+        "scope": url_for("pagine.index"),
         "display": "standalone",
         "background_color": COLORE_SFONDO,
         "theme_color": COLORE_TEMA,
@@ -118,8 +118,8 @@ def manifest() -> ResponseReturnValue:
             {"src": icona("icona.svg"), "sizes": "any", "type": "image/svg+xml"},
         ],
         "shortcuts": [
-            {"name": _("Pasto"), "url": url_for("pasto")},
-            {"name": _("Guida"), "url": url_for("guida")},
+            {"name": _("Pasto"), "url": url_for("pasto_diario.pasto")},
+            {"name": _("Guida"), "url": url_for("pagine.guida")},
         ],
     }
 
@@ -134,7 +134,7 @@ def tabella_completa() -> str:
     """
     La tabella con tutte le righe, senza filtri: la copia per l'uso offline.
     """
-    return url_for("index", per_pagina=ricerca.TUTTI)
+    return url_for("pagine.index", per_pagina=ricerca.TUTTI)
 
 
 @bp.route("/sw.js")
@@ -145,10 +145,10 @@ def service_worker() -> ResponseReturnValue:
         cache_pagine=CACHE_PAGINE,
         statici=[url_for("static", filename=percorso) for percorso in STATICI],
         prefisso_statici=url_for("static", filename=""),
-        base=url_for("index"),
+        base=url_for("pagine.index"),
         pagine=[
-            [tabella_completa(), url_for("index")],
-            [url_for("guida"), url_for("guida")],
+            [tabella_completa(), url_for("pagine.index")],
+            [url_for("pagine.guida"), url_for("pagine.guida")],
         ],
         tabella_completa=tabella_completa(),
         offline=url_for("pwa.offline"),

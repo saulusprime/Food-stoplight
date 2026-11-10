@@ -48,7 +48,7 @@
                         {% set c = riepiloghi[chiave] %}
                         <li>
                             <a
-                                href="{{ url_for('importa_anteprima', modalita=chiave) }}"
+                                href="{{ url_for('import_export.importa_anteprima', modalita=chiave) }}"
                                 class="modalita-opzione"
                                 {% if chiave == modalita %}aria-current="true"{% endif %}
                             >
@@ -97,7 +97,7 @@
                     <div><dt>{{ _('Saltati') }}</dt><dd>{{ r.saltato }}</dd></div>
                 </dl>
 
-                <form method="post" action="{{ url_for('importa_conferma') }}">
+                <form method="post" action="{{ url_for('import_export.importa_conferma') }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="modalita" value="{{ modalita }}">
 
@@ -127,10 +127,10 @@
                     {% endif %}
                 </form>
 
-                <form method="post" action="{{ url_for('importa_annulla') }}" class="d-flex gap-2">
+                <form method="post" action="{{ url_for('import_export.importa_annulla') }}" class="d-flex gap-2">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-outline-secondary btn-sm">{{ _("Annulla l'import") }}</button>
-                    <a href="{{ url_for('importa') }}" class="btn btn-link btn-sm">{{ _('Carica un altro file') }}</a>
+                    <a href="{{ url_for('import_export.importa') }}" class="btn btn-link btn-sm">{{ _('Carica un altro file') }}</a>
                 </form>
 
                 <p class="small text-muted mt-3 mb-0">

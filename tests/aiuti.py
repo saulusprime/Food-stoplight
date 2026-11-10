@@ -61,6 +61,9 @@ sys.path.insert(0, str(PROGETTO))
 from werkzeug.security import generate_password_hash  # noqa: E402
 
 import app as applicazione  # noqa: E402
+import archivio  # noqa: E402
+import importazione  # noqa: E402
+from web import import_export  # noqa: E402
 
 PASSWORD = "password-di-prova"
 UTENTI = (("admin_t", "admin"), ("anna_t", "visitatore"), ("bruno_t", "visitatore"))
@@ -139,20 +142,20 @@ def piano_in_attesa(
         token = sessione["import_token"]
 
     with applicazione.app.app_context():
-        percorso = applicazione.percorso_import(token)
+        percorso = import_export.percorso_import(token)
         assert percorso is not None
 
         with open(percorso, encoding="utf-8") as f:
             letto = json.load(f)
 
-        conn = applicazione.get_db()
+        conn = archivio.get_db()
 
         try:
-            voci = applicazione.importazione.pianifica(conn, letto, modalita)
+            voci = importazione.pianifica(conn, letto, modalita)
         finally:
             conn.close()
 
-    return letto, voci, applicazione.importazione.riepilogo(voci)
+    return letto, voci, importazione.riepilogo(voci)
 
 
 def solo_testo(html: bytes) -> str:

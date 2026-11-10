@@ -45,9 +45,9 @@
 {% include "_elenco_alimenti.html" %}
 
 <div class="d-flex flex-wrap gap-2 mb-3">
-    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">← {{ _('Torna alla tabella') }}</a>
+    <a href="{{ url_for('pagine.index') }}" class="btn btn-outline-secondary btn-sm">← {{ _('Torna alla tabella') }}</a>
     {% if alimenti %}
-        <a href="{{ url_for('confronta') }}" class="btn btn-link btn-sm">{{ _('Svuota il confronto') }}</a>
+        <a href="{{ url_for('pagine.confronta') }}" class="btn btn-link btn-sm">{{ _('Svuota il confronto') }}</a>
     {% endif %}
 </div>
 
@@ -55,7 +55,7 @@
     <section class="card card-form shadow-sm p-4 mb-3" aria-labelledby="titolo-aggiungi-confronto">
         <h2 class="grafico-titolo" id="titolo-aggiungi-confronto">{{ _('Aggiungi un alimento') }}</h2>
 
-        <form method="get" action="{{ url_for('confronta') }}" class="row g-2 align-items-end">
+        <form method="get" action="{{ url_for('pagine.confronta') }}" class="row g-2 align-items-end">
             {% for i in ids %}
                 <input type="hidden" name="id" value="{{ i }}">
             {% endfor %}
@@ -96,9 +96,9 @@
                     {% for a in alimenti %}
                         {% set altri = ids|reject('equalto', a.id)|list %}
                         <th scope="col" class="confronto-alimento">
-                            <a class="nome-alimento" href="{{ url_for('scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
+                            <a class="nome-alimento" href="{{ url_for('pagine.scheda', alimento_id=a.id) }}">{{ a.alimento }}</a>
                             <small class="d-block text-muted fw-normal">{{ (a.categoria or 'Senza categoria')|traduci }}</small>
-                            <a class="confronto-togli" href="{{ url_for('confronta', id=altri) }}"
+                            <a class="confronto-togli" href="{{ url_for('pagine.confronta', id=altri) }}"
                                aria-label="{{ _('Togli %(nome)s dal confronto', nome=a.alimento) }}">✕ {{ _('Togli') }}</a>
                         </th>
                     {% endfor %}
@@ -229,7 +229,7 @@
 
 <p class="small text-muted">
     {{ _('Le barre confrontano i valori di ogni riga con il più alto della riga. Nessun valore è «migliore» di per sé: i livelli di rischio e la guida dicono quando un valore è alto.') }}
-    <a href="{{ url_for('guida') }}">{{ _('Guida') }}</a>
+    <a href="{{ url_for('pagine.guida') }}">{{ _('Guida') }}</a>
 </p>
 {% endif %}
 

@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+import archivio
 import classificazioni
 import cofid
 import crea
@@ -13,6 +14,7 @@ import ricette
 import usda
 from tests.aiuti import ASPARAGI, applicazione, solo_testo, sql
 from tests.test_fonti_rischi import SCHEDA_CREA, USDA_ALBICOCCHE
+from web import comune
 
 ALBICOCCHE_COFID = {
     "codice": "14-001", "nome": "Apricots, raw", "zuccheri": 8.0, "fruttosio": 2.0, "glucosio": 2.0,
@@ -190,11 +192,11 @@ def test_ricalcolo_ricette_dopo_modifica(admin):
     assert "fruttosio" in (sugo["campi_ricetta"] or "")
 
     with applicazione.app.app_context():
-        conn = applicazione.get_db()
+        conn = archivio.get_db()
         conn.execute("UPDATE alimenti SET fruttosio = ?, glucosio = 0 WHERE id = ?", (2.0, pasta["id"]))
         conn.commit()
         conn.close()
-        applicazione.aggiorna_ricette()
+        comune.aggiorna_ricette()
 
     dopo = sql("SELECT fruttosio FROM alimenti WHERE codice_crea = 'PC0016'")[0]["fruttosio"]
     assert dopo > sugo["fruttosio"]
