@@ -121,8 +121,16 @@ Commit `6b46f86` — 9 novembre 2026 — `app.py` da 2.500 a circa 320 righe; gl
 
 ## 🌐 Integrazione dati: rischi non classificati
 
-10 novembre 2026 — non classificati: colesterolo da 52 a 29 alimenti, malassorbimento da 79 a 55; un alimento solo simile si abbina quando il livello di rischio non dipende dalla scelta
+Commit `6289fec` — 10 novembre 2026 — non classificati: colesterolo da 52 a 29 alimenti, malassorbimento da 79 a 55; un alimento solo simile si abbina quando il livello di rischio non dipende dalla scelta
 
 - [x] Grassi saturi da CoFID anche senza la percentuale sugli acidi grassi: quota dei saturi sui grassi dell'alimento CoFID (colonna «Satd FA /100g fd»), applicata ai grassi del CREA (alimenti senza saturi da 134 a 111)
 - [x] Profilo degli zuccheri CoFID applicato anche agli zuccheri totali USDA quando il CREA non li pubblica (carciofi e topinambur avevano l'abbinamento ma restavano senza fruttosio); se mancano anche in USDA, zuccheri totali CoFID, al massimo i carboidrati del CREA (alimenti senza fruttosio da 82 a 58)
 - [x] 40 nuovi abbinamenti in `dati/crea_cofid.csv`, ognuno con la nota sulla scelta: frattaglie, selvaggina, patè, mortadella, cheeseburger, caviale, minestre in scatola, gelati, piatti etnici, pizza, dolci, castagne, anona, germe di grano, grano saraceno, riso cotto e gnocchi (con le tre ricette di gnocchi)
+
+## 🛠️ Ritocchi: legenda e import CREA
+
+11 novembre 2026 — legenda e pulsante delle colonne non occupano più una riga a sé; un import CREA con USDA non disponibile non cancella più i valori USDA
+
+- [x] Legenda della tabella sulla riga dell'ordinamento, accanto a «Righe per pagina» e con l'aspetto delle select; aperta si sovrappone alla tabella senza spostarla e si chiude con Esc o con un clic fuori
+- [x] «Mostra tutte le colonne» sulla riga del titolo, accanto all'export; offline, quando l'export è nascosto, il pulsante resta
+- [x] `crea-importa` scarica i valori USDA prima delle pagine CREA e, se USDA rifiuta le richieste, si ferma senza scrivere nulla: prima riscriveva gli alimenti abbinati senza fruttosio, FDC ID e gli altri campi presi da USDA

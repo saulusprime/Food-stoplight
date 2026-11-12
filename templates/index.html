@@ -369,56 +369,25 @@
         {{ _('Tabella') }} <span class="text-muted fw-normal">· {{ ngettext('%(num)d alimento', '%(num)d alimenti', visualizzati) }}{% if paginazione.pagine > 1 %} · {{ _('righe %(da)d–%(a)d', da=paginazione.inizio + 1, a=paginazione.fine) }}{% endif %}</span>
     </h2>
 
-    <div class="d-flex flex-wrap align-items-center gap-2 solo-online" role="group" aria-labelledby="etichetta-export">
-        <span class="small text-muted" id="etichetta-export">{% if filtri_attivi %}{{ _('Esporta con i filtri:') }}{% else %}{{ _('Esporta:') }}{% endif %}</span>
-        <a href="{{ url_for('import_export.esporta', formato='csv', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>CSV</a>
-        <a href="{{ url_for('import_export.esporta', formato='xlsx', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>Excel</a>
-        <a href="{{ url_for('import_export.esporta', formato='pdf', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>PDF</a>
+    {# Colonne ed export sulla stessa riga, a destra del titolo. Il pulsante
+       delle colonne resta fuori da «solo-online»: funziona anche offline #}
+    <div class="barra-export-azioni">
+        <button type="button" class="btn btn-sm btn-outline-secondary pulsante-colonne" id="mostra-colonne" aria-pressed="false" hidden>
+            {{ _('Mostra tutte le colonne') }}
+        </button>
+
+        <div class="d-flex flex-wrap align-items-center gap-2 solo-online" role="group" aria-labelledby="etichetta-export">
+            <span class="small text-muted" id="etichetta-export">{% if filtri_attivi %}{{ _('Esporta con i filtri:') }}{% else %}{{ _('Esporta:') }}{% endif %}</span>
+            <a href="{{ url_for('import_export.esporta', formato='csv', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>CSV</a>
+            <a href="{{ url_for('import_export.esporta', formato='xlsx', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>Excel</a>
+            <a href="{{ url_for('import_export.esporta', formato='pdf', **parametri_export) }}" class="btn btn-sm btn-outline-primary" download>PDF</a>
+        </div>
     </div>
 </div>
 
-{# Legenda compatta: i dettagli sono nella pagina Guida #}
-<details class="legenda-tabella">
-    <summary>{{ _('Come leggere la tabella') }}</summary>
-    <div class="legenda-tabella-corpo">
-        <div>
-            <p class="legenda-tabella-titolo">{{ _('Livelli di rischio') }}</p>
-            <ul class="legenda-livelli">
-                {% set significati = {
-                    'trascurabile': _('nessun fattore rilevante'),
-                    'basso': _('un fattore lieve'),
-                    'medio': _('con moderazione'),
-                    'alto': _('da limitare'),
-                } %}
-                {% for liv in LIVELLI_RISCHIO %}
-                    <li><span class="badge-risk stato-{{ liv.stato }}">{{ liv.etichetta|traduci }}</span> {{ significati[liv.chiave] }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        <dl class="legenda-definizioni">
-            <dt>{{ _('Punteggio') }}</dt>
-            <dd>{{ _('sintesi dei cinque rischi: 100 = tutti trascurabili, 0 = tutti alti.') }}</dd>
-            <dt>{{ _('TEF') }}</dt>
-            <dd>{{ _("energia spesa per digerire l'alimento, in Kcal e in percentuale delle Kcal.") }}</dd>
-            <dt>{{ _('Kcal nette') }}</dt>
-            <dd>{{ _('Kcal meno TEF.') }}</dd>
-            <dt>{{ _('Rapporto F/F') }}</dt>
-            <dd>{{ _('fruttosio diviso fibre: più è basso, meglio è.') }}</dd>
-            <dt>{{ _('Ricerca') }}</dt>
-            <dd>{{ _('trova nomi anche parziali, senza accenti, al singolare o al plurale e con qualche errore di battitura.') }}</dd>
-            <dt>{{ _('Ordinamento') }}</dt>
-            <dd>{{ _("clic su un'intestazione per ordinare, Maiusc+clic per aggiungere un criterio (es. categoria, poi Kcal); oppure i menu «Ordina per».") }}</dd>
-            <dt>{{ _('Confronto') }}</dt>
-            <dd>{{ _('seleziona da 2 a %(n)d alimenti con le caselle accanto al nome, anche da pagine o ricerche diverse.', n=confronto_max) }}</dd>
-        </dl>
-        <p class="mb-0">
-            <a href="{{ url_for('pagine.guida') }}">{{ _('Guida completa: soglie, calcoli e fonti') }}</a>
-        </p>
-    </div>
-</details>
-
-{# Ordinamento (fino a tre criteri) e righe per pagina. Su schermi piccoli
-   la tabella diventa un elenco di schede senza intestazioni: si ordina da qui #}
+{# Ordinamento (fino a tre criteri), righe per pagina e legenda sulla stessa
+   riga. Su schermi piccoli la tabella diventa un elenco di schede senza
+   intestazioni: si ordina da qui #}
 <form method="get" action="{{ url_for('pagine.index') }}" class="vista-form" aria-label="{{ _('Ordinamento e righe per pagina') }}">
     {% for nome, valore in parametri_tabella.items() if nome not in ('sort', 'dir', 'per_pagina') %}
         <input type="hidden" name="{{ nome }}" value="{{ valore }}">
@@ -445,24 +414,62 @@
         {% endif %}
     {% endfor %}
 
-    <div class="vista-livello vista-per-pagina">
-        <label class="form-label" for="per-pagina">{{ _('Righe per pagina') }}</label>
-        <select class="form-select" id="per-pagina" name="per_pagina" onchange="this.form.submit()">
-            {% for n in per_pagina_opzioni %}
-                <option value="{{ n }}" {% if paginazione.per_pagina == n %}selected{% endif %}>{{ n }}</option>
-            {% endfor %}
-            <option value="{{ tutti_valore }}" {% if paginazione.per_pagina is none %}selected{% endif %}>{{ _('Tutte') }}</option>
-        </select>
+    {# Righe per pagina e legenda restano insieme, in fondo a destra #}
+    <div class="vista-fine">
+        <div class="vista-livello vista-per-pagina">
+            <label class="form-label" for="per-pagina">{{ _('Righe per pagina') }}</label>
+            <select class="form-select" id="per-pagina" name="per_pagina" onchange="this.form.submit()">
+                {% for n in per_pagina_opzioni %}
+                    <option value="{{ n }}" {% if paginazione.per_pagina == n %}selected{% endif %}>{{ n }}</option>
+                {% endfor %}
+                <option value="{{ tutti_valore }}" {% if paginazione.per_pagina is none %}selected{% endif %}>{{ _('Tutte') }}</option>
+            </select>
+        </div>
+
+        {# Legenda compatta, accanto alle righe per pagina: aperta si sovrappone
+           alla tabella; i dettagli sono nella pagina Guida #}
+        <details class="legenda-tabella" data-chiudi-fuori>
+            <summary>{{ _('Come leggere la tabella') }}</summary>
+            <div class="legenda-tabella-corpo">
+                <div>
+                    <p class="legenda-tabella-titolo">{{ _('Livelli di rischio') }}</p>
+                    <ul class="legenda-livelli">
+                        {% set significati = {
+                            'trascurabile': _('nessun fattore rilevante'),
+                            'basso': _('un fattore lieve'),
+                            'medio': _('con moderazione'),
+                            'alto': _('da limitare'),
+                        } %}
+                        {% for liv in LIVELLI_RISCHIO %}
+                            <li><span class="badge-risk stato-{{ liv.stato }}">{{ liv.etichetta|traduci }}</span> {{ significati[liv.chiave] }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <dl class="legenda-definizioni">
+                    <dt>{{ _('Punteggio') }}</dt>
+                    <dd>{{ _('sintesi dei cinque rischi: 100 = tutti trascurabili, 0 = tutti alti.') }}</dd>
+                    <dt>{{ _('TEF') }}</dt>
+                    <dd>{{ _("energia spesa per digerire l'alimento, in Kcal e in percentuale delle Kcal.") }}</dd>
+                    <dt>{{ _('Kcal nette') }}</dt>
+                    <dd>{{ _('Kcal meno TEF.') }}</dd>
+                    <dt>{{ _('Rapporto F/F') }}</dt>
+                    <dd>{{ _('fruttosio diviso fibre: più è basso, meglio è.') }}</dd>
+                    <dt>{{ _('Ricerca') }}</dt>
+                    <dd>{{ _('trova nomi anche parziali, senza accenti, al singolare o al plurale e con qualche errore di battitura.') }}</dd>
+                    <dt>{{ _('Ordinamento') }}</dt>
+                    <dd>{{ _("clic su un'intestazione per ordinare, Maiusc+clic per aggiungere un criterio (es. categoria, poi Kcal); oppure i menu «Ordina per».") }}</dd>
+                    <dt>{{ _('Confronto') }}</dt>
+                    <dd>{{ _('seleziona da 2 a %(n)d alimenti con le caselle accanto al nome, anche da pagine o ricerche diverse.', n=confronto_max) }}</dd>
+                </dl>
+                <p class="mb-0">
+                    <a href="{{ url_for('pagine.guida') }}">{{ _('Guida completa: soglie, calcoli e fonti') }}</a>
+                </p>
+            </div>
+        </details>
     </div>
 
     <noscript><button type="submit" class="btn btn-outline-secondary vista-applica">{{ _('Applica') }}</button></noscript>
 </form>
-
-<div class="d-none d-md-flex justify-content-end mb-2">
-    <button type="button" class="btn btn-sm btn-outline-secondary" id="mostra-colonne" aria-pressed="false" hidden>
-        {{ _('Mostra tutte le colonne') }}
-    </button>
-</div>
 
 {# Testi uguali in ogni riga: tradotti una volta sola (la tabella ha più di 1000 righe) #}
 {% set T = {

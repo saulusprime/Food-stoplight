@@ -725,3 +725,37 @@ document.addEventListener("click", function (evento) {
             /* cache non leggibile: resta il messaggio "nessuna scheda" */
         });
 })();
+
+// ---------------------------------------------------------------
+// Riquadri a comparsa (<details data-chiudi-fuori>, es. la legenda della
+// tabella): aperti si sovrappongono alla pagina, quindi si chiudono anche
+// con Esc o con un clic fuori
+// ---------------------------------------------------------------
+(function () {
+    "use strict";
+
+    function aperti() {
+        return document.querySelectorAll("details[data-chiudi-fuori][open]");
+    }
+
+    document.addEventListener("click", function (evento) {
+        aperti().forEach(function (riquadro) {
+            if (!riquadro.contains(evento.target)) {
+                riquadro.open = false;
+            }
+        });
+    });
+
+    document.addEventListener("keydown", function (evento) {
+        if (evento.key !== "Escape") {
+            return;
+        }
+        aperti().forEach(function (riquadro) {
+            var dentro = riquadro.contains(document.activeElement);
+            riquadro.open = false;
+            if (dentro) {
+                riquadro.querySelector("summary").focus();
+            }
+        });
+    });
+})();

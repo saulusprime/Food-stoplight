@@ -260,7 +260,11 @@ def test_colonne_secondarie_segnate(client):
     html = client.get("/").data.decode()
     intestazioni = html.split('class="table table-hover')[1].split("</thead>")[0]
     assert intestazioni.count("col-secondaria") == 5
-    assert 'id="mostra-colonne"' in html
+    # Il pulsante sta nella barra del titolo, accanto all'export ma fuori dal
+    # gruppo «solo-online»: le colonne si scelgono anche offline
+    barra = html.split('class="barra-export"')[1].split('class="vista-form"')[0]
+    pulsante = barra.index('id="mostra-colonne"')
+    assert pulsante < barra.index("solo-online")
 
 
 # ---------------------------------------------------------------

@@ -292,3 +292,39 @@ def test_scheda_mostra_indice_glicemico_e_fonte(client):
     mele = sql("SELECT id FROM alimenti WHERE codice_crea = '007120'")[0]["id"]
     contenuto = solo_testo(client.get(f"/alimento/{mele}").data)
     assert "voce «Apple, raw»" in contenuto
+
+
+@pytest.fixture
+def usda_rifiuta(monkeypatch):
+    """USDA rifiuta le richieste; le pagine CREA non devono nemmeno essere lette."""
+    def rifiuta(*_args, **_kwargs):
+        raise usda.ErroreUsda("Limite di richieste USDA raggiunto: riprova più tardi o usa una chiave personale.")
+
+    def non_leggere(*_args, **_kwargs):
+        raise AssertionError("pagine CREA lette nonostante l'errore USDA")
+
+    monkeypatch.setattr(usda, "scarica", rifiuta)
+    monkeypatch.setattr(crea, "scarica_schede", non_leggere)
+    return sql("SELECT codice_crea FROM alimenti WHERE fdc_id IS NOT NULL AND codice_crea IS NOT NULL "
+               "ORDER BY codice_crea LIMIT 1")[0]["codice_crea"]
+
+
+def test_import_crea_si_ferma_se_usda_non_risponde(usda_rifiuta):
+    # Riscritti senza USDA, gli alimenti abbinati perderebbero fruttosio, FDC ID e gli altri campi presi da lì
+    prima = dict(sql("SELECT * FROM alimenti WHERE codice_crea = ?", (usda_rifiuta,))[0])
+    conn = sqlite3.connect(DB)
+
+    try:
+        with pytest.raises(usda.ErroreUsda):
+            fonti.importa_crea(conn, [usda_rifiuta], "2026-11-11 10:00:00")
+        conn.commit()
+    finally:
+        conn.close()
+
+    assert dict(sql("SELECT * FROM alimenti WHERE codice_crea = ?", (usda_rifiuta,))[0]) == prima
+
+
+def test_comando_crea_importa_annullato_se_usda_non_risponde(app, usda_rifiuta):
+    esito = app.test_cli_runner().invoke(args=["crea-importa", usda_rifiuta])
+    assert esito.exit_code != 0
+    assert "Import annullato prima di leggere il CREA, nessuna modifica scritta" in esito.output

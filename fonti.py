@@ -394,25 +394,28 @@ def importa_crea(
     Importa (o aggiorna) gli alimenti CREA indicati, con i valori USDA degli
     abbinamenti. Con sostituisci elimina prima gli alimenti senza codice CREA.
     Non fa commit. Restituisce conteggi ed errori.
+
+    I valori USDA si scaricano prima delle pagine CREA: se USDA non risponde
+    (o rifiuta le richieste) si solleva usda.ErroreUsda senza aver letto né
+    scritto nulla, perché gli alimenti abbinati, riscritti senza USDA,
+    perderebbero fruttosio, FDC ID e gli altri campi presi da lì.
     """
     def avvisa(testo: str) -> None:
         if avanzamento:
             avanzamento(testo)
 
+    codici = list(dict.fromkeys(codici))
+    ids = [abbinamenti()[codice] for codice in codici if codice in abbinamenti()]
+    dati_usda: dict[int, dict[str, Any]] = {}
+
+    if ids:
+        dati_usda = usda.scarica(api_key or usda.CHIAVE_DEMO, ids,
+                                 avanzamento=lambda n, totale: avvisa(f"USDA {n}/{totale}"))
+
     schede, errori = crea.scarica_schede(
         codici, cache=cache_pagine,
         avanzamento=lambda n, totale: avvisa(f"CREA {n}/{totale}") if n % 50 == 0 or n == totale else None,
     )
-
-    ids = [abbinamenti()[s["codice"]] for s in schede if s["codice"] in abbinamenti()]
-    dati_usda: dict[int, dict[str, Any]] = {}
-
-    if ids:
-        try:
-            dati_usda = usda.scarica(api_key or usda.CHIAVE_DEMO, ids,
-                                     avanzamento=lambda n, totale: avvisa(f"USDA {n}/{totale}"))
-        except usda.ErroreUsda as exc:
-            errori.append(f"USDA: {exc} (fruttosio e altri valori USDA non aggiornati)")
 
     alimenti = [da_crea(s, dati_usda.get(abbinamenti().get(s["codice"], 0))) for s in schede]
 

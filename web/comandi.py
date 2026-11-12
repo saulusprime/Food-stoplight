@@ -232,8 +232,15 @@ def crea_importa_cmd(codici: tuple[str, ...], tutti: bool, sostituisci: bool, ca
     try:
         config = current_app.config
         nome_backup = None if prova else backup.crea(config["DATABASE_PATH"], config["BACKUP_DIR"], "crea")
-        esito = fonti.importa_crea(conn, elenco, adesso_testo(), api_key, cache_pagine, sostituisci,
-                                   avanzamento=click.echo)
+        try:
+            esito = fonti.importa_crea(conn, elenco, adesso_testo(), api_key, cache_pagine, sostituisci,
+                                       avanzamento=click.echo)
+        except usda.ErroreUsda as exc:
+            conn.rollback()
+            raise click.ClickException(
+                f"USDA: {exc} Import annullato prima di leggere il CREA, nessuna modifica scritta: "
+                "senza i valori USDA gli alimenti abbinati li perderebbero."
+            ) from None
 
         for errore in esito["errori"][:20]:
             click.echo(f"  ! {errore}")
