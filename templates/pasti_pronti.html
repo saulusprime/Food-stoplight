@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ _('Pasti pronti') }}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>🍝 {{ _('Pasti pronti') }}</h1>
+    <p>
+        {{ _('Ricette della cucina italiana già convertite negli alimenti della tabella. Aggiungi gli ingredienti al pasto con le quantità per le porzioni che vuoi: lì vedi totali e profilo di rischio, e puoi cambiare i grammi.') }}
+    </p>
+</div>
+
+{% if not totale %}
+    <div class="alert alert-info">
+        {{ _('Nessun pasto pronto nel database. Un amministratore può caricarli con «flask pasti-importa».') }}
+    </div>
+{% else %}
+
+<nav class="filtro-portate mb-3" aria-label="{{ _('Portate') }}">
+    <a href="{{ url_for('pasti_pronti.elenco', ordina=ordina if ordina != 'nome' else None) }}"
+       class="btn btn-sm {{ 'btn-primary' if not portata else 'btn-outline-primary' }}"
+       {% if not portata %}aria-current="page"{% endif %}>{{ _('Tutti') }} <span class="conteggio">{{ totale }}</span></a>
+    {% for chiave, etichetta in portate %}
+        <a href="{{ url_for('pasti_pronti.elenco', portata=chiave, ordina=ordina if ordina != 'nome' else None) }}"
+           class="btn btn-sm {{ 'btn-primary' if portata == chiave else 'btn-outline-primary' }}"
+           {% if portata == chiave %}aria-current="page"{% endif %}>{{ etichetta|traduci }} <span class="conteggio">{{ conteggi[chiave] }}</span></a>
+    {% endfor %}
+</nav>
+
+<form method="get" action="{{ url_for('pasti_pronti.elenco') }}" class="ordina-pasti mb-3">
+    {% if portata %}<input type="hidden" name="portata" value="{{ portata }}">{% endif %}
+    <label for="ordina-pasti" class="form-label mb-0">{{ _('Ordina per') }}</label>
+    <select class="form-select" id="ordina-pasti" name="ordina" onchange="this.form.submit()">
+        {% for chiave, etichetta in ordinamenti.items() %}
+            <option value="{{ chiave }}" {% if ordina == chiave %}selected{% endif %}>{{ etichetta|traduci }}</option>
+        {% endfor %}
+    </select>
+    <noscript><button type="submit" class="btn btn-outline-secondary btn-sm">{{ _('Applica') }}</button></noscript>
+</form>
+
+{% for chiave, etichetta, voci in gruppi %}
+    <section class="card mb-3 elenco-pasti" aria-labelledby="titolo-{{ chiave }}">
+        <div class="card-body">
+            <h2 class="grafico-titolo" id="titolo-{{ chiave }}">{{ etichetta|traduci }} <span class="text-muted fw-normal">· {{ voci|length }}</span></h2>
+
+            <ul class="lista-pasti">
+                {% for voce in voci %}
+                    <li class="pasto-pronto">
+                        <div class="pasto-pronto-testo">
+                            <p class="pasto-pronto-nome mb-1">
+                                {% if voce.piatto %}
+                                    <a href="{{ url_for('pagine.scheda', alimento_id=voce.piatto.id) }}">{{ voce.nome }}</a>
+                                {% else %}
+                                    {{ voce.nome }}
+                                {% endif %}
+                            </p>
+                            <p class="pasto-pronto-dati mb-1">
+                                {% if voce.piatto and voce.piatto.porzione %}
+                                    {% trans grammi=voce.piatto.porzione|numero(0), kcal=voce.kcal_porzione|numero(0) %}Porzione da {{ grammi }} g · {{ kcal }} Kcal{% endtrans %}
+                                    ·
+                                {% endif %}
+                                {{ ngettext('ricetta per %(num)d persona', 'ricetta per %(num)d persone', voce.porzioni) }}
+                                · <a href="{{ voce.url_fonte }}" target="_blank" rel="noopener noreferrer">{{ fonti_ricette[voce.fonte].nome }}</a>
+                            </p>
+                            {% if voce.piatto %}
+                                <p class="pasto-pronto-rischi mb-0">
+                                    {% if voce.piatto.punteggio is not none %}
+                                        {% set liv = livello_punteggio(voce.piatto.punteggio) %}
+                                        <span class="punteggio stato-{{ liv.stato }}" title="{{ _('Punteggio') }}">{{ voce.piatto.punteggio }}</span>
+                                    {% endif %}
+                                    {% for rischio in voce.rischi %}
+                                        <span class="badge-risk stato-{{ stato_rischio(rischio.valore) }}">{{ rischio.etichetta|traduci }}: {{ rischio.valore|traduci }}</span>
+                                    {% else %}
+                                        <span class="small text-muted">{{ _('nessun rischio medio o alto') }}</span>
+                                    {% endfor %}
+                                </p>
+                            {% endif %}
+                        </div>
+
+                        <form method="post" action="{{ url_for('pasti_pronti.aggiungi', codice=voce.codice) }}" class="pasto-pronto-azione">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+                            <label class="visually-hidden" for="porzioni-{{ voce.codice }}">{{ _('Porzioni') }}</label>
+                            <select class="form-select form-select-sm" id="porzioni-{{ voce.codice }}" name="porzioni">
+                                {% for n in range(1, porzioni_max + 1) %}
+                                    <option value="{{ n }}">{{ ngettext('%(num)d porzione', '%(num)d porzioni', n) }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm" aria-label="{{ _('Aggiungi al pasto gli ingredienti di %(nome)s', nome=voce.nome) }}">
+                                ➕ {{ _('Al pasto') }}
+                            </button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+{% endfor %}
+
+<p class="small text-muted">
+    {% trans url_wb='https://it.wikibooks.org/wiki/Libro_di_cucina', url_bp='https://www.buttalapasta.it/', url_licenza=fonti_ricette.Wikibooks.url_licenza %}Ricette da <a href="{{ url_wb }}" target="_blank" rel="noopener noreferrer">Wikibooks, Libro di cucina</a> (licenza <a href="{{ url_licenza }}" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>) e da <a href="{{ url_bp }}" target="_blank" rel="noopener noreferrer">Buttalapasta</a>: qui ci sono solo nomi, porzioni e ingredienti con le quantità; il procedimento è nella pagina originale, collegata a ogni ricetta.{% endtrans %}
+    <a href="{{ url_for('pagine.guida') }}#pasti-pronti">{{ _('Come sono calcolati') }}</a>
+</p>
+
+{% endif %}
+
+{% endblock %}

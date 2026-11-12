@@ -15,6 +15,9 @@ Per i valori che il CREA non pubblica, in quest'ordine:
 3. ricette CREA: fruttosio, glucosio, lattosio e saturi dagli ingredienti
    (ricette.py), calcolati dopo aver costruito tutti gli alimenti.
 Gli abbinamenti sono scelti alimento per alimento.
+
+I piatti dei pasti pronti (pasti_pronti.py) si calcolano interamente dagli
+ingredienti e si ricalcolano con le ricette CREA.
 """
 
 from __future__ import annotations
@@ -32,6 +35,7 @@ import cofid
 import crea
 import importazione
 import openfoodfacts
+import pasti_pronti
 import ricette
 import rischi
 import usda
@@ -422,7 +426,11 @@ def importa_crea(
     eliminati = 0
 
     if sostituisci and alimenti:
-        eliminati = conn.execute("DELETE FROM alimenti WHERE codice_crea IS NULL").rowcount
+        # I piatti dei pasti pronti restano: si ricalcolano dagli ingredienti
+        eliminati = conn.execute(
+            "DELETE FROM alimenti WHERE codice_crea IS NULL"
+            " AND id NOT IN (SELECT alimento_id FROM pasti_pronti WHERE alimento_id IS NOT NULL)"
+        ).rowcount
 
     conteggi = scrivi(conn, alimenti, adesso)
     ricalcolate = ricalcola_ricette(conn, adesso)
@@ -500,7 +508,8 @@ def ricalcola_ricette(conn: sqlite3.Connection, adesso: str) -> int:
     """
     Ricalcola dagli ingredienti i campi delle ricette CREA (fruttosio,
     glucosio, lattosio, grassi saturi che il CREA non pubblica), con
-    derivati e rischi; non fa commit. Restituisce le ricette cambiate.
+    derivati e rischi, e i piatti dei pasti pronti; non fa commit.
+    Restituisce le ricette cambiate.
     """
     righe = {r["codice_crea"]: dict(r) for r in conn.execute("SELECT * FROM alimenti WHERE codice_crea IS NOT NULL")}
     prima = {codice: dict(r) for codice, r in righe.items() if r.get("ingredienti")}
@@ -518,7 +527,152 @@ def ricalcola_ricette(conn: sqlite3.Connection, adesso: str) -> int:
             )
             cambiate += 1
 
-    return cambiate
+    return cambiate + aggiorna_pasti_pronti(conn, adesso)["aggiornati"]
+
+
+# ---------------------------------------------------------------
+# PASTI PRONTI
+# ---------------------------------------------------------------
+
+def leggi_pasti_pronti(conn: sqlite3.Connection) -> list[pasti_pronti.Ricetta]:
+    """
+    Pasti pronti salvati nel database, con ingredienti e id del piatto.
+    """
+    ricette_db = [dict(r) for r in conn.execute("SELECT * FROM pasti_pronti ORDER BY id")]
+    ingredienti: dict[int, list[dict[str, Any]]] = {}
+
+    for riga in conn.execute("SELECT * FROM pasti_pronti_ingredienti ORDER BY pasto_id, ordine"):
+        ingredienti.setdefault(riga["pasto_id"], []).append(dict(riga))
+
+    for ricetta in ricette_db:
+        ricetta["ingredienti"] = ingredienti.get(ricetta["id"], [])
+
+    return ricette_db
+
+
+def aggiorna_pasti_pronti(conn: sqlite3.Connection, adesso: str, crea_mancanti: bool = False) -> dict[str, Any]:
+    """
+    Ricalcola dagli ingredienti i piatti dei pasti pronti; non fa commit.
+    Con crea_mancanti inserisce i piatti che non esistono (o sono stati
+    eliminati), altrimenti li lascia stare. Un piatto con un ingrediente che
+    non è più tra gli alimenti resta com'era. Restituisce i conteggi
+    {nuovi, aggiornati, invariati} e gli errori.
+    """
+    esito: dict[str, Any] = {"nuovi": 0, "aggiornati": 0, "invariati": 0, "errori": []}
+    ricette_db = leggi_pasti_pronti(conn)
+
+    if not ricette_db:
+        return esito
+
+    alimenti = {r["codice_crea"]: dict(r) for r in conn.execute("SELECT * FROM alimenti WHERE codice_crea IS NOT NULL")}
+    altri_nomi = {
+        r[0].casefold() for r in conn.execute(
+            "SELECT alimento FROM alimenti"
+            " WHERE id NOT IN (SELECT alimento_id FROM pasti_pronti WHERE alimento_id IS NOT NULL)"
+        )
+    }
+    colonne = (*importazione.CAMPI, "aggiornato_il")
+
+    for ricetta in ricette_db:
+        try:
+            valori = pasti_pronti.calcola(ricetta, alimenti)
+        except pasti_pronti.IngredientiMancanti as exc:
+            esito["errori"].append(f"{ricetta['codice']}: alimenti inesistenti {', '.join(exc.codici)}")
+            continue
+
+        valori["alimento"] = pasti_pronti.nome_piatto(valori["alimento"], altri_nomi)
+        nuovo = completa(valori)
+
+        precedente: dict[str, Any] | None = None
+
+        if ricetta["alimento_id"] is not None:
+            riga = conn.execute("SELECT * FROM alimenti WHERE id = ?", (ricetta["alimento_id"],)).fetchone()
+            precedente = dict(riga) if riga else None
+
+        if precedente is not None:
+            if _diversi(nuovo, precedente):
+                conn.execute(
+                    f"UPDATE alimenti SET {', '.join(f'{c} = ?' for c in colonne)} WHERE id = ?",
+                    [nuovo.get(c) for c in importazione.CAMPI] + [adesso, precedente["id"]],
+                )
+                esito["aggiornati"] += 1
+            else:
+                esito["invariati"] += 1
+        elif crea_mancanti:
+            cursore = conn.execute(
+                f"INSERT INTO alimenti ({', '.join(colonne)}) VALUES ({', '.join('?' for _ in colonne)})",
+                [nuovo.get(c) for c in importazione.CAMPI] + [adesso],
+            )
+            conn.execute("UPDATE pasti_pronti SET alimento_id = ? WHERE id = ?", (cursore.lastrowid, ricetta["id"]))
+            esito["nuovi"] += 1
+
+    return esito
+
+
+def carica_pasti_pronti(
+    conn: sqlite3.Connection, ricette_file: list[pasti_pronti.Ricetta], adesso: str,
+) -> dict[str, Any]:
+    """
+    Porta nel database le ricette lette dai file (pasti_pronti.leggi_dati):
+    aggiunge o aggiorna ricette e ingredienti, elimina quelle che non ci sono
+    più (con i loro piatti) e ricalcola i piatti. Non fa commit. Solleva
+    pasti_pronti.IngredientiMancanti se un ingrediente non è tra gli alimenti.
+    """
+    codici_crea = {r[0] for r in conn.execute("SELECT codice_crea FROM alimenti WHERE codice_crea IS NOT NULL")}
+    mancanti = sorted({
+        voce["codice_crea"] for ricetta in ricette_file for voce in ricetta["ingredienti"]
+        if voce["codice_crea"] and voce["codice_crea"] not in codici_crea
+    })
+
+    if mancanti:
+        raise pasti_pronti.IngredientiMancanti(mancanti)
+
+    esistenti = {r["codice"]: dict(r) for r in conn.execute("SELECT * FROM pasti_pronti")}
+    nuovi_codici = {ricetta["codice"] for ricetta in ricette_file}
+    eliminati = 0
+
+    for codice, vecchia in esistenti.items():
+        if codice in nuovi_codici:
+            continue
+
+        conn.execute("DELETE FROM pasti_pronti_ingredienti WHERE pasto_id = ?", (vecchia["id"],))
+        conn.execute("DELETE FROM pasti_pronti WHERE id = ?", (vecchia["id"],))
+
+        if vecchia["alimento_id"] is not None:
+            conn.execute("DELETE FROM alimenti WHERE id = ?", (vecchia["alimento_id"],))
+
+        eliminati += 1
+
+    campi = ("nome", "portata", "porzioni", "fonte", "url_fonte", "note")
+
+    for ricetta in ricette_file:
+        salvata = esistenti.get(ricetta["codice"])
+
+        if salvata is None:
+            pasto_id = conn.execute(
+                f"INSERT INTO pasti_pronti (codice, {', '.join(campi)}, aggiornato_il) "
+                f"VALUES (?, {', '.join('?' for _ in campi)}, ?)",
+                [ricetta["codice"], *(ricetta[c] for c in campi), adesso],
+            ).lastrowid
+        else:
+            pasto_id = salvata["id"]
+            conn.execute(
+                f"UPDATE pasti_pronti SET {', '.join(f'{c} = ?' for c in campi)}, aggiornato_il = ? WHERE id = ?",
+                [*(ricetta[c] for c in campi), adesso, pasto_id],
+            )
+            conn.execute("DELETE FROM pasti_pronti_ingredienti WHERE pasto_id = ?", (pasto_id,))
+
+        conn.executemany(
+            "INSERT INTO pasti_pronti_ingredienti (pasto_id, ordine, ingrediente, codice_crea, grammi, resa, nota) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [
+                (pasto_id, ordine, voce["ingrediente"], voce["codice_crea"], voce["grammi"], voce["resa"], voce["nota"])
+                for ordine, voce in enumerate(ricetta["ingredienti"], start=1)
+            ],
+        )
+
+    esito = aggiorna_pasti_pronti(conn, adesso, crea_mancanti=True)
+    return {**esito, "ricette": len(ricette_file), "eliminati": eliminati}
 
 
 def ricalcola_rischi(conn: sqlite3.Connection, adesso: str) -> int:

@@ -15,6 +15,7 @@
         {% else %}
             {{ _('Il pasto resta in questo browser finché non lo svuoti.') }}
         {% endif %}
+        {% trans url=url_for('pasti_pronti.elenco') %}Puoi anche partire dagli ingredienti di un <a href="{{ url }}">pasto pronto</a>.{% endtrans %}
     </p>
 </div>
 

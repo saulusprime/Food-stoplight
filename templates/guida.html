@@ -34,6 +34,7 @@
                     <li><a href="#rischi">{{ _('I cinque rischi') }}</a></li>
                     <li><a href="#punteggio">{{ _('Punteggio complessivo') }}</a></li>
                     <li><a href="#pasti">{{ _('Pasti e diario') }}</a></li>
+                    <li><a href="#pasti-pronti">{{ _('Pasti pronti') }}</a></li>
                     <li><a href="#medaglie">{{ _('Medaglie') }}</a></li>
                     <li><a href="#tef">{{ _('Energia, TEF e Kcal nette') }}</a></li>
                     <li><a href="#glicemico">{{ _('Indice e carico glicemico') }}</a></li>
@@ -203,6 +204,24 @@
                     </p>
                     <p class="mb-0">
                         {% trans %}Il diario conserva i valori dell'alimento al momento della registrazione: le modifiche successive al database non cambiano i giorni passati.{% endtrans %}
+                    </p>
+                </div>
+            </section>
+
+            <section class="card guida-sezione" id="pasti-pronti" aria-labelledby="titolo-pasti-pronti">
+                <div class="card-body">
+                    <h2 id="titolo-pasti-pronti">{{ _('Pasti pronti') }}</h2>
+                    <p>
+                        {% trans url_wb='https://it.wikibooks.org/wiki/Libro_di_cucina', url_licenza='https://creativecommons.org/licenses/by-sa/4.0/deed.it', url_bp='https://www.buttalapasta.it/' %}I pasti pronti sono 100 ricette della cucina italiana (20 antipasti, 30 primi, 30 secondi, 20 contorni) prese dal <a href="{{ url_wb }}" target="_blank" rel="noopener noreferrer">Libro di cucina di Wikibooks</a> (licenza <a href="{{ url_licenza }}" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>) e da <a href="{{ url_bp }}" target="_blank" rel="noopener noreferrer">Buttalapasta</a>, che ne consente il riuso citando la fonte. Delle ricette si riportano solo nome, porzioni e ingredienti con le quantità, con il collegamento alla pagina originale per il procedimento.{% endtrans %}
+                    </p>
+                    <p>
+                        {% trans %}Ogni ingrediente è abbinato all'alimento più vicino della tabella, crudo. Cucchiai, pezzi e «quanto basta» diventano grammi con pesi standard (per esempio uno spicchio d'aglio 4 g, un uovo 50 g, un cucchiaio d'olio 10 g, olio «q.b.» 10 g a porzione); dell'olio per friggere si conta la parte assorbita, il 10% del peso dei cibi fritti. Sale, pepe e spezie non sono conteggiati: il sale aggiunto non è tra gli alimenti del CREA, quindi il sodio dei piatti è solo quello degli ingredienti. Acqua e brodo contano solo nel peso del piatto.{% endtrans %}
+                    </p>
+                    <p>
+                        {% trans url_usda='https://www.ars.usda.gov/ARSUserFiles/80400525/Data/retn/retn06.pdf' %}Il piatto in tabella si calcola come le ricette delle tabelle di composizione: i nutrienti degli ingredienti crudi si sommano e si dividono per il peso del piatto cotto. Il peso cotto tiene conto dell'acqua assorbita o persa in cottura, ingrediente per ingrediente: per pasta, riso, cereali e legumi bolliti si usa il rapporto tra crudo e cotto delle tabelle CREA (per esempio 1,95 per la pasta di semola), per carni (0,7-0,75), pesce (0,8), verdure cotte (0,7-0,8) e liquidi che si riducono (0,5) una stima arrotondata. L'alcol del vino in cottura scende al 35%, il valore delle <a href="{{ url_usda }}" target="_blank" rel="noopener noreferrer">tabelle USDA dei fattori di ritenzione</a> per 30 minuti di cottura. Un valore resta non disponibile se gli ingredienti senza quel dato ne portano più del 5%, come per le ricette CREA.{% endtrans %}
+                    </p>
+                    <p class="mb-0">
+                        {% trans %}«Al pasto» aggiunge gli ingredienti crudi per le porzioni scelte, e nella pagina del pasto i rischi si pesano sulle Kcal di ciascun ingrediente, come per ogni pasto (le quantità sotto 1 g, come le erbe, salgono a 1 g). Il semaforo del piatto in tabella valuta invece il piatto intero, per 100 g e per porzione, con le stesse regole degli altri alimenti: come per le ricette del CREA, la carne rossa o lavorata conta nel rischio tumorale del singolo ingrediente, non del piatto che la contiene.{% endtrans %}
                     </p>
                 </div>
             </section>

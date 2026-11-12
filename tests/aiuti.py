@@ -65,6 +65,9 @@ import archivio  # noqa: E402
 import importazione  # noqa: E402
 from web import import_export  # noqa: E402
 
+# L'app all'import ha migrato la copia: ogni test riparte da quella, con lo schema attuale
+shutil.copy(DB, ORIGINALE)
+
 PASSWORD = "password-di-prova"
 UTENTI = (("admin_t", "admin"), ("anna_t", "visitatore"), ("bruno_t", "visitatore"))
 

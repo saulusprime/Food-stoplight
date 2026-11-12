@@ -56,6 +56,10 @@
                         {{ _('Pasto') }}{% if voci_pasto %} <span class="contatore-pasto" aria-label="{{ ngettext('%(num)d alimento nel pasto', '%(num)d alimenti nel pasto', voci_pasto) }}">{{ voci_pasto }}</span>{% endif %}
                     </a>
 
+                    <a class="nav-link" href="{{ url_for('pasti_pronti.elenco') }}">
+                        {{ _('Pasti pronti') }}
+                    </a>
+
                     {% if current_user.is_authenticated %}
                         <a class="nav-link" href="{{ url_for('pasto_diario.diario') }}">
                             {{ _('Diario') }}

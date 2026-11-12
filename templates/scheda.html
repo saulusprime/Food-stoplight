@@ -219,7 +219,10 @@
                         {% if fonti_dati.off %}
                             <li>{% trans url=fonti_dati.off %}Valori dell'etichetta e gruppo NOVA: <a href="{{ url }}" target="_blank" rel="noopener noreferrer">Open Food Facts</a> (licenza ODbL).{% endtrans %}</li>
                         {% endif %}
-                        {% if not (fonti_dati.crea or fonti_dati.usda or fonti_dati.off) %}
+                        {% if pasto_pronto %}
+                            {% set fonte_ricetta = pasto_pronto.fonte_ricetta %}
+                            <li>{% trans url=pasto_pronto.url_fonte, fonte=fonte_ricetta.nome, url_licenza=fonte_ricetta.url_licenza, licenza=fonte_ricetta.licenza|traduci %}Valori calcolati dagli ingredienti della ricetta (alimenti della tabella, crudi), divisi per il peso del piatto cotto. Ricetta: <a href="{{ url }}" target="_blank" rel="noopener noreferrer">{{ fonte }}</a> (<a href="{{ url_licenza }}" target="_blank" rel="noopener noreferrer">{{ licenza }}</a>).{% endtrans %}</li>
+                        {% elif not (fonti_dati.crea or fonti_dati.usda or fonti_dati.off) %}
                             {% if item.url_fonte %}
                                 <li><a href="{{ item.url_fonte }}" target="_blank" rel="noopener noreferrer">{{ item.fonte_nutrienti or item.url_fonte }}</a></li>
                             {% elif item.fonte_nutrienti %}
@@ -246,6 +249,47 @@
                         </details>
                     {% endif %}
                 </div>
+
+                {% if pasto_pronto %}
+                    <div class="ricetta-pasto mb-3">
+                        <h3 class="ricetta-pasto-titolo">{{ _('Ingredienti per una porzione') }}</h3>
+                        <ul class="ricetta-pasto-ingredienti">
+                            {% for voce in pasto_pronto.ingredienti %}
+                                <li>
+                                    {% if voce.alimento %}
+                                        <a href="{{ url_for('pagine.scheda', alimento_id=voce.alimento.id) }}">{{ voce.ingrediente }}</a>
+                                        <span class="ricetta-pasto-grammi">{{ voce.grammi_porzione|numero(1) }} g</span>
+                                    {% elif voce.grammi %}
+                                        {{ voce.ingrediente }}
+                                        <span class="ricetta-pasto-grammi text-muted">{{ _('solo peso') }}</span>
+                                    {% else %}
+                                        <span class="text-muted">{{ voce.ingrediente }}</span>
+                                        <span class="ricetta-pasto-grammi text-muted">{{ _('non conteggiato') }}</span>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <p class="small text-muted mb-2">
+                            {{ ngettext('Grammi crudi, dalla ricetta per %(num)d persona.', 'Grammi crudi, dalla ricetta per %(num)d persone.', pasto_pronto.porzioni) }}
+                            {{ _('Sale, pepe e spezie non sono conteggiati; acqua e brodo contano solo nel peso del piatto.') }}
+                            <a href="{{ url_for('pagine.guida') }}#pasti-pronti">{{ _('Come sono calcolati') }}</a>
+                        </p>
+                        {% if pasto_pronto.note %}
+                            <p class="small text-muted mb-2">{{ pasto_pronto.note }}</p>
+                        {% endif %}
+                        <form method="post" action="{{ url_for('pasti_pronti.aggiungi', codice=pasto_pronto.codice) }}" class="d-flex flex-wrap align-items-center gap-2">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+                            <label class="visually-hidden" for="porzioni-ricetta">{{ _('Porzioni') }}</label>
+                            <select class="form-select form-select-sm w-auto" id="porzioni-ricetta" name="porzioni">
+                                {% for n in range(1, pasto_pronto.porzioni_max + 1) %}
+                                    <option value="{{ n }}">{{ ngettext('%(num)d porzione', '%(num)d porzioni', n) }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-outline-primary btn-sm">{{ _('➕ Aggiungi gli ingredienti al pasto') }}</button>
+                        </form>
+                    </div>
+                {% endif %}
 
                 {% if item.note %}
                     <p class="small mb-3 nota-alimento"><strong>{{ _('Note:') }}</strong> {{ item.note }}</p>

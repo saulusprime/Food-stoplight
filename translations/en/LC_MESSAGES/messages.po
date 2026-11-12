@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Food-stoplight 1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-10 19:36+0100\n"
+"POT-Creation-Date: 2026-11-12 19:40+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -154,6 +154,12 @@ msgid "%(num)d eliminato"
 msgid_plural "%(num)d eliminati"
 msgstr[0] "%(num)d deleted"
 msgstr[1] "%(num)d deleted"
+
+#, python-format
+msgid "%(num)d porzione"
+msgid_plural "%(num)d porzioni"
+msgstr[0] "%(num)d serving"
+msgstr[1] "%(num)d servings"
 
 #, python-format
 msgid "%(num)d punto"
@@ -309,6 +315,10 @@ msgstr "Add"
 msgid "Aggiungi al diario"
 msgstr "Add to the diary"
 
+#, python-format
+msgid "Aggiungi al pasto gli ingredienti di %(nome)s"
+msgstr "Add the ingredients of %(nome)s to the meal"
+
 msgid "Aggiungi almeno un altro alimento per vederli affiancati."
 msgstr "Add at least one more food to see them side by side."
 
@@ -319,12 +329,21 @@ msgid "Aggiungi un alimento"
 msgstr "Add a food"
 
 #, python-format
+msgid "Aggiunti al pasto gli ingredienti di «%(nome)s» per %(num)d porzione."
+msgid_plural "Aggiunti al pasto gli ingredienti di «%(nome)s» per %(num)d porzioni."
+msgstr[0] "Added the ingredients of “%(nome)s” to the meal for %(num)d serving."
+msgstr[1] "Added the ingredients of “%(nome)s” to the meal for %(num)d servings."
+
+#, python-format
 msgid "Aggiunto al diario: %(nome)s, %(grammi)s g."
 msgstr "Added to the diary: %(nome)s, %(grammi)s g."
 
 #, python-format
 msgid "Aggiunto al pasto: %(nome)s, %(grammi)s g."
 msgstr "Added to the meal: %(nome)s, %(grammi)s g."
+
+msgid "Al pasto"
+msgstr "To meal"
 
 msgid "Alcol"
 msgstr "Alcohol"
@@ -428,6 +447,9 @@ msgstr "Import preview"
 
 msgid "Anteprima import"
 msgstr "Import preview"
+
+msgid "Antipasti"
+msgstr "Starters"
 
 msgid "Applica"
 msgstr "Apply"
@@ -706,6 +728,9 @@ msgstr "How they are calculated"
 msgid "Come si calcolano TEF e Kcal nette"
 msgstr "How TEF and net Kcal are calculated"
 
+msgid "Come sono calcolati"
+msgstr "How they are calculated"
+
 msgid "Compila"
 msgstr "Fill in"
 
@@ -754,6 +779,9 @@ msgstr "Food comparison"
 #, python-format
 msgid "Contiene alcol (%(grammi)s g per 100 g): cancerogeno del gruppo 1 IARC."
 msgstr "Contains alcohol (%(grammi)s g per 100 g): IARC group 1 carcinogen."
+
+msgid "Contorni"
+msgstr "Side dishes"
 
 msgid "Copia del database"
 msgstr "Database copy"
@@ -1304,6 +1332,12 @@ msgid "Grammi"
 msgstr "Grams"
 
 #, python-format
+msgid "Grammi crudi, dalla ricetta per %(num)d persona."
+msgid_plural "Grammi crudi, dalla ricetta per %(num)d persone."
+msgstr[0] "Raw grams, from the recipe for %(num)d person."
+msgstr[1] "Raw grams, from the recipe for %(num)d people."
+
+#, python-format
 msgid "Grammi di %(nome)s"
 msgstr "Grams of %(nome)s"
 
@@ -1363,6 +1397,28 @@ msgid ""
 msgstr ""
 "Levels are calculated from the nutrition values when you save: they "
 "aren't entered by hand."
+
+#, python-format
+msgid ""
+"I pasti pronti sono 100 ricette della cucina italiana (20 antipasti, 30 "
+"primi, 30 secondi, 20 contorni) prese dal <a href=\"%(url_wb)s\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">Libro di cucina di "
+"Wikibooks</a> (licenza <a href=\"%(url_licenza)s\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">CC BY-SA 4.0</a>) e da <a href=\"%(url_bp)s\""
+" target=\"_blank\" rel=\"noopener noreferrer\">Buttalapasta</a>, che ne "
+"consente il riuso citando la fonte. Delle ricette si riportano solo nome,"
+" porzioni e ingredienti con le quantità, con il collegamento alla pagina "
+"originale per il procedimento."
+msgstr ""
+"Ready meals are 100 Italian recipes (20 starters, 30 first courses, 30 "
+"main courses, 20 side dishes) taken from the <a href=\"%(url_wb)s\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">Italian Wikibooks "
+"cookbook</a> (licence <a href=\"%(url_licenza)s\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">CC BY-SA 4.0</a>) and from <a "
+"href=\"%(url_bp)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">Buttalapasta</a>, which allows reuse with credit. Only the "
+"name, servings and ingredients with their quantities are reproduced, with"
+" a link to the original page for the method."
 
 #, python-format
 msgid ""
@@ -1530,6 +1586,14 @@ msgstr "The average level shown next to the score:"
 msgid "Il pasto può contenere al massimo %(n)d alimenti."
 msgstr "A meal can contain at most %(n)d foods."
 
+#, python-format
+msgid ""
+"Il pasto può contenere al massimo %(n)d alimenti: svuotalo o togline "
+"qualcuno prima di aggiungere «%(nome)s»."
+msgstr ""
+"A meal can hold at most %(n)d foods: empty it or remove some before "
+"adding “%(nome)s”."
+
 msgid ""
 "Il pasto resta in questo browser finché non lo svuoti o lo salvi nel "
 "diario."
@@ -1545,6 +1609,35 @@ msgid ""
 "Il pasto è vuoto: aggiungi gli alimenti qui sopra oppure con «Aggiungi al"
 " pasto» dalla scheda di un alimento."
 msgstr "The meal is empty: add foods above or with “Add to meal” on a food's page."
+
+#, python-format
+msgid ""
+"Il piatto in tabella si calcola come le ricette delle tabelle di "
+"composizione: i nutrienti degli ingredienti crudi si sommano e si "
+"dividono per il peso del piatto cotto. Il peso cotto tiene conto "
+"dell'acqua assorbita o persa in cottura, ingrediente per ingrediente: per"
+" pasta, riso, cereali e legumi bolliti si usa il rapporto tra crudo e "
+"cotto delle tabelle CREA (per esempio 1,95 per la pasta di semola), per "
+"carni (0,7-0,75), pesce (0,8), verdure cotte (0,7-0,8) e liquidi che si "
+"riducono (0,5) una stima arrotondata. L'alcol del vino in cottura scende "
+"al 35%%, il valore delle <a href=\"%(url_usda)s\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">tabelle USDA dei fattori di ritenzione</a> "
+"per 30 minuti di cottura. Un valore resta non disponibile se gli "
+"ingredienti senza quel dato ne portano più del 5%%, come per le ricette "
+"CREA."
+msgstr ""
+"The dish in the table is calculated like the recipes in food composition "
+"tables: the nutrients of the raw ingredients are added up and divided by "
+"the weight of the cooked dish. The cooked weight accounts for the water "
+"absorbed or lost in cooking, ingredient by ingredient: for boiled pasta, "
+"rice, cereals and pulses it uses the raw-to-cooked ratio of the CREA "
+"tables (for example 1.95 for durum wheat pasta), for meat (0.7-0.75), "
+"fish (0.8), cooked vegetables (0.7-0.8) and liquids that reduce (0.5) a "
+"rounded estimate. Alcohol from wine drops to 35%% in cooking, the value "
+"of the <a href=\"%(url_usda)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">USDA table of nutrient retention factors</a> for 30 minutes "
+"of cooking. A value stays unavailable if the ingredients without it carry"
+" more than 5%% of it, as for CREA recipes."
 
 msgid ""
 "Il più alto tra il livello del carico glicemico della porzione tipica e "
@@ -1686,6 +1779,9 @@ msgstr "Recipe ingredients"
 
 msgid "Ingredienti della ricetta CREA"
 msgstr "Ingredients of the CREA recipe"
+
+msgid "Ingredienti per una porzione"
+msgstr "Ingredients for one serving"
 
 msgid "Ingredienti: elenco non valido, ignorato"
 msgstr "Ingredients: invalid list, ignored"
@@ -1933,6 +2029,9 @@ msgstr ""
 "Fewest Kcal per 100 g (values of 0, which mean missing data, are "
 "excluded)."
 
+msgid "Meno Kcal per porzione"
+msgstr "Fewest kcal per serving"
+
 msgid "Meno calorici"
 msgstr "Lowest in calories"
 
@@ -2080,8 +2179,19 @@ msgstr "No relevant risk factor."
 msgid "Nessun file in attesa di conferma: caricane uno."
 msgstr "No file waiting for confirmation: upload one."
 
+#, python-format
+msgid "Nessun ingrediente di «%(nome)s» è tra gli alimenti."
+msgstr "None of the ingredients of “%(nome)s” is among the foods."
+
 msgid "Nessun livello di rischio disponibile."
 msgstr "No risk level available."
+
+msgid ""
+"Nessun pasto pronto nel database. Un amministratore può caricarli con "
+"«flask pasti-importa»."
+msgstr ""
+"No ready meals in the database. An administrator can load them with "
+"“flask pasti-importa”."
 
 msgid "Nessun rischio classificato."
 msgstr "No risk classified."
@@ -2104,6 +2214,9 @@ msgstr "None: the file matches the data in the database."
 
 msgid "Nessuno zucchero libero."
 msgstr "No free sugars."
+
+msgid "Nome"
+msgstr "Name"
 
 msgid "Nome utente"
 msgstr "Username"
@@ -2176,6 +2289,26 @@ msgstr ""
 "Each food has five health risks, each on a four-level scale, like a "
 "traffic light. The level is always written as well as colored."
 
+#, python-format
+msgid ""
+"Ogni ingrediente è abbinato all'alimento più vicino della tabella, crudo."
+" Cucchiai, pezzi e «quanto basta» diventano grammi con pesi standard (per"
+" esempio uno spicchio d'aglio 4 g, un uovo 50 g, un cucchiaio d'olio 10 "
+"g, olio «q.b.» 10 g a porzione); dell'olio per friggere si conta la parte"
+" assorbita, il 10%% del peso dei cibi fritti. Sale, pepe e spezie non "
+"sono conteggiati: il sale aggiunto non è tra gli alimenti del CREA, "
+"quindi il sodio dei piatti è solo quello degli ingredienti. Acqua e brodo"
+" contano solo nel peso del piatto."
+msgstr ""
+"Each ingredient is matched to the closest raw food in the table. Spoons, "
+"pieces and “to taste” become grams with standard weights (for example a "
+"garlic clove 4 g, an egg 50 g, a tablespoon of oil 10 g, oil “to taste” "
+"10 g per serving); for frying oil only the absorbed part counts, 10%% of "
+"the weight of the fried food. Salt, pepper and spices are not counted: "
+"added salt is not among the CREA foods, so the sodium of the dishes is "
+"only that of the ingredients. Water and broth count only in the weight of"
+" the dish."
+
 msgid "Ogni riga diventa un nuovo alimento, anche se esiste già."
 msgstr "Each row becomes a new food, even if it already exists."
 
@@ -2225,6 +2358,9 @@ msgstr "Password"
 
 msgid "Pasti e diario"
 msgstr "Meals and diary"
+
+msgid "Pasti pronti"
+msgstr "Ready meals"
 
 msgid "Pasto"
 msgstr "Meal"
@@ -2317,8 +2453,15 @@ msgstr "Then empty the meal"
 msgid "Polioli (sorbitolo, mannitolo)"
 msgstr "Polyols (sorbitol, mannitol)"
 
+msgid "Portate"
+msgstr "Courses"
+
 msgid "Porzione"
 msgstr "Portion"
+
+#, python-format
+msgid "Porzione da %(grammi)s g · %(kcal)s Kcal"
+msgstr "%(grammi)s g serving · %(kcal)s kcal"
 
 msgid "Porzione tipica (g)"
 msgstr "Typical serving (g)"
@@ -2330,6 +2473,13 @@ msgstr "Typical serving: %(grammi)s g."
 #, python-format
 msgid "Porzione: «%(testo)s» non valida, ignorata"
 msgstr "Serving: “%(testo)s” is not valid, ignored"
+
+msgid "Porzioni"
+msgstr "Servings"
+
+#, python-format
+msgid "Porzioni non valide: da 1 a %(n)d."
+msgstr "Invalid servings: from 1 to %(n)d."
 
 msgid "Porzioni rapide"
 msgstr "Quick portions"
@@ -2349,6 +2499,9 @@ msgid ""
 msgstr ""
 "Takes the name and nutrition values from CREA, Open Food Facts or USDA; "
 "before saving you can check and correct them."
+
+msgid "Prima del caricamento dei pasti pronti"
+msgstr "Before loading the ready meals"
 
 msgid "Prima del ricalcolo dei rischi"
 msgstr "Before recalculating the risks"
@@ -2377,6 +2530,9 @@ msgstr "Before a schema migration"
 #, python-format
 msgid "Prima: %(valore)s"
 msgstr "Before: %(valore)s"
+
+msgid "Primi piatti"
+msgstr "First courses"
 
 msgid "Processazione (NOVA)"
 msgstr "Processing (NOVA)"
@@ -2409,6 +2565,9 @@ msgstr "Score"
 msgid "Punteggio complessivo"
 msgstr "Overall score"
 
+msgid "Punteggio migliore"
+msgstr "Best score"
+
 msgid "Punteggio più alto; a parità, più fibre."
 msgstr "Highest score; on a tie, more fiber."
 
@@ -2425,6 +2584,14 @@ msgid ""
 msgstr ""
 "You can also build a meal in <a href=\"%(url)s\">Meal</a> and save it "
 "here in one go."
+
+#, python-format
+msgid ""
+"Puoi anche partire dagli ingredienti di un <a href=\"%(url)s\">pasto "
+"pronto</a>."
+msgstr ""
+"You can also start from the ingredients of a <a href=\"%(url)s\">ready "
+"meal</a>."
 
 #, python-format
 msgid "Puoi confrontare al massimo %(n)d alimenti."
@@ -2490,6 +2657,34 @@ msgstr ""
 "applied to the sugars and fat of the dish. If the ingredients without the"
 " value bring more than 5%% of the sugars or fat, the value stays "
 "unavailable."
+
+#, python-format
+msgid ""
+"Ricette da <a href=\"%(url_wb)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">Wikibooks, Libro di cucina</a> (licenza <a "
+"href=\"%(url_licenza)s\" target=\"_blank\" rel=\"noopener noreferrer\">CC"
+" BY-SA 4.0</a>) e da <a href=\"%(url_bp)s\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">Buttalapasta</a>: qui ci sono solo nomi, "
+"porzioni e ingredienti con le quantità; il procedimento è nella pagina "
+"originale, collegata a ogni ricetta."
+msgstr ""
+"Recipes from <a href=\"%(url_wb)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">Wikibooks, Libro di cucina</a> (licence <a "
+"href=\"%(url_licenza)s\" target=\"_blank\" rel=\"noopener noreferrer\">CC"
+" BY-SA 4.0</a>) and from <a href=\"%(url_bp)s\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">Buttalapasta</a>: only names, servings and "
+"ingredients with quantities are here; the method is on the original page,"
+" linked from each recipe."
+
+msgid ""
+"Ricette della cucina italiana già convertite negli alimenti della "
+"tabella. Aggiungi gli ingredienti al pasto con le quantità per le "
+"porzioni che vuoi: lì vedi totali e profilo di rischio, e puoi cambiare i"
+" grammi."
+msgstr ""
+"Italian recipes already converted into the foods of the table. Add the "
+"ingredients to the meal with the quantities for the servings you want: "
+"there you see totals and risk profile, and you can change the grams."
 
 msgid "Richiesta non valida."
 msgstr "Invalid request."
@@ -2571,6 +2766,13 @@ msgstr "Cancer risk"
 msgid "Risorsa non trovata."
 msgstr "Resource not found."
 
+msgid ""
+"Sale, pepe e spezie non sono conteggiati; acqua e brodo contano solo nel "
+"peso del piatto."
+msgstr ""
+"Salt, pepper and spices are not counted; water and broth count only in "
+"the weight of the dish."
+
 #, python-format
 msgid ""
 "Sale: %(grammi)s g per 100 g, alto (cibi conservati sotto sale e tumore "
@@ -2634,6 +2836,9 @@ msgstr "Type to search"
 
 msgid "Scrivi per cercare, es. mela"
 msgstr "Type to search, e.g. apple"
+
+msgid "Secondi piatti"
+msgstr "Main courses"
 
 msgid "Sei offline"
 msgstr "You are offline"
@@ -2972,6 +3177,20 @@ msgstr "Accepted values"
 
 #, python-format
 msgid ""
+"Valori calcolati dagli ingredienti della ricetta (alimenti della tabella,"
+" crudi), divisi per il peso del piatto cotto. Ricetta: <a "
+"href=\"%(url)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">%(fonte)s</a> (<a href=\"%(url_licenza)s\" target=\"_blank\""
+" rel=\"noopener noreferrer\">%(licenza)s</a>)."
+msgstr ""
+"Values calculated from the recipe ingredients (raw foods of the table), "
+"divided by the weight of the cooked dish. Recipe: <a href=\"%(url)s\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">%(fonte)s</a> (<a "
+"href=\"%(url_licenza)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">%(licenza)s</a>)."
+
+#, python-format
+msgid ""
 "Valori dell'etichetta e gruppo NOVA: <a href=\"%(url)s\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Open Food Facts</a> "
 "(licenza ODbL)."
@@ -3290,11 +3509,17 @@ msgstr "no filters"
 msgid "nessun rischio classificato"
 msgstr "no classified risk"
 
+msgid "nessun rischio medio o alto"
+msgstr "no medium or high risk"
+
 msgid "nessuno"
 msgstr "none"
 
 msgid "non classificato"
 msgstr "not classified"
+
+msgid "non conteggiato"
+msgstr "not counted"
 
 msgid "non leggibile"
 msgstr "not readable"
@@ -3322,6 +3547,12 @@ msgid "punto e virgola"
 msgstr "semicolon"
 
 #, python-format
+msgid "ricetta per %(num)d persona"
+msgid_plural "ricetta per %(num)d persone"
+msgstr[0] "recipe for %(num)d person"
+msgstr[1] "recipe for %(num)d people"
+
+#, python-format
 msgid "righe %(da)d–%(a)d"
 msgstr "rows %(da)d–%(a)d"
 
@@ -3334,6 +3565,9 @@ msgstr "results per page, 1-%(massimo)d (default %(predefinito)d)"
 
 msgid "riuscita"
 msgstr "successful"
+
+msgid "riuso consentito citando la fonte"
+msgstr "reuse allowed with credit"
 
 #, python-format
 msgid ""
@@ -3352,6 +3586,9 @@ msgstr "separator: %(nome)s"
 
 msgid "sintesi dei cinque rischi: 100 = tutti trascurabili, 0 = tutti alti."
 msgstr "summary of the five risks: 100 = all negligible, 0 = all high."
+
+msgid "solo peso"
+msgstr "weight only"
 
 msgid "sì"
 msgstr "yes"
@@ -3415,7 +3652,27 @@ msgstr ""
 msgid "«%(nome)s» è già nel confronto."
 msgstr "“%(nome)s” is already in the comparison."
 
+msgid ""
+"«Al pasto» aggiunge gli ingredienti crudi per le porzioni scelte, e nella"
+" pagina del pasto i rischi si pesano sulle Kcal di ciascun ingrediente, "
+"come per ogni pasto (le quantità sotto 1 g, come le erbe, salgono a 1 g)."
+" Il semaforo del piatto in tabella valuta invece il piatto intero, per "
+"100 g e per porzione, con le stesse regole degli altri alimenti: come per"
+" le ricette del CREA, la carne rossa o lavorata conta nel rischio "
+"tumorale del singolo ingrediente, non del piatto che la contiene."
+msgstr ""
+"“To meal” adds the raw ingredients for the chosen servings, and on the "
+"meal page the risks are weighted by the kcal of each ingredient, as for "
+"any meal (amounts under 1 g, such as herbs, go up to 1 g). The traffic "
+"light of the dish in the table instead rates the whole dish, per 100 g "
+"and per serving, with the same rules as the other foods: as for CREA "
+"recipes, red or processed meat counts in the cancer risk of the "
+"ingredient itself, not of the dish that contains it."
+
 #, python-format
 msgid "➕ Aggiungi al pasto (%(grammi)s g)"
 msgstr "➕ Add to meal (%(grammi)s g)"
+
+msgid "➕ Aggiungi gli ingredienti al pasto"
+msgstr "➕ Add the ingredients to the meal"
 

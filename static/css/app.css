@@ -294,6 +294,19 @@ pre {
     opacity: 0.92;
 }
 
+/* Link sul verde dell'intestazione: bianchi e sottolineati */
+.page-header a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+
+.page-header a:hover,
+.page-header a:focus-visible {
+    color: inherit;
+    text-decoration-thickness: 2px;
+}
+
 .table-card,
 .grafico-card {
     border: 0;
@@ -2269,4 +2282,127 @@ html.js .barra-confronto:not(.attiva) {
 .scheda-indicatori .badge-risk {
     white-space: normal;
     max-width: 100%;
+}
+
+/* ---------------------------------------------------------------
+   Pasti pronti: elenco per portata e ingredienti nella scheda
+   --------------------------------------------------------------- */
+.filtro-portate {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.filtro-portate .conteggio {
+    font-weight: 400;
+    opacity: 0.8;
+    margin-left: 0.15rem;
+}
+
+.ordina-pasti {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ordina-pasti .form-select {
+    width: auto;
+}
+
+.lista-pasti {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.pasto-pronto {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    padding: 0.85rem 0;
+    border-top: 1px solid var(--bordo);
+}
+
+.pasto-pronto:first-child {
+    border-top: 0;
+    padding-top: 0.25rem;
+}
+
+.pasto-pronto-testo {
+    flex: 1 1 22rem;
+    min-width: 0;
+}
+
+.pasto-pronto-nome {
+    font-weight: 600;
+}
+
+.pasto-pronto-dati {
+    font-size: 0.85rem;
+    color: var(--testo-tenue);
+}
+
+.pasto-pronto-rischi {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.5rem;
+}
+
+.pasto-pronto-azione {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: none;
+}
+
+.pasto-pronto-azione .form-select {
+    width: auto;
+}
+
+.ricetta-pasto {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--bordo);
+    border-radius: 0.75rem;
+    background: var(--superficie-2);
+}
+
+.ricetta-pasto-titolo {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.ricetta-pasto-ingredienti {
+    list-style: none;
+    margin: 0 0 0.5rem;
+    padding: 0;
+    font-size: 0.9rem;
+}
+
+.ricetta-pasto-ingredienti li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.2rem 0;
+    border-bottom: 1px dotted var(--bordo);
+}
+
+.ricetta-pasto-grammi {
+    flex: none;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+    .pasto-pronto-azione {
+        width: 100%;
+    }
+
+    .pasto-pronto-azione .btn {
+        flex: 1 1 auto;
+    }
 }

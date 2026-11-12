@@ -148,7 +148,7 @@ def test_home_paginata(client):
     assert 'class="pagination-wrapper' not in tutte
 
     oltre = client.get("/?pagina=999&per_pagina=100").data.decode()
-    assert "aria-current=\"page\">9<" in oltre        # 900 alimenti: si mostra l'ultima pagina
+    assert "aria-current=\"page\">10<" in oltre       # 1000 alimenti: si mostra l'ultima pagina
 
 
 def test_home_ricerca_per_pertinenza(client):

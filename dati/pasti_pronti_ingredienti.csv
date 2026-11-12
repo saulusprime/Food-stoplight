@@ -1,0 +1,799 @@
+codice,ingrediente,codice_crea,grammi,resa,nota
+acciughe-alle-olive,"acciughe sotto sale, 100 g",120030,100,1,
+acciughe-alle-olive,"aglio, ½ spicchio",005000,2,1,½ spicchio × 4 g
+acciughe-alle-olive,"cipolla, 1 fettina",005300,10,1,1 fettina: stima 10 g
+acciughe-alle-olive,"prezzemolo tritato, 1 cucchiaio",006840,4,1,1 cucchiaio tritato: stima 4 g
+acciughe-alle-olive,"olive piccanti al peperoncino, 5",008800,15,1,5 olive piccole snocciolate × 3 g
+acciughe-alle-olive,"pane sciapo tagliato fino, 2 fette",000530,40,1,2 fette sottili senza crosta × 20 g; pane sciapo: pane bianco
+acciughe-alle-olive,"aceto, 2 cucchiai",,30,1,2 cucchiai × 15 g; aceto assente nel CREA: solo peso
+acciughe-alle-olive,"olio, 4 cucchiai",009210,40,1,4 cucchiai × 10 g; olio: extravergine di oliva
+acciughe-alle-olive,"peperoncino secco tritato, 1/4 cucchiaino",,,1,
+acciughe-alle-olive,pepe,,,1,
+arancini-siciliani,"riso per timballi, 250 gr",000100,250,3.3,
+arancini-siciliani,"tuorli di uovo, 3",183010,45,1,3 tuorli × 15 g
+arancini-siciliani,"zafferano, 1 bustina",,,1,
+arancini-siciliani,"burro, 30 gr",190010,30,1,
+arancini-siciliani,"parmigiano grattugiato, 100 gr",166000,100,1,
+arancini-siciliani,"sale, q.b.",,,1,
+arancini-siciliani,"carne macinata di bovino, 150 gr",101120,150,0.7,"macinato: bovino adulto, tagli anteriori"
+arancini-siciliani,"cipolla, 1/2",005300,40,0.8,1/2 cipolla × 80 g
+arancini-siciliani,"burro, 25 gr",190010,25,1,
+arancini-siciliani,"olio di oliva, 2 cucchiai da minestra",009200,20,1,2 cucchiai × 10 g
+arancini-siciliani,"piselli, 100 gr",004700,100,0.8,
+arancini-siciliani,"formaggio tipo caciocavallo o scamorza, 100 gr",160800,100,1,
+arancini-siciliani,"concentrato di pomodoro (oppure un pomodoro pelato), 2 cucchiai da minestra",006660,30,1,2 cucchiai × 15 g
+arancini-siciliani,"vino rosso, 100 ml",405020,100,0.5,
+arancini-siciliani,"sale, q.b.",,,1,
+arancini-siciliani,"pepe, q.b.",,,1,
+arancini-siciliani,"uova, 2",181100,100,1,2 uova × 50 g
+arancini-siciliani,"pangrattato, q.b.",000570,50,1,q.b.: 5 g a porzione
+arancini-siciliani,olio per friggere,009610,114,1,assorbito: 10% del peso crudo degli arancini (1140 g); olio non specificato: arachide
+bruschette-con-peperoni-arrosto-e-olive,"pane casereccio, 4 fette grandi",000530,200,1,4 fette grandi × 50 g
+bruschette-con-peperoni-arrosto-e-olive,"peperoni, 2",005600,400,0.7,2 peperoni × 200 g
+bruschette-con-peperoni-arrosto-e-olive,"olive nere, 20",008810,60,1,20 olive × 3 g netti (senza nocciolo)
+bruschette-con-peperoni-arrosto-e-olive,"aglio, 2 spicchi",005000,8,1,2 spicchi × 4 g
+bruschette-con-peperoni-arrosto-e-olive,"aceto balsamico, 1 cucchiaino",007420,5,1,1 cucchiaino = 5 g; aceto balsamico assente nel CREA: succo d'uva (zuccheri simili)
+bruschette-con-peperoni-arrosto-e-olive,"olio extravergine di oliva, q.b.",009210,40,1,q.b.: 10 g a porzione
+bruschette-con-peperoni-arrosto-e-olive,"sale, q.b.",,,1,
+bruschette-con-peperoni-arrosto-e-olive,"pepe, q.b.",,,1,
+caviale-di-melanzane,"melanzana grossa, 1",005500,400,0.7,1 melanzana grossa: stima 400 g; cotta al forno
+caviale-di-melanzane,"cipolla tritata, 1",005300,80,0.8,1 cipolla × 80 g
+caviale-di-melanzane,"olio d'oliva, 4 cucchiai",009200,40,1,4 cucchiai × 10 g
+caviale-di-melanzane,"polpa di pomodoro passata, 4 cucchiai",006670,60,0.7,4 cucchiai × 15 g
+caviale-di-melanzane,"succo di limone, 1 cucchiaio",008040,15,1,1 cucchiaio × 15 g
+caviale-di-melanzane,"sale e pepe, q.b.",,,1,
+caviale-di-melanzane,"limone, 1",008040,30,1,servito a fette: succo 30 g
+cozze-alla-tarantina,"cozze, 1,5 kg",127120,375,0.8,parte edibile 25% del peso con guscio
+cozze-alla-tarantina,"polpa di pomodoro, 700 gr",006680,700,0.7,polpa di pomodoro: pelati in scatola
+cozze-alla-tarantina,"aglio, 2 spicchi",005000,8,0.8,2 spicchi × 4 g
+cozze-alla-tarantina,"vino bianco, 100 ml",405010,100,0.5,
+cozze-alla-tarantina,"peperoncino rosso piccante, qb",,,1,
+cozze-alla-tarantina,"prezzemolo fresco tritato, qb",,,1,
+cozze-alla-tarantina,"sale e pepe, qb",,,1,
+cozze-alla-tarantina,"pane casareccio tostato o crostini, qb",000530,180,1,q.b.: 1 fetta (30 g) a porzione
+crostini-con-i-fegatini,"fegatini di pollo, 400 g.",115360,400,0.7,
+crostini-con-i-fegatini,"cipolla, 1",005300,80,0.8,1 cipolla = 80 g
+crostini-con-i-fegatini,"capperi sotto sale, 1 manciata",,,1,capperi assenti nel CREA: non conteggiati
+crostini-con-i-fegatini,"acciughe sotto sale, 1 o 2",120030,12,1,"1,5 acciughe × 8 g (2 filetti da 4 g)"
+crostini-con-i-fegatini,"burro, 40 g.",190010,40,1,
+crostini-con-i-fegatini,"carota, 1/2",005150,40,0.8,1/2 carota × 80 g
+crostini-con-i-fegatini,"sedano, 1/2 gambo",005680,20,0.8,1/2 costa × 40 g
+crostini-con-i-fegatini,"prezzemolo, qualche rametto",006840,6,1,3 rametti × 2 g
+crostini-con-i-fegatini,"olio extra vergine di oliva, q.b.",009210,60,1,q.b.: 10 g a porzione
+crostini-con-i-fegatini,"sale e pepe nero macinato o pestato al momento, q.b.",,,1,
+crostini-con-i-fegatini,"brodo preferibilmente di pollo, q.b.",,100,0.5,"brodo fatto in casa, solo peso; q.b.: 1 mestolo (100 g)"
+crostini-con-i-fegatini,"pane toscano, q.b.",000530,240,1,q.b.: 40 g a porzione; pane toscano: pane bianco
+farinata-di-ceci,"farina di ceci, 500 g",004000,500,1,farina di ceci assente nel CREA: ceci secchi
+farinata-di-ceci,"olio d'oliva extravergine, 2 dl",009210,184,1,200 ml × 0.92 g/ml
+farinata-di-ceci,"acqua, 1,5 l",,1500,0.5,solo peso; evapora in forno: resa 0.5
+farinata-di-ceci,"sale, 10 g",,,1,
+farinata-di-ceci,pepe nero,,,1,
+fiori-di-zucca-fritti-in-pastella,"fiori di zucca, 270 gr",005330,270,0.8,
+fiori-di-zucca-fritti-in-pastella,"acqua frizzante fredda, 275 ml",,275,0.5,"acqua della pastella, solo peso; evapora in frittura"
+fiori-di-zucca-fritti-in-pastella,"farina, 185 gr",000220,185,1,
+fiori-di-zucca-fritti-in-pastella,"sale, q.b.",,,1,
+fiori-di-zucca-fritti-in-pastella,"olio di semi, q.b.",009610,73,1,per friggere: assorbito 10% di fiori e pastella (730 g); olio di semi: arachide
+focaccia-con-le-cipolle,"farina bianca di grano tenero tipo 00, 1000 g",000220,1000,1,
+focaccia-con-le-cipolle,"lievito di birra fresco, 25 g",503100,25,1,
+focaccia-con-le-cipolle,"acqua, 6 dl",,600,0.5,solo peso; evapora in forno: resa 0.5; variante con vino non considerata
+focaccia-con-le-cipolle,"sale fino, 10 g",,,1,
+focaccia-con-le-cipolle,"sale grosso, 5 g",,,1,
+focaccia-con-le-cipolle,"olio extravergine d'oliva, 1 dl",009210,92,1,100 ml × 0.92 g/ml
+focaccia-con-le-cipolle,"cipolle dorate, 0,5 kg",005300,500,0.8,
+impepata-di-cozze,"cozze freschissime, 2 kg",127120,500,0.8,parte edibile 25% del peso con guscio
+impepata-di-cozze,"pepe nero macinato o pestato al momento, qb",,,1,
+impepata-di-cozze,"prezzemolo tritato (opzionale), un mazzetto",006840,20,1,1 mazzetto = 20 g
+impepata-di-cozze,"limone (opzionale), 1",008040,30,1,succo di 1 limone = 30 g
+impepata-di-cozze,"olio extra vergine di oliva, 1 filo da usare a crudo",009210,20,1,1 filo ≈ 20 g (5 g a porzione)
+insalata-caprese,"mozzarella di Bufala Campana, 500 gr",164811,500,1,
+insalata-caprese,"pomodori fiascone maturi, 2",006610,400,1,pomodoro fiascone (grande) ≈ 200 g × 2
+insalata-caprese,"basilico genovese DOP, 1 mazzetto",006800,20,1,1 mazzetto ≈ 20 g
+insalata-caprese,"olio evo, qb",009210,40,1,q.b.: 10 g a porzione
+insalata-caprese,"sale, qb",,,1,
+insalata-caprese,"origano, qb",,,1,
+insalata-di-mare,"polpo, 1 kg",127150,800,0.8,parte edibile 80% (intero da pulire)
+insalata-di-mare,"seppie e/o calamari, 500 gr",127160,400,0.8,parte edibile 80% (interi da pulire); calcolate come seppie
+insalata-di-mare,"gamberi, 300 gr",128100,150,0.8,parte edibile 50% (interi)
+insalata-di-mare,"cozze, 1 kg",127120,250,0.8,parte edibile 25% del peso con guscio
+insalata-di-mare,"olive taggiasche, 200 gr",008810,200,1,olive taggiasche: olive nere
+insalata-di-mare,"prezzemolo, 1 mazzetto",006840,20,1,1 mazzetto = 20 g
+insalata-di-mare,"limoni, 1",008040,30,1,succo di 1 limone = 30 g
+insalata-di-mare,"olio d'oliva extra vergine, qb",009210,80,1,q.b.: 10 g a porzione
+insalata-di-mare,"sale e pepe nero, qb",,,1,
+insalata-di-mare,"aglio, 1 spicchio (facoltativo)",005000,4,1,1 spicchio = 4 g
+insalata-di-polpo,"polpo, 1 kg",127150,800,0.8,parte edibile 80% (intero da pulire)
+insalata-di-polpo,"sedano, 1 costa",005680,40,1,1 costa = 40 g
+insalata-di-polpo,"carota, 1",005150,80,1,1 carota = 80 g
+insalata-di-polpo,"cipolla, 1 piccola",005300,50,1,1 cipolla piccola = 50 g
+insalata-di-polpo,"prezzemolo, 1 ciuffo",006840,10,1,1 ciuffo ≈ 10 g
+insalata-di-polpo,"olio extra vergine d'oliva, qb",009210,40,1,q.b.: 10 g a porzione
+insalata-di-polpo,"aglio, 1 spicchio",005000,4,1,1 spicchio = 4 g
+insalata-di-polpo,"pepe nero, qb",,,1,
+insalata-di-polpo,"succo di limone, qb",008040,20,1,q.b.: 5 g a porzione
+insalata-di-polpo,"sale, qb",,,1,
+involtini-di-melanzane,"melanzane, 2 grandi",005500,800,0.8,melanzana grande ≈ 400 g
+involtini-di-melanzane,"mozzarella, 250 gr",164820,250,1,
+involtini-di-melanzane,"ricotta, 200 gr",166820,200,1,ricotta di vacca
+involtini-di-melanzane,"basilico, 70 gr circa",006800,70,1,
+involtini-di-melanzane,"prosciutto cotto, 130 gr",110400,130,1,
+involtini-di-melanzane,"formaggio grattugiato, 50 gr",162410,50,1,formaggio grattugiato generico: Grana Padano
+involtini-di-melanzane,"aglio, 1 spicchio",005000,4,0.8,1 spicchio = 4 g
+involtini-di-melanzane,"olio di oliva extravergine, 3 cucchiai",009210,30,1,3 cucchiai × 10 g
+involtini-di-melanzane,"passata di pomodoro, 1 litro",006670,1000,0.7,1 l = 1000 g
+involtini-di-melanzane,"sale, q.b.",,,1,
+involtini-di-melanzane,"pepe, q.b.",,,1,
+panzanella,"pane toscano raffermo, 400 gr",000530,400,1,pane toscano: pane bianco
+panzanella,"pomodori maturi, 500 gr",006610,500,1,
+panzanella,"cipolla rossa, 1",005300,80,1,1 cipolla = 80 g
+panzanella,"cetriolo, 1",005220,200,1,1 cetriolo ≈ 200 g netti
+panzanella,"basilico, un mazzetto",006800,20,1,1 mazzetto ≈ 20 g
+panzanella,"olio extravergine d'oliva, q.b.",009210,40,1,q.b.: 10 g a porzione
+panzanella,"sale e pepe, q.b.",,,1,
+panzanella,"aceto di vino bianco, q.b.",,20,1,q.b.: 5 g a porzione; aceto assente nel CREA: solo peso (nutrienti trascurabili)
+polpette-di-melanzane,"melanzane, 1 kg",005500,1000,0.8,
+polpette-di-melanzane,"uova, 2",181100,100,1,2 uova × 50 g
+polpette-di-melanzane,"aglio, 1 spicchio",005000,4,0.8,1 spicchio = 4 g
+polpette-di-melanzane,"parmigiano reggiano grattugiato, 120 gr",166000,120,1,
+polpette-di-melanzane,"prezzemolo, 1 ciuffo",006840,10,1,1 ciuffo ≈ 10 g
+polpette-di-melanzane,"sale, q.b.",,,1,
+polpette-di-melanzane,"pepe, q.b.",,,1,
+polpette-di-melanzane,"olio di arachidi, 1 litro",009610,125.4,1,per friggere: assorbito 10% del peso crudo delle polpette (1254 g)
+polpette-di-melanzane,"pangrattato, q.b.",000570,20,1,q.b.: 5 g a porzione
+scapece-gallipolina,"pesce misto (boghe, vopilli), 800 g",120400,480,0.8,pesce intero: parte edibile 60% di 800 g; pesce misto: boga
+scapece-gallipolina,"olio da frittura, 1 l",009610,80,1,solo l'assorbito: 10% di 800 g di pesce fritto; olio non specificato: arachide
+scapece-gallipolina,"aceto, 1 l",,1000,1,aceto assente nel CREA: solo peso
+scapece-gallipolina,"pane, 1 kg",000530,700,1,si usa solo la mollica: stimata 70% di 1 kg
+scapece-gallipolina,"zafferano, 3 bustine",,,1,
+scapece-gallipolina,"sale, q.b.",,,1,
+scapece-gallipolina,"farina, q.b.",000220,75,1,q.b. per infarinare: 5 g a porzione
+sfincione,"farina, 500 g",000220,500,1,farina non specificata: tipo 00
+sfincione,"zucchero, 1 cucchiaio",201500,12,1,1 cucchiaio × 12 g
+sfincione,"lievito, 10 g",503100,10,1,lievito di birra
+sfincione,"pomodori, 200 g",006610,200,0.7,
+sfincione,"cipolle, 100 g",005300,100,0.8,
+sfincione,"concentrato di pomodoro, 50 g",006660,50,1,
+sfincione,"pane grattugiato, 50 g",000570,50,1,
+sfincione,"formaggio fresco primosale, 200 g",160860,200,1,primosale assente nel CREA: caciottina fresca
+sfincione,"alici sotto sale, 50 g",120030,50,1,
+sfincione,"succo di limone, mezzo limone",008040,15,1,½ limone: succo 15 g
+sfincione,"sale, q.b.",,,1,
+sfincione,"pepe, q.b.",,,1,
+sfincione,"pecorino grattugiato, q.b.",166060,30,1,q.b.: 5 g a porzione; pecorino romano
+sfincione,"origano, a piacere",,,1,
+sfincione,"olio di oliva, 9 cucchiai (nel procedimento)",009200,90,1,"nel procedimento: 2 cucchiai per le cipolle, 4 nell'impasto, 3 per la teglia, × 10 g"
+suppli-al-telefono,"riso, 300 gr",000100,300,1,cotto nella passata (liquido indicato)
+suppli-al-telefono,"mozzarella, 500 gr",164820,500,1,
+suppli-al-telefono,"passata di pomodoro, 1,4 litri",006670,1400,0.7,"1,4 l = 1400 g"
+suppli-al-telefono,"cipolla, 1",005300,80,0.8,1 cipolla = 80 g
+suppli-al-telefono,"basilico, 30 gr",006800,30,1,
+suppli-al-telefono,"olio extravergine di oliva, 3 cucchiai",009210,30,1,3 cucchiai × 10 g
+suppli-al-telefono,"farina, 150 gr",000220,150,1,
+suppli-al-telefono,"pangrattato, 150 gr",000570,150,1,
+suppli-al-telefono,"uova, 3",181100,150,1,3 uova × 50 g
+suppli-al-telefono,"olio per friggere, 200 ml",009610,184,1,"assorbito: il 10% del peso crudo (2,8 kg) supera l'olio indicato, contati 200 ml × 0,92; olio non specificato: arachide"
+suppli-al-telefono,"sale, q.b.",,,1,
+torta-pasqualina,"farina, 600 gr",000220,600,1,
+torta-pasqualina,"acqua, 350 ml",,350,1,"acqua dell'impasto, solo peso"
+torta-pasqualina,"bietole, 1,2 kg",005080,1200,0.8,
+torta-pasqualina,"quagliata (o ricotta), 500 gr",166820,500,1,quagliata assente nel CREA: ricotta di vacca
+torta-pasqualina,"parmigiano grattugiato, 150 gr",166000,150,1,
+torta-pasqualina,"panna liquida, 100 ml",140300,100,1,panna fresca liquida: panna 35%
+torta-pasqualina,"uova, 4",181100,200,0.85,4 uova × 50 g
+torta-pasqualina,"maggiorana fresca, qb",,,1,
+torta-pasqualina,"aglio, 1 spicchio",005000,4,0.8,1 spicchio = 4 g
+torta-pasqualina,"burro, 1 noce",190010,10,1,1 noce = 10 g
+torta-pasqualina,"olio d'oliva extra vergine, 35 gr + quello per ungere",009210,35,1,olio per ungere non contato
+torta-pasqualina,"sale, qb",,,1,
+bigoli-alle-noci-alla-veneta,"bigoli, 400 g",000800,400,1.95,bigoli: pasta di semola (tipo non indicato)
+bigoli-alle-noci-alla-veneta,"gherigli di noci, 70 g",008570,70,1,
+bigoli-alle-noci-alla-veneta,"burro, 20 g",190010,20,1,
+bigoli-alle-noci-alla-veneta,"pangrattato, 2 cucchiai",000570,12,1,2 cucchiai × 6 g
+bigoli-alle-noci-alla-veneta,"zucchero, 1 pizzico",,,1,pizzico: non conteggiato
+bigoli-alle-noci-alla-veneta,"cannella in polvere, 1 pizzico",,,1,spezia: non conteggiata
+bigoli-alle-noci-alla-veneta,"noce moscata, 1 pizzico",,,1,spezia: non conteggiata
+bigoli-alle-noci-alla-veneta,"olio, q.b.",009210,40,1,q.b.: 10 g a porzione; olio non specificato: extravergine
+bigoli-alle-noci-alla-veneta,"sale e pepe, q.b.",,,1,
+crema-di-zucchine,"zucchine, 1 kg",005730,1000,1,
+crema-di-zucchine,"patate, 1/2 kg",006500,500,1,
+crema-di-zucchine,"cipolla, 1",005300,80,1,1 cipolla = 80 g
+crema-di-zucchine,"brodo (o 2 dadi in 1 l di acqua), 1 l",,1000,0.5,brodo: solo peso; alternativa con dadi non conteggiata
+crema-di-zucchine,"basilico, foglie",,,1,erba fresca senza quantità: non conteggiata
+crema-di-zucchine,"burro, una noce",190010,10,1,1 noce = 10 g
+crema-di-zucchine,"panna (facoltativa), 1/4 di l",140400,250,1,facoltativa: conteggiata; 250 ml = 250 g; panna da cucina
+fileja-e-nduja-piccante,"fileja, 500 g",000800,500,1.95,fileja secchi: pasta di semola
+fileja-e-nduja-piccante,"'nduja, 250 g",110720,250,1,'nduja assente nel CREA: salsiccia di suino secca (grassi simili)
+fileja-e-nduja-piccante,"salsa di pomodoro, 400 g",006670,400,0.7,salsa di pomodoro: passata
+fileja-e-nduja-piccante,"cipolla rossa di Tropea, 1",005300,80,0.8,1 cipolla = 80 g
+fileja-e-nduja-piccante,"olio extravergine di oliva, 50 g",009210,50,1,
+fileja-e-nduja-piccante,"sale, quanto basta",,,1,
+fusilli-ai-broccoli-e-ricotta,"pasta corta formato fusilli, 400 gr",000800,400,1.95,
+fusilli-ai-broccoli-e-ricotta,"broccolo, 1 grande",005180,400,0.8,1 broccolo grande ≈ 400 g mondato (stima)
+fusilli-ai-broccoli-e-ricotta,"cipolla rossa, 1",005300,80,0.8,1 cipolla × 80 g
+fusilli-ai-broccoli-e-ricotta,"ricotta di mucca, 250 gr",166820,250,1,
+fusilli-ai-broccoli-e-ricotta,"aglio, 1 spicchio",005000,4,0.8,1 spicchio × 4 g
+fusilli-ai-broccoli-e-ricotta,"sale, q.b.",,,1,
+fusilli-ai-broccoli-e-ricotta,"pepe nero, q.b.",,,1,
+fusilli-ai-broccoli-e-ricotta,"brodo vegetale, 400 ml",,400,0.5,400 ml = 400 g; solo peso
+fusilli-ai-broccoli-e-ricotta,"olio extravergine di oliva, 2 cucchiai",009210,20,1,2 cucchiai × 10 g
+fusilli-alla-partenopea,"fusilli, 500 g",000800,500,1.95,
+fusilli-alla-partenopea,"pomodori pelati, 500 g",006680,500,1,
+fusilli-alla-partenopea,"olio, 100 g",009210,100,1,olio non specificato: extravergine
+fusilli-alla-partenopea,"mozzarella, 120 g",164820,120,1,
+fusilli-alla-partenopea,"pecorino, 50 g",166060,50,1,pecorino romano
+fusilli-alla-partenopea,"sale, pepe e origano, q.b.",,,1,
+gnocchetti-di-ricotta,"ricotta, 250 g",166820,250,1,ricotta di vacca
+gnocchetti-di-ricotta,"parmigiano grattugiato, 100 g",166000,100,1,
+gnocchetti-di-ricotta,"farina, 4 cucchiai",000220,40,1,4 cucchiai × 10 g; farina tipo 00
+linguine-al-ragu-di-gianchetti,"linguine, 400 g",000800,400,1.95,
+linguine-al-ragu-di-gianchetti,"gianchetti freschissimi, 500 g",120010,500,0.8,gianchetti (novellame di acciuga e sardina) assenti nel CREA: acciuga
+linguine-al-ragu-di-gianchetti,"pomodori da sugo maturi, 1 kg",006610,1000,0.7,
+linguine-al-ragu-di-gianchetti,"cipolla, 1",005300,80,0.8,1 cipolla = 80 g
+linguine-al-ragu-di-gianchetti,"basilico tritato, 1 manciata",006800,10,1,"1 manciata ≈ 25 foglie × 0,4 g"
+linguine-al-ragu-di-gianchetti,olio extravergine di oliva,009210,40,1,quantità non indicata: q.b. 10 g a porzione
+linguine-al-ragu-di-gianchetti,"sale, q.b.",,,1,
+orecchiette-con-cime-di-rapa,"orecchiette pugliesi (preferibilmente fresche), 400 gr",000800,320,1.95,"fresche: 400 g × 0,8 = pasta di semola secca equivalente"
+orecchiette-con-cime-di-rapa,"cime di rapa, 1 kg",005090,600,1,da mondare: parte edibile stimata 60% di 1 kg; bollite con la pasta
+orecchiette-con-cime-di-rapa,"olio extravergine di oliva, 5 cucchiai",009210,50,1,5 cucchiai × 10 g
+orecchiette-con-cime-di-rapa,"acciughe sott'olio, 6",120020,24,0.8,6 filetti × 4 g
+orecchiette-con-cime-di-rapa,"aglio, 1 spicchio",005000,4,0.8,1 spicchio × 4 g
+orecchiette-con-cime-di-rapa,"sale, q.b.",,,1,
+passatelli-in-brodo,"formaggio parmigiano grattugiato, 200 g",166000,200,1,
+passatelli-in-brodo,"pane secco grattugiato, 200 g",000570,200,1,
+passatelli-in-brodo,"uova, 4",181100,200,1,4 uova × 50 g
+passatelli-in-brodo,"noce moscata, 1 pizzico abbondante",,,1,spezia: non conteggiata
+passatelli-in-brodo,"sale, q.b.",,,1,
+passatelli-in-brodo,brodo per la cottura (nel procedimento),,1000,1,q.b.: 250 g a porzione; brodo: solo peso
+passatelli-in-brodo,parmigiano per servire (nel procedimento),166000,20,1,q.b.: 5 g a porzione
+pasta-all-amatriciana,"bucatini, 400 gr",000800,400,1.95,
+pasta-all-amatriciana,"pomodori pelati, 300 gr",006680,300,0.7,
+pasta-all-amatriciana,"guanciale, 200 gr",110310,200,0.75,guanciale assente nel CREA: pancetta tesa
+pasta-all-amatriciana,"vino bianco, q.b.",,,1,q.b.: non conteggiato (sfumato)
+pasta-all-amatriciana,"sale, q.b.",,,1,
+pasta-all-amatriciana,"pecorino romano, q.b.",166060,20,1,q.b.: 5 g a porzione
+pasta-alla-gricia,"spaghetti o bucatini, 360 gr",000800,360,1.95,
+pasta-alla-gricia,"guanciale, 250 gr",110310,250,0.75,guanciale assente nel CREA: pancetta tesa
+pasta-alla-gricia,"pecorino romano grattugiato, q.b.",166060,20,1,q.b.: 5 g a porzione
+pasta-alla-gricia,"pepe nero macinato, q.b.",,,1,
+pasta-alla-gricia,"sale, q.b.",,,1,
+pasta-alla-norma,"spaghetti, 500 gr",000800,500,1.95,
+pasta-alla-norma,"melanzane, 500 gr",005500,500,0.8,fritte
+pasta-alla-norma,"ricotta infornata, 80 gr",160810,80,1,ricotta infornata assente nel CREA: cacioricotta (ricotta stagionata)
+pasta-alla-norma,"pomodoro, 450 gr",006610,450,0.7,
+pasta-alla-norma,"cipolla, 1",005300,80,0.8,1 cipolla = 80 g
+pasta-alla-norma,"olio extravergine di oliva, 50 gr",009210,50,1,unico olio per frittura e sugo: conteggiato tutto (pari al 10% delle melanzane)
+pasta-alla-norma,"basilico, a piacere",,,1,erba fresca senza quantità: non conteggiata
+pasta-alla-norma,sale e pepe,,,1,
+pasta-alle-vongole,"spaghetti, 350 gr",000800,350,1.95,
+pasta-alle-vongole,"vongole, 1 kg",127170,200,0.8,parte edibile 20% di 1 kg con guscio
+pasta-alle-vongole,"vino bianco secco, mezzo bicchiere",405010,75,0.5,mezzo bicchiere = 75 ml = 75 g
+pasta-alle-vongole,"aglio, uno spicchio",005000,4,0.8,1 spicchio × 4 g
+pasta-alle-vongole,"peperoncino, q.b.",,,1,
+pasta-alle-vongole,"olio extravergine di oliva, q.b.",009210,40,1,q.b.: 10 g a porzione
+pasta-alle-vongole,"prezzemolo, 1 mazzetto",006840,20,1,1 mazzetto = 20 g
+pasta-alle-vongole,"sale, q.b.",,,1,
+pasta-cacio-e-pepe,"spaghetti, 400 gr",000800,400,1.95,
+pasta-cacio-e-pepe,"pecorino romano grattugiato, 300 gr",166060,300,1,
+pasta-cacio-e-pepe,"pepe nero, 6 grani",,,1,
+pasta-cacio-e-pepe,"sale, q.b.",,,1,
+pasta-e-cucozza,"zucca, 500 g",005720,500,1,
+pasta-e-cucozza,"pasta mista o tubettoni, 350 g",000800,350,1.95,cotta nell'acqua della zucca (non elencata)
+pasta-e-cucozza,"aglio, 2 spicchi",005000,8,0.8,2 spicchi × 4 g
+pasta-e-cucozza,prezzemolo,,,1,erba fresca senza quantità: non conteggiata
+pasta-e-cucozza,"olio extravergine di oliva, 4 cucchiai",009210,40,1,4 cucchiai × 10 g
+pasta-e-cucozza,"peperoncino, q.b.",,,1,
+pasta-e-cucozza,"pepe, q.b.",,,1,
+pasta-e-cucozza,"sale, q.b.",,,1,
+pasta-e-fagioli,"fagioli borlotti secchi, 3 hg",004120,300,2.9,3 hg = 300 g
+pasta-e-fagioli,"sedano, 1 foglia",005680,10,1,1 foglia (cima con foglie) stimata 10 g
+pasta-e-fagioli,"carota, 1",005150,80,1,1 carota = 80 g
+pasta-e-fagioli,"pomodoro rosso, 1",006610,120,1,1 pomodoro = 120 g
+pasta-e-fagioli,"salsiccia, 1",110710,100,0.7,1 salsiccia stimata 100 g
+pasta-e-fagioli,"pancetta fresca pepata, 1 hg",110320,100,0.7,pancetta fresca pepata: pancetta arrotolata (grassi simili); 1 hg = 100 g
+pasta-e-fagioli,"pasta corta (ditalini o spaghetti spezzati), 1 hg o più",000800,100,1.95,1 hg = 100 g; cotta nell'acqua della minestra (non elencata)
+pasta-e-fagioli,"aceto di vino rosso, ½ bicchiere",,75,0.5,aceto assente nel CREA: solo peso (apporto trascurabile); ½ bicchiere = 75 g
+penne-all-arrabbiata,"penne rigate, 400 gr",000800,400,1.95,
+penne-all-arrabbiata,"polpa di pomodoro a cubetti, 500 gr",006680,500,0.7,polpa di pomodoro: pelati in scatola
+penne-all-arrabbiata,"olio d'oliva extravergine, 4 cucchiai",009210,40,1,4 cucchiai × 10 g
+penne-all-arrabbiata,"peperoncini freschi, 2 grandi",,,1,peperoncino: non conteggiato
+penne-all-arrabbiata,"spicchi di aglio, 2",005000,8,0.8,2 spicchi × 4 g
+penne-all-arrabbiata,"prezzemolo tritato, 1 manciata",006840,10,1,1 manciata ≈ 10 g
+penne-all-arrabbiata,"pecorino romano, 100 gr",166060,100,1,
+penne-all-arrabbiata,"sale, q.b.",,,1,
+ribollita,"fagioli toscanelli o borlotti, 300 gr",004120,300,2.9,fagioli secchi messi a bagno: borlotti secchi
+ribollita,"cavolo nero, 500 gr",005090,500,1,"cavolo nero assente nel CREA: broccoletti di rapa (crucifera a foglia, valori simili)"
+ribollita,"cavolo verza, 200 gr",005210,200,1,
+ribollita,"patate, 2",006500,300,1,2 patate × 150 g
+ribollita,"carote, 2",005150,160,1,2 carote × 80 g
+ribollita,"zucchine, 2",005730,300,1,2 zucchine × 150 g
+ribollita,"sedano, 2 costole",005680,80,1,2 coste × 40 g
+ribollita,"pomodori pelati, 2",006680,120,1,2 pelati × 60 g (stima)
+ribollita,"porro, 1",005650,120,1,1 porro mondato stimato 120 g
+ribollita,"bietola, 1 mazzetto",005080,250,1,1 mazzetto mondato stimato 250 g
+ribollita,"cipolla, 1",005300,80,1,1 cipolla = 80 g
+ribollita,"pane toscano raffermo (senza sale), 250 gr",000530,250,1,pane toscano sciocco: pane bianco (che contiene sale)
+ribollita,"olio extravergine d'oliva, q.b.",009210,40,1,q.b.: 10 g a porzione
+ribollita,sale e pepe,,,1,
+riso-in-cagnone,"riso, gr. 500",000100,500,3.3,
+riso-in-cagnone,"burro, 100 gr",190010,100,1,
+riso-in-cagnone,"aglio, 1 spicchio",005000,4,0.8,1 spicchio × 4 g
+riso-in-cagnone,"salvia, 6 foglie",006860,3,1,"6 foglie × 0,5 g"
+riso-in-cagnone,parmigiano,166000,25,1,quantità non indicata: q.b. 5 g a porzione
+riso-patate-e-cozze,"riso, 400 gr",000100,400,3.3,cotto in forno nell'acqua (non elencata)
+riso-patate-e-cozze,"cozze, 1 kg",127120,250,0.8,parte edibile 25% del peso con guscio
+riso-patate-e-cozze,"patate, 1 kg",006500,1000,0.75,al forno
+riso-patate-e-cozze,pomodoro pelato,006680,200,0.7,quantità non indicata: stimati 200 g (mezza scatola)
+riso-patate-e-cozze,"aglio, 1 spicchio",005000,4,0.8,1 spicchio × 4 g
+riso-patate-e-cozze,"cipolla, 1",005300,80,0.8,1 cipolla = 80 g
+riso-patate-e-cozze,"zucchina, 1",005730,150,0.8,1 zucchina = 150 g
+riso-patate-e-cozze,"prezzemolo, 1 mazzetto",006840,20,1,1 mazzetto = 20 g
+riso-patate-e-cozze,"olio extravergine d'oliva, q.b.",009210,40,1,q.b.: 10 g a porzione
+riso-patate-e-cozze,"sale e pepe, q.b.",,,1,
+risotto-ai-funghi-porcini,"riso Carnaroli, 320 gr",000100,320,1,risotto: liquido elencato
+risotto-ai-funghi-porcini,"funghi porcini freschi, 400 gr",006030,400,0.8,
+risotto-ai-funghi-porcini,"formaggio parmigiano grattugiato, 100 gr",166000,100,1,
+risotto-ai-funghi-porcini,"scalogno (o cipolla), 1",005300,25,0.8,1 scalogno × 25 g; scalogno assente nel CREA: cipolla
+risotto-ai-funghi-porcini,"burro, 40 gr",190010,40,1,
+risotto-ai-funghi-porcini,"olio d'oliva extra vergine, 3 cucchiai",009210,30,1,3 cucchiai × 10 g
+risotto-ai-funghi-porcini,"prezzemolo tritato, un ciuffo",006840,10,1,1 ciuffo ≈ 10 g
+risotto-ai-funghi-porcini,"brodo vegetale bollente, 1,2 litri",,1200,0.5,"1,2 l = 1200 g; solo peso"
+risotto-ai-funghi-porcini,"pepe nero e sale, q.b.",,,1,
+risotto-ai-funghi-porcini,"vino bianco, 50 ml",405010,50,0.5,50 ml = 50 g
+risotto-alla-milanese-vegetariano,"riso Carnaroli, 320/350 g",000100,335,1,media di 320 e 350 g
+risotto-alla-milanese-vegetariano,"brodo di verdure, q.b.",,1000,0.5,q.b.: 250 g a porzione; solo peso
+risotto-alla-milanese-vegetariano,"parmigiano reggiano grattugiato, 60 g",166000,60,1,
+risotto-alla-milanese-vegetariano,"caciotta di pecorino fresco, 30 g",160830,30,1,caciotta di pecora
+risotto-alla-milanese-vegetariano,"cipolla, 1",005300,80,0.8,1 cipolla = 80 g
+risotto-alla-milanese-vegetariano,"olio di oliva extravergine, 4 cucchiai",009210,40,1,4 cucchiai × 10 g
+risotto-alla-milanese-vegetariano,"vino bianco secco, 1/2 bicchiere",405010,75,0.5,½ bicchiere = 75 ml
+risotto-alla-milanese-vegetariano,zafferano,,,1,spezia: non conteggiata
+risotto-alla-monzese,"riso, 340-380 g",000100,360,1,media di 340 e 380 g
+risotto-alla-monzese,"cipolla bianca, 1/4",005300,20,0.8,¼ di cipolla da 80 g
+risotto-alla-monzese,"burro, 1 noce",190010,10,1,1 noce = 10 g
+risotto-alla-monzese,"vino rosso secco, ½ bicchiere",405020,75,0.5,½ bicchiere = 75 ml
+risotto-alla-monzese,"luganega o altra salsiccia dolce, 300 g",110710,300,0.7,luganega: salsiccia di suino fresca
+risotto-alla-monzese,"brodo di carne, q.b.",,1000,0.5,q.b.: 250 g a porzione; solo peso
+risotto-con-la-zucca,"brodo vegetale, 1400 g",,1400,0.5,solo peso
+risotto-con-la-zucca,"riso, 300 g",000100,300,1,
+risotto-con-la-zucca,"zucca, 200 g",005720,200,0.8,
+risotto-con-la-zucca,"porro, 1",005650,120,0.8,1 porro mondato stimato 120 g
+risotto-con-la-zucca,"olio d'oliva, 4 cucchiai",009200,40,1,4 cucchiai × 10 g
+risotto-con-la-zucca,"burro, q.b.",190010,20,1,q.b.: 5 g a porzione
+risotto-con-la-zucca,"sale e pepe, q.b.",,,1,
+risotto-con-la-zucca,"grana, q.b.",162410,20,1,q.b.: 5 g a porzione
+spaghetti-aglio-olio-e-peperoncino,"spaghetti di grano duro, 160 g",000800,160,1.95,
+spaghetti-aglio-olio-e-peperoncino,"acqua, 2 litri",,,1,acqua di cottura della pasta: non conteggiata
+spaghetti-aglio-olio-e-peperoncino,"aglio, 1 spicchio",005000,4,0.8,1 spicchio × 4 g
+spaghetti-aglio-olio-e-peperoncino,"peperoncino piccante, 1",,,1,spezia: non conteggiata
+spaghetti-aglio-olio-e-peperoncino,"sale grosso, 10 g",,,1,
+spaghetti-aglio-olio-e-peperoncino,"olio extravergine d'oliva, 21 g",009210,21,1,
+spaghetti-alla-carbonara,"spaghetti, 350 gr",000800,350,1.95,
+spaghetti-alla-carbonara,"guanciale, 150 gr",110310,150,0.75,guanciale assente nel CREA: pancetta tesa
+spaghetti-alla-carbonara,"pecorino grattugiato, 100 gr",166060,100,1,
+spaghetti-alla-carbonara,"tuorli, 3",183010,45,1,3 × 15 g
+spaghetti-alla-carbonara,"uovo, 1",181100,50,1,1 × 50 g
+spaghetti-alla-carbonara,"sale, q.b.",,,1,
+spaghetti-alla-carbonara,"pepe, q.b.",,,1,
+spaghetti-tonno-e-origano,"spaghetti, 400 g",000800,400,1.95,
+spaghetti-tonno-e-origano,"passata di pomodoro, 200 g",006670,200,1,
+spaghetti-tonno-e-origano,"tonno, 200 g",123610,200,1,"tonno sott'olio (già cotto), sgocciolato"
+spaghetti-tonno-e-origano,"aglio, 1 spicchio",005000,4,0.8,1 spicchio × 4 g
+spaghetti-tonno-e-origano,"origano, 1 manciata",,,1,erba secca: non conteggiata
+spaghetti-tonno-e-origano,"peperoncino, q.b.",,,1,
+spaghetti-tonno-e-origano,"sale, q.b.",,,1,
+spaghetti-tonno-e-origano,olio (se non è già nel tonno),009210,40,1,olio del tonno o aggiunto: q.b. 10 g a porzione
+tagliolini-al-salmone-affumicato,"salmone affumicato, 200 g",122410,200,0.8,
+tagliolini-al-salmone-affumicato,"tagliolini essiccati, 300 g",000870,300,2.8,tagliolini all'uovo secchi
+tagliolini-al-salmone-affumicato,"panna, due cucchiai",140400,30,1,2 cucchiai × 15 g; panna da cucina
+tagliolini-al-salmone-affumicato,"burro, 80 g",190010,80,1,
+tagliolini-al-salmone-affumicato,"erba cipollina, 2 steli",,,1,erba cipollina assente nel CREA: trascurabile
+tagliolini-al-salmone-affumicato,"limone, 1",008030,2,1,solo scorza grattugiata: 2 g
+tagliolini-al-salmone-affumicato,"pepe nero, q.b.",,,1,
+tagliolini-al-salmone-affumicato,"sale, un cucchiaio",,,1,sale per l'acqua: non conteggiato
+tagliolini-al-salmone-affumicato,"acqua, q.b.",,,1,acqua di cottura della pasta: non conteggiata
+trofie-al-pesto,"trofie, 150 gr",000800,150,1.95,
+trofie-al-pesto,"pesto genovese, 3 cucchiai",PC0008,45,1,3 cucchiai × 15 g (come salse/liquidi); pesto alla genovese CREA
+trofie-al-pesto,"olio e burro (olio), q.b.",009210,20,1,q.b.: 10 g a porzione
+trofie-al-pesto,"olio e burro (burro), q.b.",190010,10,1,q.b.: 5 g a porzione
+trofie-al-pesto,"parmigiano grattugiato, q.b.",166000,10,1,q.b.: 5 g a porzione
+trofie-al-pesto,"sale, q.b.",,,1,
+zuppa-d-orzo,"orzo, 100 g",000090,100,1,cotto nel brodo elencato
+zuppa-d-orzo,"speck, 150 g",110800,150,0.7,
+zuppa-d-orzo,"cipolla, 1/2",005300,40,1,½ cipolla da 80 g
+zuppa-d-orzo,"carote, 2",005150,160,1,2 carote × 80 g
+zuppa-d-orzo,"patata grossa, 1",006500,200,1,1 patata grossa stimata 200 g
+zuppa-d-orzo,"sedano, 1 gambo",005680,40,1,1 costa = 40 g
+zuppa-d-orzo,"pisellini, 150 g",004700,150,1,
+zuppa-d-orzo,"porro, 1/2",005650,60,1,½ porro mondato (intero stimato 120 g)
+zuppa-d-orzo,"brodo di dado (acqua), 1 1/2 L",,1500,0.5,"1,5 L = 1500 g; solo peso"
+zuppa-d-orzo,"brodo di dado (dado), 1 1/2 L",503010,30,1,1 dado ogni ½ L: 3 dadi × 10 g
+zuppa-d-orzo,"olio, 6 cucchiai",009210,60,1,6 cucchiai × 10 g; olio non specificato: extravergine
+abbacchio-a-scottadito,"costolette di abbacchio, 450 gr",104040,315,0.75,con osso: parte edibile 70% di 450 g
+abbacchio-a-scottadito,"limone, 1",008040,30,1,succo di 1 limone = 30 g
+abbacchio-a-scottadito,"rosmarino fresco, 1 rametto",006850,1,1,1 rametto = 1 g
+abbacchio-a-scottadito,"aglio, 2 spicchi",005000,8,1,2 spicchi × 4 g
+abbacchio-a-scottadito,"olio d'oliva extravergine, q.b.",009210,20,1,q.b.: 10 g a porzione
+abbacchio-a-scottadito,"pepe, q.b.",,,1,
+abbacchio-a-scottadito,"sale, q.b.",,,1,
+alici-in-tortiera,"alici fresche, 800 gr",120010,400,0.8,pesce intero non eviscerato: parte edibile 50% di 800 g
+alici-in-tortiera,"pangrattato, 70 gr",000570,70,1,
+alici-in-tortiera,"capperi sotto sale, 30 gr",,,1,capperi assenti nel CREA: non conteggiati
+alici-in-tortiera,"prezzemolo, q.b.",,,1,
+alici-in-tortiera,"aglio, 2 spicchi",005000,8,0.8,2 spicchi × 4 g
+alici-in-tortiera,"olio extra vergine di oliva, q.b.",009210,40,1,q.b.: 10 g a porzione
+alici-in-tortiera,"sale, q.b.",,,1,
+arista-all-uva,"fettine di arista di maiale, quattro",105210,480,0.75,4 fettine × 120 g (stimato); arista: lombo
+arista-all-uva,"uva bianca matura, 100 g",007390,100,0.8,
+arista-all-uva,"aglio, 1 spicchio",005000,4,0.8,1 spicchio 4 g
+arista-all-uva,"brodo, mezzo mestolo",,50,0.5,mezzo mestolo ≈ 50 ml; brodo: solo peso
+arista-all-uva,"vino bianco, mezzo bicchiere",405010,75,0.5,mezzo bicchiere 75 ml
+arista-all-uva,"sale, q.b.",,,1,
+arista-all-uva,"olio di oliva, 2 cucchiai (nel procedimento)",009200,20,1,nel procedimento: 2 cucchiai × 10 g
+baccala-alla-vicentina,"baccalà ragno, 500 g peso secco (1000-1200 g se già ammollato)",121330,1100,0.8,"ragno = stoccafisso; peso ammollato indicato, media 1100 g"
+baccala-alla-vicentina,"latte, 1/4 L",135010,250,0.5,250 ml; latte intero
+baccala-alla-vicentina,"olio extravergine di oliva, 1/2 L",009210,460,1,"500 ml × 0,92"
+baccala-alla-vicentina,"cipolle, 250 g",005300,250,0.8,
+baccala-alla-vicentina,"acciughe, 2-3",120030,20,0.8,"media 2,5 acciughe × 2 filetti × 4 g; sotto sale"
+baccala-alla-vicentina,"sale, q.b.",,,1,
+baccala-alla-vicentina,"farina, q.b.",000220,30,1,q.b. per infarinare: 5 g a porzione
+baccala-alla-vicentina,prezzemolo,,,1,senza quantità: non conteggiato
+baccala-fritto,"baccalà già ammollato, 300 gr",121450,300,0.8,
+baccala-fritto,"farina, q.b.",000220,10,1,q.b. per infarinare: 5 g a porzione
+baccala-fritto,"olio di semi di girasole per friggere, 1 litro",009650,31,1,solo olio assorbito: 10% di 310 g fritti (baccalà + farina)
+baccala-fritto,"limone, 1",008040,30,1,succo di 1 limone = 30 g
+baccala-fritto,"sale, q.b.",,,1,
+branzino-al-sale,"branzino, 1 di circa mezzo kg",123200,250,0.8,pesce intero non eviscerato: parte edibile 50% di 500 g; branzino = spigola
+branzino-al-sale,"sale grosso, 1 kg",,,1,crosta di sale: non conteggiata
+branzino-al-sale,"rosmarino, 3 o 4 rametti",006850,3.5,1,"3,5 rametti × 1 g"
+branzino-al-sale,"limone, qualche spicchio",008040,10,1,come q.b.: 5 g di succo a porzione
+brasato-di-manzo-alla-lombarda,"polpa di manzo, 800 g",101260,800,0.7,polpa da brasato: spalla/muscolo
+brasato-di-manzo-alla-lombarda,"vino rosso, 400 ml",405020,400,0.5,
+brasato-di-manzo-alla-lombarda,"aglio, 1 spicchio",005000,4,0.8,1 spicchio 4 g
+brasato-di-manzo-alla-lombarda,"sedano, una costola",005680,40,0.8,1 costa 40 g
+brasato-di-manzo-alla-lombarda,"carota, una",005150,80,0.8,1 carota 80 g
+brasato-di-manzo-alla-lombarda,"cipolla, una",005300,80,0.8,1 cipolla 80 g
+brasato-di-manzo-alla-lombarda,"alloro, una foglia",,,1,
+brasato-di-manzo-alla-lombarda,"pomodori pelati, due scatole",006680,800,0.7,2 scatole × 400 g
+brasato-di-manzo-alla-lombarda,"olio di oliva, q.b.",009200,40,1,q.b.: 10 g a porzione
+brasato-di-manzo-alla-lombarda,"sale, q.b.",,,1,
+brasato-di-manzo-alla-lombarda,"acqua, q.b.",,,1,q.b. non quantificabile: non conteggiata
+cacciucco,"seppie, 300 g",127160,240,0.8,da pulire: parte edibile 80%
+cacciucco,"polpi, 300 g",127150,240,0.8,da pulire: parte edibile 80%
+cacciucco,"palombo, 300 g",122000,300,0.8,
+cacciucco,"pesce da zuppa (gallinelle, cappone, scorfano), 500 g",122900,250,0.8,pesce intero non eviscerato: parte edibile 50%; mappato a scorfano
+cacciucco,"cicale, 300 g",128100,150,0.8,crostacei interi: parte edibile 50%; cicale assenti nel CREA: gamberi
+cacciucco,"frutti di mare misti (cozze, vongole), 500 g",127120,112.5,0.8,"con guscio: metà cozze (25%) e metà vongole (20%) = 22,5%; mappato a cozza"
+cacciucco,"pomodori maturi, 500 g",006610,500,0.7,
+cacciucco,"concentrato di pomodoro, 1 cucchiaio",006660,15,1,1 cucchiaio 15 g (stessa riga dei pomodori)
+cacciucco,"vino bianco o rosso, 1 bicchiere",405020,150,0.5,1 bicchiere 150 ml; scelto rosso
+cacciucco,"pane raffermo arrostito, pepato e agliato, 12 fette",000530,360,1,12 fette × 30 g
+cacciucco,"aglio, peperoncino e salvia per il soffritto",,,1,senza quantità: non conteggiati
+cacciucco,olio per il soffritto (nel procedimento),009210,60,1,nel procedimento senza quantità: 10 g a porzione
+calamari-fritti,"calamari, 400 g",127100,320,0.8,da pulire: parte edibile 80%
+calamari-fritti,"farina di semola rimacinata, 100 g q.b. (e uova in caso di pastella)",000310,32,1,per infarinare: conteggiato solo quanto aderisce (10% dei calamari puliti); uova facoltative non conteggiate
+calamari-fritti,olio di semi di arachidi o olio extravergine di oliva,009610,35.2,1,olio per friggere: assorbito 10% del peso crudo fritto (352 g)
+calamari-fritti,"sale fino, q.b.",,,1,
+calamari-fritti,"limone, 1",008040,30,1,succo di 1 limone 30 g
+coda-di-bue-alla-vaccinara,"coda di vitellone o di bue, 1 kg",101250,700,0.7,parte edibile 70% (con osso); coda assente nel CREA: pancia/biancostato
+coda-di-bue-alla-vaccinara,"sedani, 1 o 2",005680,60,0.8,"media 1,5 coste × 40 g"
+coda-di-bue-alla-vaccinara,"cipolla, 1",005300,80,0.8,1 cipolla 80 g
+coda-di-bue-alla-vaccinara,"carota, 1",005150,80,0.8,1 carota 80 g
+coda-di-bue-alla-vaccinara,"pomodoro in polpa, 250 g",006680,250,0.7,polpa di pomodoro: pelati in scatola
+coda-di-bue-alla-vaccinara,"olio d'oliva, q.b.",009200,40,1,q.b.: 10 g a porzione
+coda-di-bue-alla-vaccinara,"sale, q.b.",,,1,
+coda-di-bue-alla-vaccinara,"pepe, q.b.",,,1,
+coda-di-bue-alla-vaccinara,"peperoncino, q.b.",,,1,
+coda-di-bue-alla-vaccinara,"vino rosso o bianco, 1 bicchiere",405020,150,0.5,1 bicchiere 150 ml; scelto rosso (preferito dalla ricetta)
+coda-di-bue-alla-vaccinara,"dado da brodo, 1",503010,10,1,1 dado 10 g
+coniglio-alla-cacciatora,"coniglio, 1 kg",107010,700,0.7,a pezzi con osso: parte edibile 70% di 1 kg
+coniglio-alla-cacciatora,"vino bianco, 1 bicchiere",405010,150,0.5,1 bicchiere = 150 ml = 150 g
+coniglio-alla-cacciatora,"pomodori pelati o freschi, 500 gr",006680,500,0.7,
+coniglio-alla-cacciatora,"cipolla, 1",005300,80,0.8,1 cipolla × 80 g
+coniglio-alla-cacciatora,"aglio, 2 spicchi",005000,8,0.8,2 spicchi × 4 g
+coniglio-alla-cacciatora,"olive nere o verdi snocciolate, 120 gr",008810,120,1,
+coniglio-alla-cacciatora,"basilico, q.b.",,,1,
+coniglio-alla-cacciatora,"rosmarino, q.b.",,,1,
+coniglio-alla-cacciatora,"aceto, q.b.",,20,0.5,q.b.: 5 g a porzione; aceto assente nel CREA: solo peso (nutrienti trascurabili)
+coniglio-alla-cacciatora,"olio extravergine d'oliva, q.b.",009210,40,1,q.b.: 10 g a porzione
+coniglio-alla-cacciatora,"peperoncino (facoltativo), q.b.",,,1,
+coniglio-alla-cacciatora,"sale, q.b.",,,1,
+cotoletta-alla-milanese,"costolette o nodini di vitello alte 2 cm, 4",101520,700,0.75,"4 × 250 g con osso (stimato), parte edibile 70%; vitello: filetto (unico taglio di vitello nel CREA)"
+cotoletta-alla-milanese,"uova, 2",181100,100,0.85,2 × 50 g
+cotoletta-alla-milanese,"pangrattato, q.b.",000570,20,1,q.b.: 5 g a porzione
+cotoletta-alla-milanese,"burro, q.b.",190010,82,1,burro per friggere: assorbito 10% del peso crudo fritto (820 g)
+fegato-alla-veneziana,"cipolle bianche, 200 g",005300,200,0.8,
+fegato-alla-veneziana,"fegato di vitello, 300 g",115320,300,0.75,fegato di vitello: fegato di bovini
+fegato-alla-veneziana,"olio, 1/2 dl",009210,46,1,"50 ml × 0,92; olio non specificato: extravergine d'oliva"
+fegato-alla-veneziana,"sale e pepe, q.b.",,,1,
+frittata-di-cipolle,"cipolle, 400 gr",005300,400,0.8,
+frittata-di-cipolle,"uova, 6",181100,300,0.85,6 × 50 g
+frittata-di-cipolle,"formaggio parmigiano grattugiato, 50 gr",166000,50,1,
+frittata-di-cipolle,"sale, 1 pizzico",,,1,
+frittata-di-cipolle,"olio extravergine d'oliva, 2 cucchiai",009210,20,1,2 cucchiai × 10 g
+frittata-di-cipolle,"prezzemolo, 1 ciuffetto",006840,5,1,1 ciuffetto ≈ 5 g
+frittata-di-zucchine,"uova, 8",181100,400,0.85,8 × 50 g
+frittata-di-zucchine,"zucchine, 2",005730,300,0.8,2 × 150 g
+frittata-di-zucchine,erba cipollina,,,1,senza quantità: non conteggiata
+frittata-di-zucchine,"olio di oliva, q.b.",009200,40,1,q.b.: 10 g a porzione
+frittata-di-zucchine,"sale, q.b.",,,1,
+involtini-di-carne-al-sugo,"fettine di vitello o manzo per involtini, 8",101520,600,0.7,8 fettine × 75 g (stima); vitello: nel CREA solo il filetto
+involtini-di-carne-al-sugo,"vino bianco, 100 ml",405010,100,0.5,100 ml = 100 g
+involtini-di-carne-al-sugo,"provola, 250 gr",167200,250,1,provola assente nel CREA: scamorza
+involtini-di-carne-al-sugo,"prosciutto cotto, 200 gr",110400,200,1,
+involtini-di-carne-al-sugo,"formaggio grattugiato, 40 gr",166000,40,1,formaggio grattugiato generico: Parmigiano Reggiano
+involtini-di-carne-al-sugo,"salsa di pomodoro, 750 gr",006670,750,0.7,salsa di pomodoro: passata
+involtini-di-carne-al-sugo,"cipolla, 1",005300,80,0.8,1 cipolla × 80 g
+involtini-di-carne-al-sugo,"olio extravergine di oliva, q.b.",009210,40,1,q.b.: 10 g a porzione
+involtini-di-carne-al-sugo,"prezzemolo, 1 ciuffo",006840,10,1,1 ciuffo ≈ 10 g
+involtini-di-carne-al-sugo,"sale e pepe, q.b.",,,1,
+ossibuchi-con-gremolata,"ossibuchi di vitello, 6 da circa 200/220 g ciascuno",101240,882,0.7,"6 × 210 g con osso, parte edibile 70%; ossobuco di vitello: geretto di vitellone"
+ossibuchi-con-gremolata,"burro, 60 g",190010,60,1,
+ossibuchi-con-gremolata,"cipolla media, 1",005300,80,0.8,1 cipolla media 80 g
+ossibuchi-con-gremolata,"triplo concentrato di pomodoro disciolto in acqua calda, 2 cucchiai",006660,30,1,"2 cucchiai × 15 g; acqua non quantificata, non conteggiata"
+ossibuchi-con-gremolata,"buccia di limone grattugiata, mezzo limone",008030,1,1,scorza di 1/2 limone: 1 g
+ossibuchi-con-gremolata,"prezzemolo tritato finemente, 1 mazzetto",006840,20,1,1 mazzetto 20 g
+ossibuchi-con-gremolata,"acciughe dissalate, 4",120030,32,1,4 acciughe × 2 filetti × 4 g
+ossibuchi-con-gremolata,"sale e pepe macinato fresco, a piacere",,,1,
+ossibuchi-con-gremolata,olio d'oliva,009200,60,1,senza quantità: q.b. 10 g a porzione
+ossibuchi-con-gremolata,farina bianca,000220,30,1,senza quantità: per infarinare 5 g a porzione
+pesce-spada-alla-siciliana,"pesce spada, 4 tranci o fette da circa 150 gr ciascuno",120910,600,0.8,4 tranci × 150 g; pesce spada assente nel CREA: dentice (valori simili)
+pesce-spada-alla-siciliana,"capperi, 1 cucchiaio",,,1,capperi assenti nel CREA: non conteggiati
+pesce-spada-alla-siciliana,"olive verdi o nere, 50 gr",008820,50,1,
+pesce-spada-alla-siciliana,"sedano, 1 gambo",005680,40,0.8,1 gambo = 1 costa × 40 g
+pesce-spada-alla-siciliana,"aglio, 1 spicchio",005000,4,0.8,1 spicchio × 4 g
+pesce-spada-alla-siciliana,"pomodori, 250 gr",006610,250,0.7,
+pesce-spada-alla-siciliana,"olio extravergine di oliva, q.b.",009210,40,1,q.b.: 10 g a porzione
+pesce-spada-alla-siciliana,"sale e pepe, q.b.",,,1,
+pesce-spada-alla-siciliana,"origano, q.b.",,,1,
+pollo-all-arancia,"fettine di petto di pollo, 6",106500,600,0.75,6 fettine × 100 g (stimato)
+pollo-all-arancia,"arance, 2/3",008010,175,0.5,"media 2,5 arance × 70 g di succo; scorza grattugiata (≈7 g) non conteggiata"
+pollo-all-arancia,"farina, quanto basta",000220,20,1,q.b. per infarinare: 5 g a porzione
+pollo-all-arancia,"olio, tre cucchiai",009210,30,1,3 cucchiai × 10 g; olio non specificato: extravergine d'oliva
+pollo-all-arancia,"aglio, 1 spicchio",005000,4,0.8,1 spicchio 4 g
+pollo-all-arancia,"sale, quanto basta",,,1,
+pollo-alla-cacciatora,"pollo a pezzi, 1,5 kg",106200,1050,0.7,"con osso: parte edibile 70% di 1,5 kg"
+pollo-alla-cacciatora,"aglio, 1 spicchio",005000,4,0.8,1 spicchio × 4 g
+pollo-alla-cacciatora,"cipolla, 1",005300,80,0.8,1 cipolla × 80 g
+pollo-alla-cacciatora,"carota, 1",005150,80,0.8,1 carota × 80 g
+pollo-alla-cacciatora,"sedano, 1 costa",005680,40,0.8,1 costa × 40 g
+pollo-alla-cacciatora,"maggiorana e rosmarino, q.b.",,,1,
+pollo-alla-cacciatora,"olio d'oliva extra vergine, q.b.",009210,40,1,q.b.: 10 g a porzione
+pollo-alla-cacciatora,"pomodori pelati, 500 gr",006680,500,0.7,
+pollo-alla-cacciatora,"vino bianco, 1 bicchiere",405010,150,0.5,1 bicchiere = 150 ml = 150 g
+pollo-alla-cacciatora,"sale e pepe, q.b.",,,1,
+pollo-alla-cacciatora,"prezzemolo, q.b.",,,1,
+polpettone-di-carne-trita,"carne di bovino adulto, 430 g",101120,430,0.7,carne trita: tagli anteriori
+polpettone-di-carne-trita,"carne di maiale, 70 g",105220,70,0.7,carne trita di maiale: spalla
+polpettone-di-carne-trita,"prosciutto cotto, 100 g",110400,100,1,
+polpettone-di-carne-trita,"parmigiano reggiano di almeno 18 mesi, 80 g",166000,80,1,
+polpettone-di-carne-trita,"fiocchi d'avena, 50 g",003030,50,1,
+polpettone-di-carne-trita,"uovo intero, 1",181100,50,0.85,1 uovo 50 g
+polpettone-di-carne-trita,"aglio, 1 spicchio",005000,4,1,1 spicchio 4 g
+polpettone-di-carne-trita,"latte intero, q.b.",,,1,q.b. per ammollare la mollica: non conteggiato
+polpettone-di-carne-trita,"pane grattugiato, q.b.",000570,20,1,q.b.: 5 g a porzione
+polpettone-di-carne-trita,"noce moscata, q.b.",,,1,
+polpettone-di-carne-trita,"prezzemolo, q.b.",,,1,
+polpettone-di-carne-trita,"sale e pepe nero, q.b.",,,1,
+polpettone-di-carne-trita,"olio extravergine di oliva, 4 cucchiai",009210,40,1,4 cucchiai × 10 g
+polpettone-di-carne-trita,"vino bianco, 1/2 bicchiere",405010,75,0.5,mezzo bicchiere 75 ml
+polpettone-di-carne-trita,"brodo vegetale, 1/2 bicchiere",,75,0.5,mezzo bicchiere 75 ml; brodo: solo peso
+polpettone-di-carne-trita,"salvia, q.b.",,,1,
+polpettone-di-carne-trita,"rosmarino, q.b.",,,1,
+polpo-con-patate,"polpo, 1 da 1,5 kg",127150,1200,0.8,"intero da pulire: parte edibile 80% di 1,5 kg"
+polpo-con-patate,"patate, 1 kg",006500,1000,1,bollite
+polpo-con-patate,"pepe, q.b.",,,1,
+polpo-con-patate,"foglie di alloro, 3",,,1,alloro: non conteggiato
+polpo-con-patate,"olio extravergine d'oliva, q.b.",009210,50,1,q.b.: 10 g a porzione
+polpo-con-patate,"limone, succo e scorza di mezzo",008040,16,1,½ limone: succo 15 g + scorza 1 g
+polpo-con-patate,"cipolla, 1",005300,80,1,1 cipolla × 80 g
+polpo-con-patate,"carote, 2",005150,160,1,2 carote × 80 g
+polpo-con-patate,"sale, q.b.",,,1,
+polpo-con-patate,"prezzemolo, q.b.",,,1,
+polpo-con-patate,"aglio, q.b.",,,1,q.b.: non conteggiato
+quaglie-arrosto,"quaglie pulite, 8",108530,720,0.75,"8 × 150 g (stimato), parte edibile 60%"
+quaglie-arrosto,"pancetta, 200 g",110310,200,1,pancetta: tesa
+quaglie-arrosto,"salvia, 8 foglie",006860,4,1,"8 foglie × 0,5 g"
+quaglie-arrosto,"rosmarino, 8 rametti",006850,8,1,8 rametti × 1 g
+quaglie-arrosto,"pepe nero, q.b.",,,1,
+quaglie-arrosto,"sale, q.b.",,,1,
+quaglie-arrosto,"olio di semi, q.b.",009610,40,1,q.b.: 10 g a porzione; olio di semi: arachide
+quaglie-arrosto,"vino bianco, mezzo bicchiere",405010,75,0.5,mezzo bicchiere 75 ml
+quaglie-arrosto,spago da cucina,,,1,non alimentare
+saltimbocca-alla-romana,"carne di vitello, 12 fettine sottili",101520,600,0.75,12 fettine × 50 g (stima); vitello: nel CREA solo il filetto
+saltimbocca-alla-romana,"salvia, 6 foglie grandi",006860,3,1,"6 foglie × 0,5 g"
+saltimbocca-alla-romana,"prosciutto crudo dolce, 6 fette grandi",110510,120,1,6 fette grandi × 20 g; crudo dolce: Parma DOP
+saltimbocca-alla-romana,"sale, q.b.",,,1,
+saltimbocca-alla-romana,"pepe, q.b.",,,1,
+saltimbocca-alla-romana,"vino bianco secco, 1 tazzina",405010,50,0.5,1 tazzina ≈ 50 ml = 50 g
+saltimbocca-alla-romana,"burro, 50 gr",190010,50,1,
+saltimbocca-alla-romana,"farina, q.b.",000220,20,1,q.b. per infarinare: 5 g a porzione
+scaloppine-al-limone,"fesa di vitello, 400 gr",101520,400,0.75,vitello: nel CREA solo il filetto
+scaloppine-al-limone,"burro, 40 gr",190010,40,1,
+scaloppine-al-limone,"farina 00, q.b.",000220,20,1,q.b. per infarinare: 5 g a porzione
+scaloppine-al-limone,"limone bio, 1 grande",008040,40,1,succo di 1 limone grande ≈ 40 g
+scaloppine-al-limone,"sale, q.b.",,,1,
+scaloppine-al-limone,"pepe, q.b.",,,1,
+scaloppine-al-limone,"capperi dissalati, 1 cucchiaio",,,1,capperi assenti nel CREA: non conteggiati
+seppie-in-umido,"seppie pulite, 600 g",127160,600,0.8,
+seppie-in-umido,"piselli sgranati, 300 g",004700,300,0.8,
+seppie-in-umido,"scalogno, 1 (o mezza cipolla)",005300,25,0.8,1 scalogno 25 g; scalogno assente nel CREA: cipolla
+seppie-in-umido,"vino bianco secco, 1 bicchiere",405010,150,0.5,1 bicchiere 150 ml
+seppie-in-umido,"olio, un po' (nel procedimento)",009210,40,1,nel procedimento senza quantità: 10 g a porzione
+spezzatino-al-vino-rosso,"spezzatino di vitello tenero, 700 g",101520,700,0.7,vitello: nel CREA solo il filetto
+spezzatino-al-vino-rosso,"cipolla, una",005300,80,0.8,1 cipolla × 80 g
+spezzatino-al-vino-rosso,"aglio, uno spicchio",005000,4,0.8,1 spicchio × 4 g
+spezzatino-al-vino-rosso,prezzemolo e basilico,,,1,erbe senza quantità: non conteggiate
+spezzatino-al-vino-rosso,"pomodorini, 400 g",006650,400,0.7,
+spezzatino-al-vino-rosso,"peperoncino, uno",,,1,peperoncino: non conteggiato
+spezzatino-al-vino-rosso,"vino rosso Morellino di Scansano, un bicchiere",405020,150,0.5,1 bicchiere = 150 ml = 150 g
+spezzatino-al-vino-rosso,brodo di dado di carne (acqua),,250,0.5,quantità non indicata: stima 250 ml; solo peso
+spezzatino-al-vino-rosso,brodo di dado di carne (dado),503010,5,1,½ dado da 10 g per 250 ml di brodo (stima)
+spezzatino-al-vino-rosso,olio extravergine di oliva,009210,40,1,quantità non indicata: 10 g a porzione
+spezzatino-al-vino-rosso,sale,,,1,
+spigola-con-pomodorini-e-olive,"filetti di spigola, 400 g",123220,400,0.8,
+spigola-con-pomodorini-e-olive,"cipolle rosse, 2",005300,160,0.8,2 cipolle × 80 g
+spigola-con-pomodorini-e-olive,"pomodorini, 10",006650,150,0.8,10 × 15 g
+spigola-con-pomodorini-e-olive,olive nere,008810,50,1,quantità non indicata (riga unita ai pomodorini): stima 50 g
+spigola-con-pomodorini-e-olive,"pinoli spellati e tostati, 50 g",008590,50,1,
+spigola-con-pomodorini-e-olive,"peperoncino, mezzo",,,1,peperoncino: non conteggiato
+spigola-con-pomodorini-e-olive,olio extravergine di oliva,009210,40,1,quantità non indicata: 10 g a porzione
+spigola-con-pomodorini-e-olive,sale,,,1,
+spigola-con-pomodorini-e-olive,pepe,,,1,
+tonno-alla-genovese,"tonno rosso mediterraneo, 4 fette da circa 150 g",123500,600,0.8,4 × 150 g
+tonno-alla-genovese,"prezzemolo, 1 mazzetto",006840,20,1,1 mazzetto 20 g
+tonno-alla-genovese,"funghi porcini secchi, 20 g",006030,200,0.8,porcini secchi assenti nel CREA: 20 g secchi ≈ 200 g freschi (×10)
+tonno-alla-genovese,"olio d'oliva extravergine, 5 cucchiai",009210,50,1,5 cucchiai × 10 g
+tonno-alla-genovese,"aglio, 1 spicchio",005000,4,0.8,1 spicchio 4 g
+tonno-alla-genovese,"succo di limone, 1 limone",008040,30,0.5,succo di 1 limone 30 g
+tonno-alla-genovese,"vino bianco fermo, 1 dl",405010,100,0.5,100 ml
+tonno-alla-genovese,"filetti d'acciuga sott'olio, 8",120020,32,0.8,8 filetti × 4 g
+tonno-alla-genovese,"burro, 1 noce",190010,10,1,1 noce 10 g
+tonno-alla-genovese,"farina, 1/2 cucchiaio",000220,5,1,mezzo cucchiaio 5 g
+tonno-alla-genovese,"sale, q.b.",,,1,
+tonno-alla-genovese,"pepe, q.b.",,,1,
+trippa-alla-romana,"trippa bianca già cotta, 1 kg",115800,1000,1,trippa già cotta: resa 1
+trippa-alla-romana,"cipolla, 1",005300,80,0.8,1 cipolla 80 g
+trippa-alla-romana,"chiodi di garofano, 3 (facoltativi)",,,1,
+trippa-alla-romana,"sedano, 1 costola",005680,40,0.8,1 costa 40 g
+trippa-alla-romana,"carota, 1",005150,80,0.8,1 carota 80 g
+trippa-alla-romana,"parmigiano reggiano e/o pecorino romano grattugiato, 100 g",166060,100,1,e/o: scelto pecorino romano (tradizione romana)
+trippa-alla-romana,"sugo di carne o finto, 3 decilitri",006670,300,0.7,300 ml; sugo assente: passata di pomodoro
+trippa-alla-romana,menta romana,,,1,senza quantità: non conteggiata
+trippa-alla-romana,"sale, q.b.",,,1,
+caponata-siciliana,"melanzane lunghe, 1 kg",005500,1000,0.8,
+caponata-siciliana,"gambi di sedano, 300 gr",005680,300,0.8,
+caponata-siciliana,"cipolle, 2 grandi",005300,300,0.8,2 cipolle grandi × 150 g
+caponata-siciliana,"olive nere, 200 gr",008810,200,1,
+caponata-siciliana,"capperi sotto sale, 100 gr",,,1,capperi assenti nel CREA: non conteggiati
+caponata-siciliana,"pinoli, 50 gr",008590,50,1,
+caponata-siciliana,"zucchero, 50 gr",201500,50,1,
+caponata-siciliana,"aceto di vino bianco, 10 ml",,10,0.5,aceto assente nel CREA: solo peso (nutrienti trascurabili)
+caponata-siciliana,"pomodori perini maturi (oppure una lattina di pelati), 500 gr",006610,500,0.7,
+caponata-siciliana,"olio di oliva extravergine, q.b.",009210,40,1,q.b.: 10 g a porzione
+caponata-siciliana,"basilico fresco, q.b.",,,1,
+caponata-siciliana,"sale grosso e fino, q.b.",,,1,
+caponata-siciliana,"olio per friggere, qb",009610,100,1,assorbito: 10% delle melanzane fritte (1 kg); olio non specificato: arachide
+carciofi-alla-romana,"carciofi mammole, 2",005131,240,0.8,2 carciofi mondati × 120 g; mammole: Carciofo Romanesco IGP
+carciofi-alla-romana,"limone, 1",008040,30,1,succo di 1 limone = 30 g
+carciofi-alla-romana,"prezzemolo, 4 rametti",006840,8,1,4 rametti × 2 g
+carciofi-alla-romana,"menta, 4 foglie grandi",006810,2,1,"4 foglie grandi × 0,5 g"
+carciofi-alla-romana,"aglio, 1 spicchio",005000,4,0.8,1 spicchio = 4 g
+carciofi-alla-romana,"brodo vegetale, 250 ml",,250,0.5,"brodo fatto in casa, solo peso"
+carciofi-alla-romana,"olio extravergine di oliva, qb",009210,20,1,q.b.: 10 g a porzione
+carciofi-alla-romana,"pepe, qb",,,1,
+carciofi-alla-romana,"sale, qb",,,1,
+carote-al-burro,"carote novelle, 20",005150,600,0.8,20 carote novelle × 30 g
+carote-al-burro,"burro, 50 gr",190010,50,1,
+carote-al-burro,"limone, 1",008040,30,1,succo di 1 limone = 30 g
+carote-al-burro,"brodo vegetale, q.b.",,200,0.5,"q.b.: 50 g a porzione; brodo fatto in casa, solo peso"
+carote-al-burro,"farina, 1 cucchiaio",000220,10,1,1 cucchiaio = 10 g
+carote-al-burro,"sale, q.b.",,,1,
+carote-al-burro,"pepe bianco, q.b.",,,1,
+cipolle-in-agrodolce,"cipolline borrettane, 300 gr",005310,300,0.8,
+cipolle-in-agrodolce,"aceto balsamico di Modena, mezzo bicchiere",007420,75,0.5,mezzo bicchiere = 75 ml; aceto balsamico assente nel CREA: succo d'uva (zuccheri simili)
+cipolle-in-agrodolce,"acqua, 1 bicchiere",,150,0.5,"1 bicchiere = 150 ml, solo peso"
+cipolle-in-agrodolce,"olio extravergine di oliva, 3 cucchiai",009210,30,1,3 cucchiai × 10 g
+cipolle-in-agrodolce,"zucchero di canna integrale, 20 gr",201500,20,1,zucchero di canna: saccarosio
+cipolle-in-agrodolce,"chiodi di garofano, 2",,,1,
+cipolle-in-agrodolce,"pepe bianco, 1 pizzico",,,1,
+cipolle-in-agrodolce,"sale, q.b. (facoltativo)",,,1,
+fagiolini-in-umido,"aglio, 1 spicchio",005000,4,0.8,1 spicchio = 4 g
+fagiolini-in-umido,"fagiolini piatti (taccole), 100 gr",004310,100,0.8,
+fagiolini-in-umido,"olio di oliva, 1 cucchiaio",009200,10,1,1 cucchiaio = 10 g
+fagiolini-in-umido,"passata di pomodoro, 2 cucchiai",006670,30,0.7,2 cucchiai × 15 g
+fave-e-cicoria,"fave secche decorticate, 400 gr",004420,400,2,
+fave-e-cicoria,"cicoria selvatica, 400 gr",005240,400,1,cicoria selvatica: cicoria di campo
+fave-e-cicoria,"patate piccole, 2",006500,200,1,2 patate piccole × 100 g
+fave-e-cicoria,"olio extravergine d'oliva, q.b.",009210,40,1,q.b.: 10 g a porzione
+fave-e-cicoria,"alloro, 2 foglie",,,1,
+fave-e-cicoria,"sale, q.b.",,,1,
+finocchi-gratinati,"finocchi, 2",005320,400,0.8,2 finocchi mondati × 200 g
+finocchi-gratinati,"gallette di riso macinate, 3",003050,24,1,3 gallette × 8 g; gallette assenti nel CREA: riso soffiato
+finocchi-gratinati,"porro, mezzo",005650,60,0.8,mezzo porro mondato ≈ 60 g
+finocchi-gratinati,"besciamella senza glutine, 1 tazza",PC0044,200,1,1 tazza = 200 ml
+finocchi-gratinati,"cime di broccoli, 1 manciata",005110,50,0.8,1 manciata ≈ 50 g
+finocchi-gratinati,"olio extravergine di oliva, 2 cucchiai",009210,20,1,2 cucchiai × 10 g
+finocchi-gratinati,"prezzemolo, 1 ciuffo",006840,10,1,1 ciuffo ≈ 10 g
+finocchi-gratinati,"radice di zenzero, qb",,,1,
+finocchi-gratinati,"sale, qb",,,1,
+friggione,"cipolle bianche, 4 kg",005300,4000,0.8,
+friggione,"pomodori pelati, 300 g",006680,300,0.7,
+friggione,"zucchero, 1 cucchiaino",201500,4,1,1 cucchiaino × 4 g
+friggione,"sale grosso, 1 cucchiaino",,,1,
+friggione,"strutto, 2 cucchiaini",193010,6.7,1,2 cucchiaini × 3.3 g (come burro)
+funghi-trifolati,"funghi (Porcini, Champignon, Pleurotes, Finferli o misti), 800 gr",006000,800,0.8,funghi misti: prataioli (champignon)
+funghi-trifolati,"aglio, 2 spicchi grandi",005000,12,0.8,2 spicchi grandi × 6 g
+funghi-trifolati,"prezzemolo fresco, 1 mazzo",006840,20,1,1 mazzo = 20 g
+funghi-trifolati,"olio extravergine di oliva, 4 cucchiai",009210,40,1,4 cucchiai × 10 g
+funghi-trifolati,"sale e pepe, qb",,,1,
+insalata-di-rinforzo,"cavolfiore grande, 1",005160,700,1,cavolfiore grande mondato ≈ 700 g
+insalata-di-rinforzo,"papaccelle, 5",005600,250,1,5 papaccelle × 50 g netti; papaccelle: peperoni
+insalata-di-rinforzo,"sottaceti misti, 200 gr",005600,200,1,sottaceti assenti nel CREA: peperoni crudi
+insalata-di-rinforzo,"olive verdi, 150 gr",008820,150,1,
+insalata-di-rinforzo,"olive nere di Gaeta, 150 gr",008810,150,1,
+insalata-di-rinforzo,"aceto di vino bianco, 2 cucchiai",,30,1,2 cucchiai × 15 g; aceto assente nel CREA: solo peso (nutrienti trascurabili)
+insalata-di-rinforzo,"alici sotto sale, 10",120030,80,1,10 alici × 8 g (2 filetti da 4 g)
+insalata-di-rinforzo,"capperi dissalati, 40 gr",,,1,capperi assenti nel CREA: non conteggiati
+insalata-di-rinforzo,"olio extravergine d'oliva, qb",009210,40,1,q.b.: 10 g a porzione
+insalata-di-rinforzo,"sale e pepe, qb",,,1,
+melanzane-a-funghetto,"melanzane, 500 g",005500,500,0.8,fritte
+melanzane-a-funghetto,"pomodori pelati, 200 g",006680,200,0.7,
+melanzane-a-funghetto,"aglio, 1 spicchio",005000,4,1,1 spicchio 4 g
+melanzane-a-funghetto,"basilico, una manciata di foglie",006800,10,1,manciata 10 g
+melanzane-a-funghetto,"olio extravergine di oliva, q.b.",009210,90,1,q.b.: 50 g assorbiti in frittura (10% delle melanzane) e 10 g a porzione per il sugo
+melanzane-a-funghetto,"sale, q.b.",,,1,
+patate-al-forno-con-buccia,"patate, 1 kg",006500,1000,0.75,"con la buccia, peso intero"
+patate-al-forno-con-buccia,"olio extra vergine di oliva, 80 ml circa",009210,73.6,1,"80 ml × 0,92"
+patate-al-forno-con-buccia,sale e pepe,,,1,
+patate-al-forno-con-buccia,rosmarino,,,1,
+patate-saltate-con-speck,"patate novelle, 1 kg",006580,1000,0.75,
+patate-saltate-con-speck,"speck affettato sottile, 100 g",110800,100,1,
+patate-saltate-con-speck,"aglio, 2 spicchi",005000,8,1,2 spicchi × 4 g
+patate-saltate-con-speck,"rosmarino, q.b.",,,1,
+patate-saltate-con-speck,olio extravergine d'oliva,009210,40,1,quantità non indicata: 10 g a porzione
+patate-saltate-con-speck,"sale e pepe, q.b.",,,1,
+peperonata,"peperoni carnosi, 1,2 kg",005600,1200,0.8,
+peperonata,"cipolla, 400 gr",005300,400,0.8,
+peperonata,"pomodori maturi, 400 gr",006610,400,0.7,
+peperonata,"olio di oliva, 2 dl",009200,184,1,200 ml × 0.92 g/ml
+peperonata,"aglio, 4 spicchi",005000,16,1,4 spicchi × 4 g
+peperonata,"alloro, 4 o 5 foglie",,,1,
+peperonata,"prezzemolo tritato, 1 cucchiaio",006840,4,1,1 cucchiaio tritato: stima 4 g
+peperonata,"sale, q.b.",,,1,
+peperonata,"pepe, q.b.",,,1,
+peperoni-conditi,"peperoni carnosi gialli o rossi, 4",005610,800,0.7,4 × 200 g; cotti sulla brace o in forno
+peperoni-conditi,"olio extravergine d'oliva, 4 cucchiai",009210,40,1,4 cucchiai × 10 g
+peperoni-conditi,"capperi, 1 manciata",,,1,capperi assenti nel CREA: non conteggiati
+peperoni-conditi,"alici salate, 2",120030,16,1,2 alici = 4 filetti × 4 g
+peperoni-conditi,"aglio, 2 spicchi",005000,8,1,2 spicchi × 4 g
+peperoni-conditi,"sale, q.b.",,,1,
+peperoni-conditi,"pepe, q.b.",,,1,
+piselli-alla-romana,"pisellini primavera, 500 g",004730,500,0.8,pisellini primavera: piselli surgelati
+piselli-alla-romana,vino bianco,405010,75,0.5,quantità assente: mezzo bicchiere (75 ml)
+piselli-alla-romana,"prosciutto cotto, 200 g in una sola fetta",110400,200,1,
+piselli-alla-romana,"cipolla, 1",005300,80,0.8,1 cipolla = 80 g
+piselli-alla-romana,brodo vegetale,,200,0.5,"quantità assente: 50 g a porzione; brodo fatto in casa, solo peso"
+piselli-alla-romana,prezzemolo,,,1,
+piselli-alla-romana,olio extravergine di oliva,009210,40,1,quantità assente: 10 g a porzione
+piselli-alla-romana,burro,190010,20,1,quantità assente: 5 g a porzione
+piselli-alla-romana,sale,,,1,
+piselli-alla-romana,pepe,,,1,
+purea-di-patate,"patate a pasta gialla, 1 kg",006500,1000,1,
+purea-di-patate,"olio extravergine di oliva, due cucchiai",009210,20,1,2 cucchiai × 10 g
+purea-di-patate,"latte intero, 3/4 di litro",135010,750,1,750 ml × 1 g/ml
+purea-di-patate,"sale grosso, 1 cucchiaino raso",,,1,
+purea-di-patate,"noce moscata e pepe bianco, un pizzico",,,1,
+scarole-stufate,"scarola, 1 kg",005465,1000,0.8,
+scarole-stufate,"olio, q.b.",009210,40,1,q.b.: 10 g a porzione; olio: extravergine di oliva
+scarole-stufate,"aglio, 1 spicchio",005000,4,1,1 spicchio × 4 g
+scarole-stufate,"filetti di alici, 2",120020,8,1,2 filetti × 4 g; filetti: acciughe sott'olio
+scarole-stufate,"olive nere di Gaeta, 100 g",008800,100,1,olive di Gaeta: olive da tavola conservate
+scarole-stufate,"sale, q.b.",,,1,
+spinaci-al-burro,"spinaci freschi, 1kg e mezzo",005700,1500,0.8,"1,5 kg = 1500 g"
+spinaci-al-burro,"burro, 50gr",190010,50,1,
+spinaci-al-burro,sale,,,1,
+spinaci-al-burro,crostini di pane,000530,80,1,quantità assente: 20 g a porzione
+zucchine-trifolate,"zucchine, 800 gr",005730,800,0.8,
+zucchine-trifolate,"aglio, 1 spicchio",005000,4,0.8,1 spicchio = 4 g
+zucchine-trifolate,"olio di oliva extravergine, q.b.",009210,40,1,q.b.: 10 g a porzione
+zucchine-trifolate,"prezzemolo, q.b.",,,1,
+zucchine-trifolate,"sale, q.b.",,,1,

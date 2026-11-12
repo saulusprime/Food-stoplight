@@ -12,6 +12,7 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 - **Ordinamento multiplo** fino a tre criteri (es. categoria, poi Kcal decrescenti): dai menu «Ordina per / poi per» o con Maiusc+clic sulle intestazioni. I livelli di rischio si ordinano per gravità, i dati mancanti vanno in fondo.
 - **Confronto affiancato** di 2–4 alimenti (`/confronta`): rischi, energia, macro e micronutrienti con barre proporzionali, indice e carico glicemico, NOVA, FODMAP e fonte. Si scelgono con le caselle della tabella (la selezione resta cambiando pagina o ricerca), dalla scheda o dal campo di ricerca della pagina.
 - **Dati reali e tracciabili**: i 900 alimenti delle Tabelle di composizione degli alimenti del CREA (2019), con i valori che il CREA non pubblica (fruttosio, glucosio, grassi saturi) presi da un alimento simile della tabella britannica CoFID 2021 o di USDA FoodData Central, oppure calcolati dagli ingredienti delle ricette CREA; ogni scheda dice da dove viene ogni dato.
+- **Pasti pronti** (`/pasti-pronti`): 100 ricette della cucina italiana (20 antipasti, 30 primi, 30 secondi, 20 contorni, da Wikibooks e Buttalapasta) già convertite negli alimenti della tabella. Un clic aggiunge al pasto gli ingredienti per le porzioni scelte; ogni ricetta è anche un piatto della tabella, con valori per 100 g, porzione e semaforo calcolati dagli ingredienti.
 - **Compila da una fonte**: nel form un alimento si riempie da un codice CREA, da un codice a barre (Open Food Facts) o da un FDC ID USDA.
 - **Sincronizzazione periodica con USDA**: l'app aggiorna da sola i valori presi da USDA (con una chiave personale), con backup prima e storico nella pagina Importa.
 - **Sistema a semaforo** per cinque indicatori di rischio, **calcolati dai valori nutrizionali** con regole documentate e riferimenti bibliografici (Reg. CE 1924/2006, semaforo FSA, OMS, EFSA, LARN, IARC, WCRF, tabelle internazionali dell'indice glicemico, soglie FODMAP):
@@ -62,6 +63,7 @@ Food-stoplight/
 │   ├── import_export.py  # Export CSV/Excel/PDF, import con anteprima, sincronizzazione USDA
 │   ├── backup.py       # Backup e ripristino (amministratori)
 │   ├── pasto_diario.py # Pasto e diario alimentare
+│   ├── pasti_pronti.py # Pasti pronti: elenco per portata, ingredienti aggiunti al pasto
 │   ├── accesso.py      # Login, logout, lingua, ruoli e controllo dell'accesso
 │   ├── comandi.py      # Comandi da riga di comando (flask --app app …)
 │   └── comune.py       # Funzioni condivise (database, file da scaricare, ricerca da un campo)
@@ -79,19 +81,20 @@ Food-stoplight/
 ├── usda.py             # Valori da USDA FoodData Central per FDC ID
 ├── cofid.py            # Tabella britannica CoFID 2021: profilo degli zuccheri, zuccheri totali e grassi saturi
 ├── ricette.py          # Ricette CREA: fruttosio, glucosio, lattosio e saturi calcolati dagli ingredienti
+├── pasti_pronti.py     # Pasti pronti: lettura dei file e piatto calcolato dagli ingredienti (peso cotto, alcol)
 ├── openfoodfacts.py    # Prodotti confezionati per codice a barre (Open Food Facts)
 ├── fonti.py            # Alimenti dalle fonti: CREA + CoFID + USDA + ricette, Open Food Facts, USDA; import e sincronizzazione
 ├── classificazioni.py  # Bevande, carni rosse e lavorate, zuccheri liberi, NOVA, FODMAP, indice glicemico
 ├── rischi.py           # Regole dei cinque rischi, con motivi e riferimenti bibliografici
 ├── sincronizzazione.py # Sincronizzazione periodica con USDA (automatica nell'app, storico, blocco)
-├── dati/               # Abbinamenti CREA -> USDA e CREA -> CoFID, alimenti CoFID usati, ingredienti delle ricette, indice glicemico
+├── dati/               # Abbinamenti CREA -> USDA e CREA -> CoFID, alimenti CoFID usati, ingredienti delle ricette, indice glicemico, pasti pronti
 ├── lingue.py           # Scelta della lingua (italiano, inglese) e traduzione dei valori mostrati
 ├── pwa.py              # App installabile: manifest, service worker, pagina offline
 ├── babel.cfg, translations/   # Estrazione dei testi e traduzione inglese (messages.po / .mo)
 ├── config.py           # Configurazione da variabili d'ambiente / .env (sviluppo e produzione)
 ├── .env.example        # Modello del file .env
 ├── update.py           # Aggiornamento del database da CSV/Excel da riga di comando (stesse regole dell'import web)
-├── alimenti.db         # Database SQLite precaricato (900 alimenti CREA)
+├── alimenti.db         # Database SQLite precaricato (900 alimenti CREA e i 100 piatti dei pasti pronti)
 ├── utenti.db           # Utenti e password (creato al primo avvio, escluso da git)
 ├── diario.db           # Diario alimentare degli utenti (creato al primo avvio, escluso da git)
 ├── instance/           # Backup del database e file in attesa di import (creata all'uso, esclusa da git)
@@ -156,7 +159,7 @@ python app.py
 
 L'app sarà disponibile su **http://127.0.0.1:5000** (indirizzo e porta configurabili, vedi sotto).
 
-Al primo avvio i database mancanti vengono creati e quelli esistenti portati allo schema attuale (vedi *Migrazioni*). Il repository include `alimenti.db` già popolato con i 900 alimenti del CREA.
+Al primo avvio i database mancanti vengono creati e quelli esistenti portati allo schema attuale (vedi *Migrazioni*). Il repository include `alimenti.db` già popolato con i 900 alimenti del CREA e i 100 pasti pronti.
 
 ## ⚙️ Configurazione
 
@@ -209,6 +212,7 @@ flask --app app elimina-utente lucia                   # elimina anche il suo di
 
 - **Pasto**: dalla scheda di un alimento («Aggiungi al pasto», con la porzione scelta) o dalla pagina *Pasto* con la ricerca. Il pasto resta nella sessione del browser (fino a 30 alimenti) ed è disponibile anche senza login.
 - **Diario**: per gli utenti registrati, sia amministratori sia visitatori; ognuno vede solo il proprio. Si aggiungono alimenti a colazione, pranzo, cena o spuntino, oppure si salva un pasto intero. Ogni voce conserva i valori dell'alimento al momento dell'inserimento, quindi il diario non cambia se l'alimento viene poi modificato o eliminato.
+- **Pasti pronti**: dalla pagina *Pasti pronti* o dalla scheda del piatto, «Al pasto» aggiunge gli ingredienti crudi della ricetta per 1-12 porzioni; un alimento già nel pasto somma i grammi.
 - Il diario sta in `diario.db`, separato dagli altri database ed escluso da git e dai backup.
 
 ## 🌐 Lingue
@@ -239,6 +243,7 @@ All'uscita dall'account le pagine salvate vengono cancellate, perché possono co
 - **Open Food Facts** (licenza ODbL) – prodotti confezionati per codice a barre, dal form.
 - **CoFID 2021** – [McCance and Widdowson's Composition of Foods Integrated Dataset](https://www.gov.uk/government/publications/composition-of-foods-integrated-dataset-cofid) (Public Health England, Open Government Licence v3.0), prima di USDA: profilo degli zuccheri di prodotti europei (senza lo sciroppo di mais dei prodotti USA), applicato agli zuccheri totali del CREA o, se il CREA non li pubblica, a quelli USDA o CoFID; grassi saturi come percentuale degli acidi grassi, convertiti con i grassi totali del CREA e lo stesso fattore FAO, o, dove CoFID non dà la percentuale, con la quota dei saturi sui grassi. Un alimento solo simile si abbina quando il livello di rischio non dipende dalla scelta. Abbinamenti in `dati/crea_cofid.csv` (una riga per gruppo di campi, con una nota sulla scelta); in `dati/cofid.csv` solo gli alimenti CoFID usati, rigenerabili dal file Excel ufficiale con `flask cofid-estrai`.
 - **Ricette CREA** – per i 53 piatti con la lista degli ingredienti, fruttosio, glucosio, lattosio e saturi che il CREA non pubblica si calcolano dagli ingredienti (abbinati agli alimenti CREA in `dati/ingredienti_crea.csv`): la composizione degli ingredienti si applica a zuccheri e grassi del piatto. Si ricalcolano dopo ogni import, modifica o sincronizzazione.
+- **Pasti pronti** – ricette dal [Libro di cucina di Wikibooks](https://it.wikibooks.org/wiki/Libro_di_cucina) (licenza [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.it)) e da [Buttalapasta](https://www.buttalapasta.it/) (riuso consentito citando la fonte). Si riprendono solo nome, porzioni e ingredienti con le quantità, con il link alla pagina; il procedimento resta lì. GialloZafferano e altri siti che vietano la lettura automatica o l'estrazione di dati (robots.txt, riserva TDM) non sono stati usati. In `dati/pasti_pronti.csv` le ricette, in `dati/pasti_pronti_ingredienti.csv` gli ingredienti con il codice CREA dell'alimento, i grammi crudi dell'intera ricetta, la resa in cottura e una nota sulle stime; i due file, derivati in parte da Wikibooks, sono distribuiti con la stessa licenza CC BY-SA 4.0. `flask pasti-importa` li carica e calcola i piatti: nutrienti degli ingredienti divisi per il peso cotto, alcol del vino al 35% (tabelle USDA dei fattori di ritenzione), sale aggiunto non conteggiato. I piatti si ricalcolano con le ricette CREA.
 - **Indice glicemico** – Atkinson et al., *Diabetes Care* 2008: tabella 1 (medie di più studi) e, dove manca, tabella A1 dell'appendice online (singoli studi, preferiti quelli italiani ed europei, media delle voci che corrispondono); 190 alimenti in `dati/indice_glicemico.csv`, con la voce e i numeri delle voci usate.
 - **NOVA, FODMAP, rischi** – regole documentate in `classificazioni.py` e `rischi.py`, spiegate nella pagina Guida con i riferimenti.
 
@@ -250,6 +255,7 @@ flask --app app usda-sincronizza                    # aggiorna subito i valori U
 flask --app app ricalcola-rischi                    # ricalcola i livelli dopo aver cambiato le regole
 flask --app app ricalcola-ricette                   # ricalcola i valori delle ricette dagli ingredienti
 flask --app app cofid-estrai CoFID_2021.xlsx        # rigenera dati/cofid.csv dal file Excel ufficiale
+flask --app app pasti-importa                       # carica i pasti pronti da dati/ e ricalcola i piatti
 ```
 
 Ogni comando fa un backup del database prima di scrivere. La sincronizzazione automatica parte nell'app stessa ogni `USDA_SINCRONIZZA_GIORNI` giorni (su Render un cron job separato non vedrebbe il disco dei dati); un file di blocco accanto al database evita che due processi la eseguano insieme. Lo stato e il pulsante «Sincronizza ora» sono nella pagina Importa. La chiave personale è gratuita: <https://fdc.nal.usda.gov/api-key-signup>.

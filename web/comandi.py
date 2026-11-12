@@ -1,6 +1,7 @@
 """
 Comandi da riga di comando (flask --app app <comando>): utenti, import dal
-CREA, sincronizzazione USDA, ricalcoli, dati CoFID, stato dei database.
+CREA, sincronizzazione USDA, ricalcoli, dati CoFID, pasti pronti, stato dei
+database.
 """
 
 from __future__ import annotations
@@ -22,6 +23,7 @@ import cofid
 import crea
 import database
 import fonti
+import pasti_pronti
 import sincronizzazione
 import usda
 from web.accesso import PASSWORD_MIN, RUOLI, USERNAME_RE
@@ -310,6 +312,53 @@ def ricalcola_ricette_cmd() -> None:
         conn.close()
 
     click.echo(f"Ricette ricalcolate: {cambiate} cambiate. Backup: {nome_backup}.")
+
+
+@bp.cli.command("pasti-importa")
+@click.option("--prova", is_flag=True, help="Legge e calcola tutto senza scrivere.")
+def pasti_importa_cmd(prova: bool) -> None:
+    """
+    Carica i pasti pronti da dati/pasti_pronti.csv e
+    dati/pasti_pronti_ingredienti.csv e ricalcola i loro piatti.
+    """
+    try:
+        ricette = pasti_pronti.leggi_dati()
+    except pasti_pronti.ErroreDati as exc:
+        for errore in exc.errori[:20]:
+            click.echo(f"  ! {errore}", err=True)
+        raise click.ClickException(f"File dei pasti pronti non validi: {len(exc.errori)} errori.") from None
+
+    conn = get_db()
+
+    try:
+        nome_backup = None if prova else backup.crea(
+            current_app.config["DATABASE_PATH"], current_app.config["BACKUP_DIR"], "pasti"
+        )
+
+        try:
+            esito = fonti.carica_pasti_pronti(conn, ricette, adesso_testo())
+        except pasti_pronti.IngredientiMancanti as exc:
+            conn.rollback()
+            raise click.ClickException(f"Codici CREA degli ingredienti non trovati tra gli alimenti: {exc}") from None
+
+        for errore in esito["errori"][:20]:
+            click.echo(f"  ! {errore}")
+
+        click.echo(
+            f"Ricette: {esito['ricette']}. Piatti nuovi {esito['nuovi']}, aggiornati {esito['aggiornati']}, "
+            f"invariati {esito['invariati']}; ricette eliminate {esito['eliminati']}."
+        )
+
+        if prova:
+            conn.rollback()
+            click.echo("Prova: nessuna modifica scritta.")
+            return
+
+        conn.commit()
+    finally:
+        conn.close()
+
+    click.echo(f"Pasti pronti caricati. Backup del database precedente: {nome_backup}.")
 
 
 @bp.cli.command("cofid-estrai")

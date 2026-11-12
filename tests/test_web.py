@@ -222,7 +222,7 @@ def test_import_anteprima_e_conferma(admin):
 def test_import_sostituisci_richiede_conferma(admin):
     carica(admin, "due.csv", b"Alimento;Kcal\nUno;1\nDue;2\n")
     admin.post("/importa/conferma", data={"modalita": "sostituisci"})
-    assert conta() == 900
+    assert conta() == 1000
     admin.post("/importa/conferma", data={"modalita": "sostituisci", "conferma_sostituisci": "1"})
     assert conta() == 2
 
@@ -230,7 +230,7 @@ def test_import_sostituisci_richiede_conferma(admin):
 def test_import_sostituisci_senza_righe_valide(admin):
     carica(admin, "vuoto.csv", b"Alimento;Kcal\n;5\n")
     admin.post("/importa/conferma", data={"modalita": "sostituisci", "conferma_sostituisci": "1"})
-    assert conta() == 900
+    assert conta() == 1000
 
 
 def test_import_annulla_e_token_manomesso(admin):

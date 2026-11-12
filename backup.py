@@ -33,6 +33,7 @@ MOTIVI = {
     "crea": N_("Prima dell'import dal CREA"),
     "rischi": N_("Prima del ricalcolo dei rischi"),
     "ricette": N_("Prima del ricalcolo delle ricette"),
+    "pasti": N_("Prima del caricamento dei pasti pronti"),
     "migrazione": N_("Prima di una migrazione dello schema"),
 }
 

@@ -32,12 +32,14 @@ import importazione
 import lingue
 import nutrienti
 import openfoodfacts
+import pasti_pronti
 import ricerca
 import ricette
 import rischi
 import usda
 from archivio import Alimento
 from lingue import N_
+from web import pasti_pronti as pasti_pronti_web
 from web.comune import (
     get_alimenti,
     get_alimento,
@@ -255,7 +257,26 @@ def scheda(alimento_id: int) -> ResponseReturnValue:
         valutazione=rischi.valuta(item),
         riferimenti=rischi.RIFERIMENTI,
         fonti_dati=fonti_alimento(item),
+        pasto_pronto=dati_pasto_pronto(alimento_id),
     )
+
+
+def dati_pasto_pronto(alimento_id: int) -> dict[str, Any] | None:
+    """
+    Per il piatto di un pasto pronto: ricetta, ingredienti per una porzione
+    e fonte; None per gli altri alimenti.
+    """
+    ricetta = pasti_pronti_web.ricetta_per("alimento_id", alimento_id)
+
+    if ricetta is None:
+        return None
+
+    return {
+        **ricetta,
+        "ingredienti": pasti_pronti_web.ingredienti_porzione(ricetta),
+        "fonte_ricetta": pasti_pronti.FONTI.get(ricetta["fonte"], {}),
+        "porzioni_max": pasti_pronti.PORZIONI_MAX,
+    }
 
 
 def fonti_alimento(item: Alimento) -> dict[str, Any]:

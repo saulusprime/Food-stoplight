@@ -129,8 +129,19 @@ Commit `6289fec` — 10 novembre 2026 — non classificati: colesterolo da 52 a 
 
 ## 🛠️ Ritocchi: legenda e import CREA
 
-11 novembre 2026 — legenda e pulsante delle colonne non occupano più una riga a sé; un import CREA con USDA non disponibile non cancella più i valori USDA
+Commit `880ebc2` — 11 novembre 2026 — legenda e pulsante delle colonne non occupano più una riga a sé; un import CREA con USDA non disponibile non cancella più i valori USDA
 
 - [x] Legenda della tabella sulla riga dell'ordinamento, accanto a «Righe per pagina» e con l'aspetto delle select; aperta si sovrappone alla tabella senza spostarla e si chiude con Esc o con un clic fuori
 - [x] «Mostra tutte le colonne» sulla riga del titolo, accanto all'export; offline, quando l'export è nascosto, il pulsante resta
 - [x] `crea-importa` scarica i valori USDA prima delle pagine CREA e, se USDA rifiuta le richieste, si ferma senza scrivere nulla: prima riscriveva gli alimenti abbinati senza fruttosio, FDC ID e gli altri campi presi da USDA
+
+## 🍝 Pasti pronti
+
+12 novembre 2026 — 100 ricette della cucina italiana (20 antipasti, 30 primi, 30 secondi, 20 contorni) convertite negli alimenti dell'app: si aggiungono al pasto e sono anche piatti della tabella
+
+- [x] Ricette dal Libro di cucina di Wikibooks (48, licenza CC BY-SA 4.0) e da Buttalapasta (52, riuso consentito citando la fonte): solo nome, porzioni e ingredienti con le quantità, con il link alla pagina. GialloZafferano non è stato usato: il suo robots.txt vieta la lettura agli agenti di Anthropic; esclusi anche i siti che riservano l'estrazione dei dati (Fatto in casa da Benedetta, Sale&Pepe)
+- [x] Ogni ingrediente abbinato a un alimento CREA con i grammi crudi dell'intera ricetta, la resa in cottura e una nota sulle stime (pesi standard per pezzi, cucchiai e «q.b.», parte edibile, olio di frittura assorbito): `dati/pasti_pronti.csv` e `dati/pasti_pronti_ingredienti.csv`
+- [x] Migrazione 5 di `alimenti.db`: tabelle `pasti_pronti` e `pasti_pronti_ingredienti`; comando `flask pasti-importa` (con backup e `--prova`)
+- [x] Piatto calcolato dagli ingredienti (metodo delle ricette): nutrienti divisi per il peso cotto, resa di pasta, riso, cereali e legumi dalle coppie crudo/cotto del CREA, alcol del vino al 35% (tabelle USDA dei fattori di ritenzione), indice glicemico pesato sui carboidrati; si ricalcola con le ricette CREA dopo ogni import, modifica o sincronizzazione
+- [x] Pagina «Pasti pronti» per portata, ordinabile per nome, punteggio o Kcal per porzione, con punteggio e rischi medi o alti di ogni piatto; «Al pasto» aggiunge gli ingredienti per 1-12 porzioni
+- [x] Nella scheda del piatto: ingredienti per una porzione con il link a ogni alimento, fonte e licenza della ricetta, aggiunta al pasto; sezione «Pasti pronti» nella guida

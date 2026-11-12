@@ -52,6 +52,7 @@ from config import carica_config
 from web import accesso, comandi, import_export, pagine, pasto_diario
 from web import alimenti as alimenti_web
 from web import backup as backup_web
+from web import pasti_pronti as pasti_pronti_web
 from web.accesso import pagina_precedente
 from web.comune import filtro_numero, get_db, get_db_utenti, init_db
 from web.pagine import CONFRONTO_MAX
@@ -269,7 +270,7 @@ def intestazioni_sicurezza(response: Response) -> Response:
 # ---------------------------------------------------------------
 
 for blueprint in (api.bp, pwa.bp, accesso.bp, pagine.bp, alimenti_web.bp, import_export.bp, backup_web.bp,
-                  pasto_diario.bp, comandi.bp):
+                  pasto_diario.bp, pasti_pronti_web.bp, comandi.bp):
     app.register_blueprint(blueprint)
 
 

@@ -173,6 +173,43 @@ def _alimenti_4_cofid_e_ricette(conn: sqlite3.Connection) -> None:
         conn.execute(f"ALTER TABLE alimenti ADD COLUMN {nome} TEXT")
 
 
+def _alimenti_5_pasti_pronti(conn: sqlite3.Connection) -> None:
+    """
+    Pasti pronti: ricette con gli ingredienti presi tra gli alimenti (codice
+    CREA, grammi crudi dell'intera ricetta, resa in cottura). alimento_id è il
+    piatto calcolato dagli ingredienti, nella tabella alimenti.
+    """
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS pasti_pronti (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            codice TEXT NOT NULL UNIQUE,
+            nome TEXT NOT NULL,
+            portata TEXT NOT NULL
+                CHECK (portata IN ('antipasto', 'primo', 'secondo', 'contorno')),
+            porzioni INTEGER NOT NULL CHECK (porzioni > 0),
+            fonte TEXT NOT NULL,
+            url_fonte TEXT,
+            note TEXT,
+            alimento_id INTEGER,
+            aggiornato_il TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS pasti_pronti_ingredienti (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            pasto_id INTEGER NOT NULL REFERENCES pasti_pronti (id) ON DELETE CASCADE,
+            ordine INTEGER NOT NULL,
+            ingrediente TEXT NOT NULL,
+            codice_crea TEXT,
+            grammi REAL CHECK (grammi IS NULL OR grammi >= 0),
+            resa REAL NOT NULL DEFAULT 1 CHECK (resa > 0),
+            nota TEXT
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS pasti_pronti_ingredienti_pasto ON pasti_pronti_ingredienti (pasto_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS pasti_pronti_alimento ON pasti_pronti (alimento_id)")
+
+
 # ---------------------------------------------------------------
 # UTENTI E DIARIO
 # ---------------------------------------------------------------
@@ -217,6 +254,7 @@ MIGRAZIONI: dict[str, list[Migrazione]] = {
         (3, "Codici CREA e a barre, porzione, glucosio, lattosio, alcol, sincronizzazioni",
          _alimenti_3_fonti_e_zuccheri),
         (4, "Valori da CoFID e ricette calcolate dagli ingredienti", _alimenti_4_cofid_e_ricette),
+        (5, "Pasti pronti: ricette con ingredienti e grammi", _alimenti_5_pasti_pronti),
     ],
     "utenti": [
         (1, "Schema di base", _utenti_1_schema_di_base),
