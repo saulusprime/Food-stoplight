@@ -12,7 +12,7 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 - **Ordinamento multiplo** fino a tre criteri (es. categoria, poi Kcal decrescenti): dai menu «Ordina per / poi per» o con Maiusc+clic sulle intestazioni. I livelli di rischio si ordinano per gravità, i dati mancanti vanno in fondo.
 - **Confronto affiancato** di 2–4 alimenti (`/confronta`): rischi, energia, macro e micronutrienti con barre proporzionali, indice e carico glicemico, NOVA, FODMAP e fonte. Si scelgono con le caselle della tabella (la selezione resta cambiando pagina o ricerca), dalla scheda o dal campo di ricerca della pagina.
 - **Dati reali e tracciabili**: i 900 alimenti delle Tabelle di composizione degli alimenti del CREA (2019), con i valori che il CREA non pubblica (fruttosio, glucosio, grassi saturi) presi da un alimento simile della tabella britannica CoFID 2021 o di USDA FoodData Central, oppure calcolati dagli ingredienti delle ricette CREA; ogni scheda dice da dove viene ogni dato.
-- **Pasti pronti** (`/pasti-pronti`): 100 ricette della cucina italiana (20 antipasti, 30 primi, 30 secondi, 20 contorni, da Wikibooks e Buttalapasta) già convertite negli alimenti della tabella. Un clic aggiunge al pasto gli ingredienti per le porzioni scelte; ogni ricetta è anche un piatto della tabella, con valori per 100 g, porzione e semaforo calcolati dagli ingredienti.
+- **Pasti pronti** (`/pasti-pronti`): 200 ricette della cucina italiana (40 antipasti, 60 primi, 60 secondi, 40 contorni, da Wikibooks e Buttalapasta) già convertite negli alimenti della tabella. Un clic aggiunge al pasto gli ingredienti per le porzioni scelte; ogni ricetta è anche un piatto della tabella, con valori per 100 g, porzione e semaforo calcolati dagli ingredienti.
 - **Compila da una fonte**: nel form un alimento si riempie da un codice CREA, da un codice a barre (Open Food Facts) o da un FDC ID USDA.
 - **Sincronizzazione periodica con USDA**: l'app aggiorna da sola i valori presi da USDA (con una chiave personale), con backup prima e storico nella pagina Importa.
 - **Sistema a semaforo** per cinque indicatori di rischio, **calcolati dai valori nutrizionali** con regole documentate e riferimenti bibliografici (Reg. CE 1924/2006, semaforo FSA, OMS, EFSA, LARN, IARC, WCRF, tabelle internazionali dell'indice glicemico, soglie FODMAP):
@@ -94,7 +94,7 @@ Food-stoplight/
 ├── config.py           # Configurazione da variabili d'ambiente / .env (sviluppo e produzione)
 ├── .env.example        # Modello del file .env
 ├── update.py           # Aggiornamento del database da CSV/Excel da riga di comando (stesse regole dell'import web)
-├── alimenti.db         # Database SQLite precaricato (900 alimenti CREA e i 100 piatti dei pasti pronti)
+├── alimenti.db         # Database SQLite precaricato (900 alimenti CREA e i 200 piatti dei pasti pronti)
 ├── utenti.db           # Utenti e password (creato al primo avvio, escluso da git)
 ├── diario.db           # Diario alimentare degli utenti (creato al primo avvio, escluso da git)
 ├── instance/           # Backup del database e file in attesa di import (creata all'uso, esclusa da git)
@@ -159,7 +159,7 @@ python app.py
 
 L'app sarà disponibile su **http://127.0.0.1:5000** (indirizzo e porta configurabili, vedi sotto).
 
-Al primo avvio i database mancanti vengono creati e quelli esistenti portati allo schema attuale (vedi *Migrazioni*). Il repository include `alimenti.db` già popolato con i 900 alimenti del CREA e i 100 pasti pronti.
+Al primo avvio i database mancanti vengono creati e quelli esistenti portati allo schema attuale (vedi *Migrazioni*). Il repository include `alimenti.db` già popolato con i 900 alimenti del CREA e i 200 pasti pronti.
 
 ## ⚙️ Configurazione
 

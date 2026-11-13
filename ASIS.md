@@ -137,7 +137,7 @@ Commit `880ebc2` — 11 novembre 2026 — legenda e pulsante delle colonne non o
 
 ## 🍝 Pasti pronti
 
-12 novembre 2026 — 100 ricette della cucina italiana (20 antipasti, 30 primi, 30 secondi, 20 contorni) convertite negli alimenti dell'app: si aggiungono al pasto e sono anche piatti della tabella
+Commit `5e1b3f9` — 12 novembre 2026 — 100 ricette della cucina italiana (20 antipasti, 30 primi, 30 secondi, 20 contorni) convertite negli alimenti dell'app: si aggiungono al pasto e sono anche piatti della tabella
 
 - [x] Ricette dal Libro di cucina di Wikibooks (48, licenza CC BY-SA 4.0) e da Buttalapasta (52, riuso consentito citando la fonte): solo nome, porzioni e ingredienti con le quantità, con il link alla pagina. GialloZafferano non è stato usato: il suo robots.txt vieta la lettura agli agenti di Anthropic; esclusi anche i siti che riservano l'estrazione dei dati (Fatto in casa da Benedetta, Sale&Pepe)
 - [x] Ogni ingrediente abbinato a un alimento CREA con i grammi crudi dell'intera ricetta, la resa in cottura e una nota sulle stime (pesi standard per pezzi, cucchiai e «q.b.», parte edibile, olio di frittura assorbito): `dati/pasti_pronti.csv` e `dati/pasti_pronti_ingredienti.csv`
@@ -145,3 +145,13 @@ Commit `880ebc2` — 11 novembre 2026 — legenda e pulsante delle colonne non o
 - [x] Piatto calcolato dagli ingredienti (metodo delle ricette): nutrienti divisi per il peso cotto, resa di pasta, riso, cereali e legumi dalle coppie crudo/cotto del CREA, alcol del vino al 35% (tabelle USDA dei fattori di ritenzione), indice glicemico pesato sui carboidrati; si ricalcola con le ricette CREA dopo ogni import, modifica o sincronizzazione
 - [x] Pagina «Pasti pronti» per portata, ordinabile per nome, punteggio o Kcal per porzione, con punteggio e rischi medi o alti di ogni piatto; «Al pasto» aggiunge gli ingredienti per 1-12 porzioni
 - [x] Nella scheda del piatto: ingredienti per una porzione con il link a ogni alimento, fonte e licenza della ricetta, aggiunta al pasto; sezione «Pasti pronti» nella guida
+
+## 🍝 Altri 100 pasti pronti
+
+12 novembre 2026 — i pasti pronti passano da 100 a 200 (40 antipasti, 60 primi, 60 secondi, 40 contorni), senza doppioni
+
+- [x] 100 ricette nuove, 83 da Buttalapasta e 17 dal Libro di cucina di Wikibooks (in tutto 137 e 63), con le stesse regole di conversione e il caricamento con `flask pasti-importa`
+- [x] Doppioni esclusi confrontando i candidati con i 100 pasti già presenti e con tutti gli alimenti del database, non solo per nome: fuori i piatti che hanno già un alimento CREA (patatine fritte, minestrone, pollo arrosto) e quelli troppo simili a un pasto esistente (zuppa di cozze e cozze alla tarantina, tiella di polpo e polpo con patate, peperoni in padella e peperonata; il baccalà mantecato di Wikibooks è in realtà un baccalà alla vicentina). Nessun nome nuovo coincide con un alimento: non serve il suffisso «(pasto pronto)»
+- [x] Scartate le ricette senza quantità per l'ingrediente principale o senza elenco degli ingredienti, e la bagna càuda: è la sola salsa, senza le verdure da intingere
+- [x] Regole di conversione precisate: capperi non conteggiati; olio, burro e brodo usati solo nel procedimento in una riga «(nel procedimento)»; impasti fatti in casa (farina 1,8 nella pasta bollita, acqua dell'impasto 0,6 in forno); parte edibile di pesci interi e asparagi; porzioni ricalcolate, con una nota, quando la fonte ne indica di inverosimili
+- [x] La guida descrive i pasti pronti senza numeri fissi, così non va aggiornata a ogni aggiunta

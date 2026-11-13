@@ -335,12 +335,12 @@ def test_scheda_del_piatto_con_ingredienti(client: Any, caricato: dict[str, Any]
 
 def test_dati_del_progetto_validi_e_caricati() -> None:
     """
-    I file in dati/ si leggono senza errori, hanno 100 ricette divise tra le
+    I file in dati/ si leggono senza errori, hanno 200 ricette divise tra le
     portate e alimenti.db del progetto è allineato: ricaricarli non cambia nulla.
     """
     ricette = pasti_pronti.leggi_dati()
-    assert len(ricette) == 100
-    assert Counter(r["portata"] for r in ricette) == {"antipasto": 20, "primo": 30, "secondo": 30, "contorno": 20}
+    assert len(ricette) == 200
+    assert Counter(r["portata"] for r in ricette) == {"antipasto": 40, "primo": 60, "secondo": 60, "contorno": 40}
     assert all(r["url_fonte"] and r["url_fonte"].startswith("https://") for r in ricette)
 
     conn = database.connetti_alimenti(str(PROGETTO / "alimenti.db"))

@@ -177,7 +177,7 @@ def test_applica_sostituisci():
     voci = importazione.pianifica(conn, letto, "sostituisci")
     eliminati = importazione.applica(conn, voci, "sostituisci", "2026-01-01 00:00:00")
     conn.commit()
-    assert eliminati == 1000
+    assert eliminati == 1100
     assert conn.execute("SELECT COUNT(*) FROM alimenti").fetchone()[0] == 2
     conn.close()
 

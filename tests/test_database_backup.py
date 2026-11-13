@@ -96,7 +96,7 @@ def test_crea_elenca_pota(tmp_path):
     assert len(set(nomi)) == 3
     elenco = backup.elenco(cartella)
     assert [b["nome"] for b in elenco] == list(reversed(nomi))
-    assert elenco[0]["alimenti"] == 1000
+    assert elenco[0]["alimenti"] == 1100
     backup.pota(cartella, conserva=1)
     assert [b["nome"] for b in backup.elenco(cartella)] == [nomi[-1]]
 
@@ -104,7 +104,7 @@ def test_crea_elenca_pota(tmp_path):
 def test_istantanea_valida(tmp_path):
     copia = tmp_path / "copia.db"
     copia.write_bytes(backup.istantanea(str(DB)))
-    assert backup.verifica(str(copia)) == 1000
+    assert backup.verifica(str(copia)) == 1100
 
 
 @pytest.mark.parametrize("nome", ["../alimenti.db", "alimenti_x.db", "utenti.db", "", "alimenti_20260101-000000_boh.db/.."])
