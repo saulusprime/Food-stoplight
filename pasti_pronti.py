@@ -25,6 +25,7 @@ zuccheri per fruttosio, glucosio e lattosio, grassi per saturi e colesterolo).
 from __future__ import annotations
 
 import csv
+import math
 import re
 from collections.abc import Iterable, Mapping
 from pathlib import Path
@@ -228,8 +229,10 @@ def _totale(parti: list[tuple[float, float | None]]) -> float | None:
     parti: (peso nel riferimento, contributo o None). Somma dei contributi
     noti estesa alla parte ignota, o None se questa supera QUOTA_IGNOTA_MAX.
     """
-    noto = sum(peso for peso, valore in parti if valore is not None)
-    ignoto = sum(peso for peso, valore in parti if valore is None)
+    # math.fsum e non sum: dalla 3.12 sum somma i float in modo diverso e un valore
+    # a metà tra due arrotondamenti cambierebbe con la versione di Python
+    noto = math.fsum(peso for peso, valore in parti if valore is not None)
+    ignoto = math.fsum(peso for peso, valore in parti if valore is None)
 
     if noto + ignoto <= 0:
         return 0.0
@@ -237,7 +240,7 @@ def _totale(parti: list[tuple[float, float | None]]) -> float | None:
     if ignoto / (noto + ignoto) > QUOTA_IGNOTA_MAX:
         return None
 
-    somma = sum(valore for _, valore in parti if valore is not None)
+    somma = math.fsum(valore for _, valore in parti if valore is not None)
     return somma * (noto + ignoto) / noto if noto > 0 else 0.0
 
 
@@ -268,7 +271,7 @@ def peso_cotto(ricetta: Ricetta) -> float:
     Peso del piatto finito: grammi per resa di tutti gli ingredienti con un
     peso, anche quelli contati solo come peso (acqua, brodo).
     """
-    return sum(float(voce["grammi"] or 0) * float(voce["resa"] or 1) for voce in ricetta["ingredienti"])
+    return math.fsum(float(voce["grammi"] or 0) * float(voce["resa"] or 1) for voce in ricetta["ingredienti"])
 
 
 def _indice_glicemico(voci: Iterable[tuple[Mapping[str, Any], float, float]]) -> float | None:
@@ -292,7 +295,7 @@ def _indice_glicemico(voci: Iterable[tuple[Mapping[str, Any], float, float]]) ->
         return None
 
     totale = _totale(parti)
-    carboidrati = sum(peso for peso, _ in parti)
+    carboidrati = math.fsum(peso for peso, _ in parti)
     return round(totale / carboidrati) if totale is not None and carboidrati > 0 else None
 
 

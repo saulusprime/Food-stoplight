@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 from collections.abc import Iterable, Mapping, MutableMapping
 from functools import cache
 from typing import Any
@@ -112,13 +113,14 @@ def _quota(parti: list[tuple[float, float | None]]) -> float | None:
     Somma di (peso nel totale, valore o None): quota del valore sul totale
     noto, o None se il totale ignoto supera QUOTA_IGNOTA_MAX.
     """
-    noto = sum(peso for peso, valore in parti if valore is not None)
-    ignoto = sum(peso for peso, valore in parti if valore is None)
+    # math.fsum: stesso risultato su ogni versione di Python (vedi pasti_pronti._totale)
+    noto = math.fsum(peso for peso, valore in parti if valore is not None)
+    ignoto = math.fsum(peso for peso, valore in parti if valore is None)
 
     if noto <= 0 or ignoto / (noto + ignoto) > QUOTA_IGNOTA_MAX:
         return None
 
-    return sum(valore for _, valore in parti if valore is not None) / noto
+    return math.fsum(valore for _, valore in parti if valore is not None) / noto
 
 
 def composizione(
