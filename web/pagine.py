@@ -34,6 +34,7 @@ import lingue
 import nutrienti
 import openfoodfacts
 import pasti_pronti
+import piano
 import profilo
 import ricerca
 import ricette
@@ -486,6 +487,8 @@ def guida() -> ResponseReturnValue:
         ciqual_licenza=ciqual.URL_LICENZA,
         nova=nutrienti.NOVA.values(),
         condizioni=profilo.CONDIZIONI,
+        piano_tolleranza=piano.TOLLERANZA,
+        piano_peso_profilo=piano.PESO_PROFILO,
         livelli_fodmap=nutrienti.LIVELLI_FODMAP,
         fodmap=nutrienti.FODMAP,
         totale_alimenti=get_stats()[0],

@@ -187,3 +187,14 @@ Commit `6a71f07` — 13 novembre 2026 — i pasti pronti passano da 100 a 200 (4
 - [x] Generazione con reparti e alimenti per reparto a scelta, ogni volta diversa tra i verdi del reparto; avviso per i reparti senza niente da proporre
 - [x] Voci da cambiare (verde successivo dello stesso reparto, o il successivo non verde dove non ci sono verdi), togliere o aggiungere dalla ricerca; per un alimento non verde l'alternativa verde del reparto
 - [x] Spunte salvate sul dispositivo, che ripartono da zero con una lista nuova; stampa senza menu e comandi, download come testo, copia offline nel service worker; voce «Spesa» nel menu con il numero di alimenti e sezione nella guida
+
+## 🗓️ Piano settimanale bilanciato
+
+14 novembre 2026 — pagina «Piano» (`/piano`): pranzi e cene della settimana con i pasti pronti, bilanciati sui rischi; sui dati attuali, rispetto a piatti presi a caso, il punteggio della settimana sale in media da 54 a 68, il rischio medio peggiore scende da 2,3 a 1,5 e le volte in cui lo stesso rischio è Alto due volte in un giorno da 6 a 0
+
+- [x] Bilanciamento (`piano.py`): con un profilo prima meno piatti Alto per te (con il diabete da 12 a 4, il minimo: solo 3 primi su 60 non sono Alto per te) e meno piatti non classificati per te; poi meno volte lo stesso rischio Alto in due piatti dello stesso giorno; poi la somma più bassa dei quadrati delle medie settimanali dei cinque rischi, pesate sulle Kcal come nel pasto, con i rischi del profilo che contano il doppio e una tolleranza di 0,05 sotto cui due piani sono pari
+- [x] Costruzione un posto alla volta (prima le portate con più Kcal), a caso tra i piatti pari, così ogni piano è diverso; poi miglioramento un piatto alla volta. Un piano da 28 piatti si calcola in circa 30 ms
+- [x] Da 1 a 7 giorni dalla data scelta, portate a scelta per pranzo e cena (di base primo e contorno a pranzo, secondo e contorno a cena), una porzione a testa, nessun piatto ripetuto finché la portata ne ha abbastanza
+- [x] ↻ cambia un piatto con il successivo nell'ordine del bilanciamento; «Scegli un altro piatto» mette quello che si vuole, cercandolo per nome. Il piatto resta fisso (📌, si può liberare) e gli altri si ribilanciano partendo dal piano com'è, con meno cambi possibile e un messaggio che dice quali sono cambiati
+- [x] Per ogni giorno Kcal, punteggio e semaforo per te; tabella dei rischi giorno per giorno; nutrienti e profilo di rischio della settimana; avviso se con il profilo alcuni piatti restano Alto per te
+- [x] Ingredienti della settimana sommati per reparto, per 1-8 persone; «Al pasto» per ogni piatto; stampa, download come testo, copia offline nel service worker; voce «Piano» nel menu e sezione nella guida

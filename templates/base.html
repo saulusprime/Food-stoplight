@@ -60,6 +60,10 @@
                         {{ _('Pasti pronti') }}
                     </a>
 
+                    <a class="nav-link" href="{{ url_for('piano.pagina') }}">
+                        {{ _('Piano') }}
+                    </a>
+
                     {% set voci_spesa = session.get('spesa', [])|length %}
                     <a class="nav-link" href="{{ url_for('spesa.lista') }}">
                         {{ _('Spesa') }}{% if voci_spesa %} <span class="contatore-pasto" aria-label="{{ ngettext('%(num)d alimento nella lista della spesa', '%(num)d alimenti nella lista della spesa', voci_spesa) }}">{{ voci_spesa }}</span>{% endif %}

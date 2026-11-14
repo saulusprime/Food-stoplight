@@ -2542,6 +2542,54 @@ html.js .barra-confronto:not(.attiva) {
     line-height: 1.3rem;
 }
 
+/* ---------------------------------------------------------------
+   Piano settimanale (piano.py)
+   --------------------------------------------------------------- */
+.piano-portata {
+    display: inline-block;
+    min-width: 5.5rem;
+    margin-right: 0.4rem;
+    color: var(--testo-tenue);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.piano-fisso {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-top: 0.2rem;
+}
+
+.piano-scegli {
+    margin-top: 0.2rem;
+}
+
+.piano-scegli summary {
+    width: fit-content;
+    color: var(--testo-tenue);
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.piano-scegli .input-group {
+    max-width: 26rem;
+}
+
+.piano-grammi {
+    flex: none;
+    font-variant-numeric: tabular-nums;
+}
+
+.piano-rischi td,
+.piano-rischi th {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
 /* Stampa: solo il contenuto della pagina, senza menu, notifiche e comandi */
 @media print {
     .navbar,
@@ -2562,7 +2610,8 @@ html.js .barra-confronto:not(.attiva) {
         box-shadow: none;
     }
 
-    .lista-spesa-voce {
+    .lista-spesa-voce,
+    .piano-giorno {
         break-inside: avoid;
     }
 }

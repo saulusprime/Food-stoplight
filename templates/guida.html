@@ -36,6 +36,7 @@
                     <li><a href="#per-te">{{ _('Semaforo per te') }}</a></li>
                     <li><a href="#pasti">{{ _('Pasti e diario') }}</a></li>
                     <li><a href="#pasti-pronti">{{ _('Pasti pronti') }}</a></li>
+                    <li><a href="#piano">{{ _('Piano settimanale') }}</a></li>
                     <li><a href="#spesa">{{ _('Lista della spesa') }}</a></li>
                     <li><a href="#medaglie">{{ _('Medaglie') }}</a></li>
                     <li><a href="#tef">{{ _('Energia, TEF e Kcal nette') }}</a></li>
@@ -247,6 +248,32 @@
                     </p>
                     <p class="mb-0">
                         {% trans %}«Al pasto» aggiunge gli ingredienti crudi per le porzioni scelte, e nella pagina del pasto i rischi si pesano sulle Kcal di ciascun ingrediente, come per ogni pasto (le quantità sotto 1 g, come le erbe, salgono a 1 g). Il semaforo del piatto in tabella valuta invece il piatto intero, per 100 g e per porzione, con le stesse regole degli altri alimenti: come per le ricette del CREA, la carne rossa o lavorata conta nel rischio tumorale del singolo ingrediente, non del piatto che la contiene.{% endtrans %}
+                    </p>
+                </div>
+            </section>
+
+            <section class="card guida-sezione" id="piano" aria-labelledby="titolo-piano">
+                <div class="card-body">
+                    <h2 id="titolo-piano">{{ _('Piano settimanale') }}</h2>
+                    <p>
+                        {% trans url=url_for('piano.pagina') %}Il <a href="{{ url }}">piano settimanale</a> riempie pranzi e cene da uno a sette giorni con i pasti pronti, una porzione a testa, con le portate scelte per ciascun pasto (di base a pranzo primo e contorno, a cena secondo e contorno). Nessun piatto si ripete, finché nella portata ce ne sono abbastanza; colazione e spuntini restano liberi.{% endtrans %}
+                    </p>
+                    <p class="mb-2">{{ _("Tra due piani si preferisce, nell'ordine, quello con:") }}</p>
+                    <ol>
+                        <li>{{ _('con un profilo, meno piatti Alto per te, poi meno piatti con il semaforo per te non classificato;') }}</li>
+                        <li>{{ _('meno volte lo stesso rischio Alto in due piatti dello stesso giorno;') }}</li>
+                        <li>
+                            {% trans tolleranza=piano_tolleranza|numero, peso=piano_peso_profilo %}la somma più bassa dei quadrati delle medie settimanali dei cinque rischi, pesate sulle Kcal come per il pasto, da 0 (Trascurabile) a 3 (Alto). Il quadrato fa pesare un rischio che si accumula più di tanti rischi bassi: due rischi a 1 contano 2, uno a 2 conta 4. I rischi del tuo profilo contano {{ peso }} volte; differenze fino a {{ tolleranza }} contano come pari.{% endtrans %}
+                        </li>
+                    </ol>
+                    <p>
+                        {% trans %}Il piano si costruisce un piatto alla volta, prima le portate con più Kcal, scegliendo a caso tra i piatti pari: per questo ogni piano è diverso. Poi si migliora cambiando un piatto alla volta, finché nessun cambio abbassa il costo oltre la tolleranza. Non è detto che sia il migliore possibile, ma i rischi restano molto più bassi e distribuiti che con piatti presi a caso.{% endtrans %}
+                    </p>
+                    <p>
+                        {% trans %}↻ mette il piatto successivo nell'ordine del bilanciamento (premendolo più volte si vedono tutti); «Scegli un altro piatto» mette quello che vuoi. Il piatto cambiato o scelto resta fermo e gli altri si ribilanciano partendo dal piano com'è: cambiano solo quelli che migliorano il bilanciamento, e la pagina dice quali. Se in una portata i piatti adatti al profilo non bastano (con il diabete quasi tutti i primi sono Alto per te), il piano usa prima quelli adatti e segnala gli altri.{% endtrans %}
+                    </p>
+                    <p class="mb-0">
+                        {% trans %}I rischi non classificati di un piatto non contano nelle medie, come nel pasto. Il piano non segue le frequenze settimanali delle linee guida (pesce, legumi, carne rossa) e le porzioni non tengono conto del fabbisogno di energia. Gli ingredienti sono i grammi crudi di tutti i piatti, sommati per il numero di persone. Il piano resta nella sessione del browser e, una volta aperto, anche offline; si stampa o si scarica come testo.{% endtrans %}
                     </p>
                 </div>
             </section>

@@ -26,7 +26,7 @@ const OFFLINE = {{ offline|tojson }};
 const INTESTAZIONE = {{ intestazione|tojson }};
 
 // Percorsi (relativi a BASE) delle pagine di consultazione
-const CONSULTABILI = [/^$/, /^guida$/, /^alimento\/\d+$/, /^spesa$/];
+const CONSULTABILI = [/^$/, /^guida$/, /^alimento\/\d+$/, /^spesa$/, /^piano$/];
 
 function relativo(url) {
     return url.pathname.startsWith(BASE) ? url.pathname.slice(BASE.length) : null;

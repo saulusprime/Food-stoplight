@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Food-stoplight 1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-14 08:42+0100\n"
+"POT-Creation-Date: 2026-11-14 09:17+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -88,8 +88,16 @@ msgstr ""
 " 100"
 
 #, python-format
+msgid "%(giorno)s, %(pasto)s: %(piatto)s"
+msgstr "%(giorno)s, %(pasto)s: %(piatto)s"
+
+#, python-format
 msgid "%(grammi)s g in tutto"
 msgstr "%(grammi)s g in total"
+
+#, python-format
+msgid "%(kcal)s Kcal"
+msgstr "%(kcal)s Kcal"
 
 #, python-format
 msgid "%(livello)s (%(media)s su %(massimo)s)"
@@ -166,6 +174,26 @@ msgid "%(num)d eliminato"
 msgid_plural "%(num)d eliminati"
 msgstr[0] "%(num)d deleted"
 msgstr[1] "%(num)d deleted"
+
+#, python-format
+msgid "%(num)d giorno"
+msgid_plural "%(num)d giorni"
+msgstr[0] "%(num)d day"
+msgstr[1] "%(num)d days"
+
+#, python-format
+msgid ""
+"%(num)d piatto è Alto per te: tra i pasti pronti di quella portata non ce"
+" n'erano abbastanza degli altri."
+msgid_plural ""
+"%(num)d piatti sono Alto per te: tra i pasti pronti di quelle portate non"
+" ce n'erano abbastanza degli altri."
+msgstr[0] ""
+"%(num)d dish is High for you: there were not enough other ready meals in "
+"that course."
+msgstr[1] ""
+"%(num)d dishes are High for you: there were not enough other ready meals "
+"in those courses."
 
 #, python-format
 msgid "%(num)d porzione"
@@ -331,6 +359,9 @@ msgstr "Add to the diary"
 msgid "Aggiungi al pasto gli ingredienti di %(nome)s"
 msgstr "Add the ingredients of %(nome)s to the meal"
 
+msgid "Aggiungi al pasto gli ingredienti di una porzione"
+msgstr "Add the ingredients for one portion to the meal"
+
 msgid "Aggiungi almeno un altro alimento per vederli affiancati."
 msgstr "Add at least one more food to see them side by side."
 
@@ -473,6 +504,9 @@ msgstr "Import preview"
 msgid "Antipasti"
 msgstr "Starters"
 
+msgid "Antipasto"
+msgstr "Starter"
+
 msgid "Applica"
 msgstr "Apply"
 
@@ -563,8 +597,15 @@ msgstr "Portion calculator"
 msgid "Cambia %(nome)s con un altro alimento del reparto"
 msgstr "Swap %(nome)s for another food from the aisle"
 
+msgid "Cambia con il piatto successivo tra i più bilanciati"
+msgstr "Change to the next most balanced dish"
+
 msgid "Cambia con un altro alimento del reparto"
 msgstr "Swap for another food from the aisle"
+
+#, python-format
+msgid "Cambia il piatto: %(nome)s"
+msgstr "Change the dish: %(nome)s"
 
 msgid "Cambia profilo"
 msgstr "Change profile"
@@ -670,6 +711,9 @@ msgstr "Search and filter foods"
 
 msgid "Cerca un alimento"
 msgstr "Search for a food"
+
+msgid "Cerca un piatto"
+msgstr "Search for a dish"
 
 msgid "Cereali"
 msgstr "Grains"
@@ -777,6 +821,12 @@ msgstr "How to read the food sheet"
 msgid "Come leggere la tabella"
 msgstr "How to read the table"
 
+msgid "Come modificarlo"
+msgstr "How to change it"
+
+msgid "Come si bilancia"
+msgstr "How it is balanced"
+
 msgid "Come si calcolano"
 msgstr "How they are calculated"
 
@@ -802,6 +852,13 @@ msgstr "Fill in the values and save: the levels will appear on the food page."
 
 msgid "Componi un pasto"
 msgstr "Build a meal"
+
+msgid ""
+"Con il tuo profilo si evitano prima i piatti alti per te, e i rischi del "
+"profilo contano il doppio."
+msgstr ""
+"With your profile, dishes that are high for you are avoided first, and "
+"the risks in your profile count double."
 
 msgid "Con il tuo profilo vengono prima quelli con il semaforo per te più basso."
 msgstr ""
@@ -876,6 +933,9 @@ msgstr "Contains alcohol (%(grammi)s g per 100 g): IARC group 1 carcinogen."
 msgid "Contorni"
 msgstr "Side dishes"
 
+msgid "Contorno"
+msgstr "Side dish"
+
 msgid "Copia del database"
 msgstr "Database copy"
 
@@ -900,6 +960,9 @@ msgstr ""
 
 msgid "Da dove vengono i dati"
 msgstr "Where the data comes from"
+
+msgid "Dal"
+msgstr "From"
 
 #, python-format
 msgid ""
@@ -1421,11 +1484,20 @@ msgstr "GOS (galacto-oligosaccharides)"
 msgid "Genera"
 msgstr "Generate"
 
+msgid "Genera il piano"
+msgstr "Create the plan"
+
 msgid "Genera la lista"
 msgstr "Generate the list"
 
+msgid "Genera un altro piano"
+msgstr "Create another plan"
+
 msgid "Genera un'altra lista"
 msgstr "Generate another list"
+
+msgid "Giorni"
+msgstr "Days"
 
 msgid "Giorno"
 msgstr "Day"
@@ -1455,6 +1527,20 @@ msgstr "Processing level (NOVA)"
 
 msgid "Grammi"
 msgstr "Grams"
+
+#, python-format
+msgid ""
+"Grammi crudi per %(num)d persona, sommati su tutti i piatti del piano. "
+"Sale, pepe, spezie e acqua non sono conteggiati."
+msgid_plural ""
+"Grammi crudi per %(num)d persone, sommati su tutti i piatti del piano. "
+"Sale, pepe, spezie e acqua non sono conteggiati."
+msgstr[0] ""
+"Raw grams for %(num)d person, added up over all the dishes in the plan. "
+"Salt, pepper, spices and water are not counted."
+msgstr[1] ""
+"Raw grams for %(num)d people, added up over all the dishes in the plan. "
+"Salt, pepper, spices and water are not counted."
 
 #, python-format
 msgid "Grammi crudi, dalla ricetta per %(num)d persona."
@@ -1558,6 +1644,22 @@ msgid "I rischi del tuo profilo trascurabili o bassi"
 msgstr "Your profile's risks negligible or low"
 
 msgid ""
+"I rischi non classificati di un piatto non contano nelle medie, come nel "
+"pasto. Il piano non segue le frequenze settimanali delle linee guida "
+"(pesce, legumi, carne rossa) e le porzioni non tengono conto del "
+"fabbisogno di energia. Gli ingredienti sono i grammi crudi di tutti i "
+"piatti, sommati per il numero di persone. Il piano resta nella sessione "
+"del browser e, una volta aperto, anche offline; si stampa o si scarica "
+"come testo."
+msgstr ""
+"Unclassified risks of a dish do not count in the averages, as in the "
+"meal. The plan does not follow the weekly frequencies of dietary "
+"guidelines (fish, legumes, red meat), and portions do not take energy "
+"needs into account. The ingredients are the raw grams of all the dishes, "
+"added up for the number of people. The plan stays in the browser session "
+"and, once opened, offline too; you can print it or download it as text."
+
+msgid ""
 "I valori calcolati (TEF, Kcal nette, rapporto F/F) sono già inclusi; "
 "nelle righe aggiornate sono evidenziate le celle che cambiano."
 msgstr ""
@@ -1626,6 +1728,20 @@ msgstr "ID “%(testo)s” not valid: ignored"
 
 msgid "ID: per aggiornare proprio quella riga (presente nei file esportati)"
 msgstr "ID: to update exactly that row (present in exported files)"
+
+#, python-format
+msgid ""
+"Il <a href=\"%(url)s\">piano settimanale</a> riempie pranzi e cene da uno"
+" a sette giorni con i pasti pronti, una porzione a testa, con le portate "
+"scelte per ciascun pasto (di base a pranzo primo e contorno, a cena "
+"secondo e contorno). Nessun piatto si ripete, finché nella portata ce ne "
+"sono abbastanza; colazione e spuntini restano liberi."
+msgstr ""
+"The <a href=\"%(url)s\">weekly plan</a> fills lunches and dinners for one"
+" to seven days with ready meals, one portion each, with the courses "
+"chosen for each meal (by default a first course and a side dish at lunch,"
+" a main course and a side dish at dinner). No dish is repeated, as long "
+"as the course has enough of them; breakfast and snacks are left free."
 
 msgid ""
 "Il TEF reale varia da persona a persona: questi valori sono stime per "
@@ -1720,6 +1836,9 @@ msgstr "The average level shown next to the score:"
 msgid "Il livello più alto tra i rischi del tuo profilo."
 msgstr "The highest level among your profile's risks."
 
+msgid "Il nuovo piano sostituisce quello attuale, anche i piatti scelti da te."
+msgstr "The new plan replaces the current one, including the dishes you chose."
+
 #, python-format
 msgid "Il pasto può contenere al massimo %(n)d alimenti."
 msgstr "A meal can contain at most %(n)d foods."
@@ -1747,6 +1866,37 @@ msgid ""
 "Il pasto è vuoto: aggiungi gli alimenti qui sopra oppure con «Aggiungi al"
 " pasto» dalla scheda di un alimento."
 msgstr "The meal is empty: add foods above or with “Add to meal” on a food's page."
+
+msgid ""
+"Il piano bilancia i rischi dei piatti e non sostituisce il parere di un "
+"medico o di un nutrizionista: le porzioni non tengono conto del tuo "
+"fabbisogno di energia."
+msgstr ""
+"The plan balances the risks of the dishes and does not replace the advice"
+" of a doctor or a dietitian: portions do not take your energy needs into "
+"account."
+
+msgid ""
+"Il piano si costruisce un piatto alla volta, prima le portate con più "
+"Kcal, scegliendo a caso tra i piatti pari: per questo ogni piano è "
+"diverso. Poi si migliora cambiando un piatto alla volta, finché nessun "
+"cambio abbassa il costo oltre la tolleranza. Non è detto che sia il "
+"migliore possibile, ma i rischi restano molto più bassi e distribuiti che"
+" con piatti presi a caso."
+msgstr ""
+"The plan is built one dish at a time, courses with more Kcal first, "
+"choosing at random among equivalent dishes: this is why every plan is "
+"different. It is then improved by changing one dish at a time, until no "
+"change lowers the cost beyond the tolerance. It is not necessarily the "
+"best possible plan, but the risks stay much lower and more evenly spread "
+"than with dishes picked at random."
+
+msgid ""
+"Il piatto cambiato o scelto resta fermo (📌) e gli altri si ribilanciano, "
+"con meno cambi possibile."
+msgstr ""
+"The dish you changed or chose stays put (📌) and the others are "
+"rebalanced, with as few changes as possible."
 
 #, python-format
 msgid ""
@@ -1854,6 +2004,9 @@ msgstr ""
 " of the profile is not classified, the “for you” traffic light is not "
 "classified either."
 
+msgid "Il tuo piano"
+msgstr "Your plan"
+
 msgid "Il tuo profilo"
 msgstr "Your profile"
 
@@ -1954,6 +2107,9 @@ msgstr "Information:"
 msgid "Informazioni"
 msgstr "Information"
 
+msgid "Ingredienti"
+msgstr "Ingredients"
+
 msgid "Ingredienti culinari trasformati"
 msgstr "Processed culinary ingredients"
 
@@ -1962,6 +2118,12 @@ msgstr "Recipe ingredients"
 
 msgid "Ingredienti della ricetta CREA"
 msgstr "Ingredients of the CREA recipe"
+
+#, python-format
+msgid "Ingredienti per %(num)d persona"
+msgid_plural "Ingredienti per %(num)d persone"
+msgstr[0] "Ingredients for %(num)d person"
+msgstr[1] "Ingredients for %(num)d people"
 
 msgid "Ingredienti per una porzione"
 msgstr "Ingredients for one serving"
@@ -2175,6 +2337,9 @@ msgstr "Risk levels"
 msgid "Livelli medi di rischio"
 msgstr "Average risk levels"
 
+msgid "Livelli medi di rischio per giorno e per la settimana"
+msgstr "Average risk levels per day and for the week"
+
 msgid "Livello"
 msgstr "Level"
 
@@ -2189,6 +2354,13 @@ msgstr ""
 
 msgid "Livello medio"
 msgstr "Average level"
+
+msgid ""
+"Livello medio di ogni rischio, pesato sulle Kcal dei piatti: da 0 "
+"(Trascurabile) a 3 (Alto)."
+msgstr ""
+"Average level of each risk, weighted by the Kcal of the dishes: from 0 "
+"(Negligible) to 3 (High)."
 
 #, python-format
 msgid "Livello medio: %(livello)s"
@@ -2282,6 +2454,9 @@ msgstr "Metabolic"
 
 msgid "Metodo non consentito: l'API è in sola lettura."
 msgstr "Method not allowed: the API is read-only."
+
+msgid "Metti"
+msgstr "Use"
 
 msgid "Micronutrienti"
 msgstr "Micronutrients"
@@ -2432,6 +2607,9 @@ msgstr "No food named “%(testo)s”: choose one from the list."
 msgid "Nessun altro alimento da proporre in questo reparto."
 msgstr "No other food to suggest in this aisle."
 
+msgid "Nessun altro piatto da proporre per questa portata."
+msgstr "No other dish to suggest for this course."
+
 msgid "Nessun avviso: tutti i valori sono stati riconosciuti."
 msgstr "No warnings: all values were recognized."
 
@@ -2460,6 +2638,20 @@ msgid ""
 msgstr ""
 "No ready meals in the database. An administrator can load them with "
 "“flask pasti-importa”."
+
+msgid ""
+"Nessun piano: scegli i giorni e le portate di pranzo e cena, poi genera "
+"il piano."
+msgstr ""
+"No plan yet: choose the days and the courses for lunch and dinner, then "
+"create the plan."
+
+msgid "Nessun piatto"
+msgstr "No dish"
+
+#, python-format
+msgid "Nessun piatto tra i pasti pronti per: %(portate)s."
+msgstr "No ready meal for: %(portate)s."
 
 msgid "Nessun rischio classificato."
 msgstr "No risk classified."
@@ -2544,6 +2736,9 @@ msgstr "New"
 msgid "Nuovo alimento"
 msgstr "New food"
 
+msgid "Nuovo piano"
+msgstr "New plan"
+
 msgid "Nutrienti"
 msgstr "Nutrients"
 
@@ -2552,6 +2747,9 @@ msgstr "Nutrients of the meal"
 
 msgid "Nutrienti della giornata"
 msgstr "Nutrients of the day"
+
+msgid "Nutrienti della settimana"
+msgstr "Nutrients for the week"
 
 msgid "Oggi"
 msgstr "Today"
@@ -2653,6 +2851,12 @@ msgstr ""
 "Per 100 g; available carbohydrates, i.e. without fiber. Leave empty if "
 "the value isn't available."
 
+#, python-format
+msgid "Per bilanciare i rischi è cambiato anche %(piatti)s."
+msgid_plural "Per bilanciare i rischi sono cambiati anche: %(piatti)s."
+msgstr[0] "To balance the risks, this also changed: %(piatti)s."
+msgstr[1] "To balance the risks, these also changed: %(piatti)s."
+
 msgid "Per carico glicemico, FODMAP e rischi; vuoto: 100 g."
 msgstr "For glycemic load, FODMAP and risks; empty: 100 g."
 
@@ -2707,6 +2911,9 @@ msgstr "For you: %(livello)s"
 msgid "Perché questi livelli"
 msgstr "Why these levels"
 
+msgid "Persone"
+msgstr "People"
+
 msgid "Pertinenza alla ricerca"
 msgstr "Search relevance"
 
@@ -2716,8 +2923,33 @@ msgstr "Weighs most"
 msgid "Pesce"
 msgstr "Fish"
 
+msgid "Piano"
+msgstr "Plan"
+
+#, python-format
+msgid "Piano dei pasti dal %(data)s"
+msgstr "Meal plan from %(data)s"
+
+#, python-format
+msgid "Piano pronto: %(num)d piatto, bilanciato sui rischi."
+msgid_plural "Piano pronto: %(num)d piatti, bilanciati sui rischi."
+msgstr[0] "Plan ready: %(num)d dish, balanced on the risks."
+msgstr[1] "Plan ready: %(num)d dishes, balanced on the risks."
+
+msgid "Piano settimanale"
+msgstr "Weekly plan"
+
+msgid "Piano svuotato."
+msgstr "Plan cleared."
+
 msgid "Piatti e ricette"
 msgstr "Dishes and recipes"
+
+msgid "Piatto"
+msgstr "Dish"
+
+msgid "Piatto non trovato tra i pasti pronti di questa portata."
+msgstr "Dish not found among the ready meals of this course."
 
 msgid "Più fattori, o un fattore marcato: con moderazione."
 msgstr "Several factors, or one marked factor: in moderation."
@@ -2772,6 +3004,15 @@ msgstr "Quick portions"
 msgid "Potassio"
 msgstr "Potassium"
 
+msgid ""
+"Pranzi e cene con i pasti pronti, scelti in modo che i rischi restino "
+"bilanciati nella settimana: nessun rischio che si accumula, e lo stesso "
+"rischio alto mai in due piatti dello stesso giorno."
+msgstr ""
+"Lunches and dinners with ready meals, chosen so that the risks stay "
+"balanced over the week: no risk builds up, and the same high risk never "
+"appears in two dishes on the same day."
+
 msgid "Pranzo"
 msgstr "Lunch"
 
@@ -2823,6 +3064,9 @@ msgstr "Before: %(valore)s"
 msgid "Primi piatti"
 msgstr "First courses"
 
+msgid "Primo"
+msgstr "First course"
+
 msgid "Processazione (NOVA)"
 msgstr "Processing (NOVA)"
 
@@ -2837,6 +3081,9 @@ msgstr "Risk profile of the meal"
 
 msgid "Profilo di rischio della giornata"
 msgstr "Risk profile of the day"
+
+msgid "Profilo di rischio della settimana"
+msgstr "Risk profile of the week"
 
 msgid "Profilo salvato: tabella e schede mostrano il semaforo per te."
 msgstr "Profile saved: the table and food pages show the “for you” traffic light."
@@ -2862,6 +3109,9 @@ msgstr "Score"
 
 msgid "Punteggio complessivo"
 msgstr "Overall score"
+
+msgid "Punteggio del giorno"
+msgstr "Score of the day"
 
 msgid "Punteggio migliore"
 msgstr "Best score"
@@ -2907,11 +3157,12 @@ msgstr "You can choose more than one, or none."
 
 msgid ""
 "Questa pagina richiede la connessione. Senza rete puoi consultare la "
-"tabella, la guida, la lista della spesa e le schede degli alimenti che "
-"hai già aperto."
+"tabella, la guida, il piano settimanale, la lista della spesa e le schede"
+" degli alimenti che hai già aperto."
 msgstr ""
 "This page needs a connection. Offline you can browse the table, the "
-"guide, the shopping list and the food pages you have already opened."
+"guide, the weekly plan, the shopping list and the food pages you have "
+"already opened."
 
 msgid "Quota"
 msgstr "Share"
@@ -3060,6 +3311,9 @@ msgstr ""
 msgid "Ripristino non eseguito: %(motivo)s"
 msgstr "Restore not performed: %(motivo)s"
 
+msgid "Rischi giorno per giorno"
+msgstr "Risks day by day"
+
 msgid "Rischio"
 msgstr "Risk"
 
@@ -3140,6 +3394,9 @@ msgstr "Download the database"
 msgid "Scegli almeno un reparto."
 msgstr "Choose at least one aisle."
 
+msgid "Scegli almeno una portata per il pranzo o per la cena."
+msgstr "Choose at least one course for lunch or dinner."
+
 msgid "Scegli cosa fare con le righe del file."
 msgstr "Choose what to do with the rows of the file."
 
@@ -3151,15 +3408,18 @@ msgstr "Choose the meal: breakfast, lunch, dinner or snack."
 
 msgid ""
 "Scegli le condizioni che ti riguardano: tabella, schede, confronto, pasti"
-" pronti, pasto e diario mostrano il semaforo «Per te», il livello più "
-"alto tra i rischi che contano per il tuo profilo."
+" pronti, piano, pasto e diario mostrano il semaforo «Per te», il livello "
+"più alto tra i rischi che contano per il tuo profilo."
 msgstr ""
 "Choose the conditions that apply to you: the table, food pages, "
-"comparison, ready meals, meal and diary show the “For you” traffic light,"
-" the highest level among the risks that matter for your profile."
+"comparison, ready meals, plan, meal and diary show the “For you” traffic "
+"light, the highest level among the risks that matter for your profile."
 
 msgid "Scegli un alimento dall'elenco."
 msgstr "Choose a food from the list."
+
+msgid "Scegli un altro piatto"
+msgstr "Choose another dish"
 
 msgid "Schede salvate su questo dispositivo"
 msgstr "Food pages saved on this device"
@@ -3179,6 +3439,9 @@ msgstr ""
 
 msgid "Secondi piatti"
 msgstr "Main courses"
+
+msgid "Secondo"
+msgstr "Main course"
 
 msgid "Sei offline"
 msgstr "You are offline"
@@ -3244,6 +3507,9 @@ msgstr "Carbohydrates needed"
 
 msgid "Sessione scaduta o richiesta non valida: riprova."
 msgstr "Session expired or invalid request: try again."
+
+msgid "Settimana"
+msgstr "Week"
 
 #, python-format
 msgid "Si possono confrontare al massimo %(n)d alimenti: ecco i primi %(n)d."
@@ -3391,8 +3657,14 @@ msgstr "Clear the comparison"
 msgid "Svuota il pasto"
 msgstr "Empty the meal"
 
+msgid "Svuota il piano"
+msgstr "Clear the plan"
+
 msgid "Svuota la lista"
 msgstr "Empty the list"
+
+msgid "Svuotare il piano?"
+msgstr "Clear the plan?"
 
 msgid "Svuotare la lista della spesa?"
 msgstr "Empty the shopping list?"
@@ -3485,6 +3757,9 @@ msgstr[1] "Remove all %(num)d foods from the meal?"
 msgid "Torna alla tabella"
 msgstr "Back to the table"
 
+msgid "Tra due piani si preferisce, nell'ordine, quello con:"
+msgstr "Between two plans, the preferred one has, in this order:"
+
 #, python-format
 msgid "Tra i primi %(n)d dell'intero database."
 msgstr "In the top %(n)d of the whole database."
@@ -3568,6 +3843,13 @@ msgstr ""
 "A green traffic light list: for each aisle, foods with a green score and "
 "no risk above Low. Where there are none, as among cereals and oils, the "
 "best choices without high risks, marked as not green."
+
+msgid ""
+"Una porzione a testa per piatto, ogni volta un piano diverso tra quelli "
+"bilanciati. Colazione e spuntini restano liberi."
+msgstr ""
+"One portion each per dish, a different plan every time among the balanced"
+" ones. Breakfast and snacks are left free."
 
 msgid "Unito"
 msgstr "Merged"
@@ -3776,6 +4058,13 @@ msgstr ""
 msgid "con moderazione"
 msgstr "in moderation"
 
+msgid ""
+"con un profilo, meno piatti Alto per te, poi meno piatti con il semaforo "
+"per te non classificato;"
+msgstr ""
+"with a profile, fewer dishes that are High for you, then fewer dishes "
+"with an unclassified for-you traffic light;"
+
 msgid "da"
 msgstr "from"
 
@@ -3911,6 +4200,24 @@ msgstr "the highest level among your profile's risks."
 msgid "in corso"
 msgstr "in progress"
 
+#, python-format
+msgid ""
+"la somma più bassa dei quadrati delle medie settimanali dei cinque "
+"rischi, pesate sulle Kcal come per il pasto, da 0 (Trascurabile) a 3 "
+"(Alto). Il quadrato fa pesare un rischio che si accumula più di tanti "
+"rischi bassi: due rischi a 1 contano 2, uno a 2 conta 4. I rischi del tuo"
+" profilo contano %(peso)s volte; differenze fino a %(tolleranza)s contano"
+" come pari."
+msgstr ""
+"the lowest sum of the squares of the weekly averages of the five risks, "
+"weighted by Kcal as for the meal, from 0 (Negligible) to 3 (High). "
+"Squaring makes a risk that builds up weigh more than many low risks: two "
+"risks at 1 count 2, one at 2 counts 4. The risks in your profile count "
+"%(peso)s times; differences up to %(tolleranza)s count as equal."
+
+msgid "lascialo scegliere al piano"
+msgstr "let the plan choose it"
+
 msgid "lista-della-spesa"
 msgstr "shopping-list"
 
@@ -3919,6 +4226,9 @@ msgstr "level (Italian value): Trascurabile, Basso, Medio, Alto"
 
 msgid "massimo per 100 g (compreso)"
 msgstr "maximum per 100 g (inclusive)"
+
+msgid "meno volte lo stesso rischio Alto in due piatti dello stesso giorno;"
+msgstr "fewer times the same High risk in two dishes on the same day;"
 
 msgid "minimo per 100 g (compreso)"
 msgstr "minimum per 100 g (inclusive)"
@@ -3973,6 +4283,9 @@ msgstr "over 5 g (2.5)"
 msgid "ordinati per %(criteri)s"
 msgstr "sorted by %(criteri)s"
 
+msgid "piano-dei-pasti"
+msgstr "meal-plan"
+
 msgid "poi per"
 msgstr "then by"
 
@@ -4001,6 +4314,9 @@ msgstr "successful"
 
 msgid "riuso consentito citando la fonte"
 msgstr "reuse allowed with credit"
+
+msgid "scelto da te"
+msgstr "chosen by you"
 
 #, python-format
 msgid ""
@@ -4092,6 +4408,9 @@ msgstr "“%(nome)s” is already in the comparison."
 msgid "«%(nome)s» è già nella lista."
 msgstr "“%(nome)s” is already on the list."
 
+msgid "«Al pasto» aggiunge al pasto gli ingredienti di una porzione."
+msgstr "“To meal” adds the ingredients for one portion to the meal."
+
 msgid ""
 "«Al pasto» aggiunge gli ingredienti crudi per le porzioni scelte, e nella"
 " pagina del pasto i rischi si pesano sulle Kcal di ciascun ingrediente, "
@@ -4108,6 +4427,30 @@ msgstr ""
 "and per serving, with the same rules as the other foods: as for CREA "
 "recipes, red or processed meat counts in the cancer risk of the "
 "ingredient itself, not of the dish that contains it."
+
+msgid ""
+"↻ cambia un piatto con il successivo tra i più bilanciati; «Scegli un "
+"altro piatto» mette quello che vuoi."
+msgstr ""
+"↻ changes a dish to the next most balanced one; “Choose another dish” "
+"puts in the one you want."
+
+msgid ""
+"↻ mette il piatto successivo nell'ordine del bilanciamento (premendolo "
+"più volte si vedono tutti); «Scegli un altro piatto» mette quello che "
+"vuoi. Il piatto cambiato o scelto resta fermo e gli altri si ribilanciano"
+" partendo dal piano com'è: cambiano solo quelli che migliorano il "
+"bilanciamento, e la pagina dice quali. Se in una portata i piatti adatti "
+"al profilo non bastano (con il diabete quasi tutti i primi sono Alto per "
+"te), il piano usa prima quelli adatti e segnala gli altri."
+msgstr ""
+"↻ puts in the next dish in balancing order (press it repeatedly to see "
+"them all); “Choose another dish” puts in the one you want. The dish you "
+"changed or chose stays put and the others are rebalanced starting from "
+"the plan as it is: only those that improve the balance change, and the "
+"page tells you which. If a course does not have enough dishes suited to "
+"your profile (with diabetes almost all first courses are High for you), "
+"the plan uses the suitable ones first and flags the others."
 
 #, python-format
 msgid "➕ Aggiungi al pasto (%(grammi)s g)"

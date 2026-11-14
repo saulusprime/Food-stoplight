@@ -9,6 +9,10 @@ migrazioni all'avvio. Le pagine sono nei blueprint del pacchetto web/:
     web/import_export.py  export, import con anteprima, sincronizzazione USDA
     web/backup.py         backup e ripristino (amministratori)
     web/pasto_diario.py   pasto e diario alimentare
+    web/pasti_pronti.py   pasti pronti e aggiunta dei loro ingredienti al pasto
+    web/piano.py          piano settimanale dei pasti bilanciato sui rischi
+    web/spesa.py          lista della spesa a semaforo verde
+    web/profilo.py        profilo personale (semaforo per te)
     web/accesso.py        login, logout, lingua, ruoli e controllo dell'accesso
     web/comandi.py        comandi da riga di comando (flask --app app ...)
     web/comune.py         funzioni condivise
@@ -54,6 +58,7 @@ from web import accesso, comandi, import_export, pagine, pasto_diario
 from web import alimenti as alimenti_web
 from web import backup as backup_web
 from web import pasti_pronti as pasti_pronti_web
+from web import piano as piano_web
 from web import profilo as profilo_web
 from web import spesa as spesa_web
 from web.accesso import pagina_precedente
@@ -277,7 +282,8 @@ def intestazioni_sicurezza(response: Response) -> Response:
 # ---------------------------------------------------------------
 
 for blueprint in (api.bp, pwa.bp, accesso.bp, pagine.bp, alimenti_web.bp, import_export.bp, backup_web.bp,
-                  pasto_diario.bp, pasti_pronti_web.bp, spesa_web.bp, profilo_web.bp, comandi.bp):
+                  pasto_diario.bp, pasti_pronti_web.bp, piano_web.bp, spesa_web.bp, profilo_web.bp,
+                  comandi.bp):
     app.register_blueprint(blueprint)
 
 

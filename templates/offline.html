@@ -6,12 +6,13 @@
 <section class="pagina-offline" data-cache-pagine="{{ cache_pagine }}">
     <h1>{{ _('Sei offline') }}</h1>
     <p class="lead">
-        {% trans %}Questa pagina richiede la connessione. Senza rete puoi consultare la tabella, la guida, la lista della spesa e le schede degli alimenti che hai già aperto.{% endtrans %}
+        {% trans %}Questa pagina richiede la connessione. Senza rete puoi consultare la tabella, la guida, il piano settimanale, la lista della spesa e le schede degli alimenti che hai già aperto.{% endtrans %}
     </p>
 
     <p class="d-flex flex-wrap gap-2">
         <a class="btn btn-primary" href="{{ url_for('pagine.index') }}">{{ _('Tabella degli alimenti') }}</a>
         <a class="btn btn-outline-primary" href="{{ url_for('pagine.guida') }}">{{ _('Guida') }}</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('piano.pagina') }}">{{ _('Piano settimanale') }}</a>
         <a class="btn btn-outline-primary" href="{{ url_for('spesa.lista') }}">{{ _('Lista della spesa') }}</a>
     </p>
 

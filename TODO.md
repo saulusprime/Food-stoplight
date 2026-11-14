@@ -21,6 +21,6 @@ Le attività completate sono in [ASIS.md](ASIS.md).
 
 ## 💡 Idee a lungo termine
 
-- [ ] Pianificatore settimanale dei pasti con bilanciamento automatico dei rischi
+- [ ] Piano settimanale: frequenze delle linee guida (pesce, legumi, carne rossa, uova) e porzioni sul fabbisogno di energia, oggi esclusi; servirebbe il gruppo dell'ingrediente principale di ogni pasto pronto
 - [ ] Assistente AI per domande in linguaggio naturale sui dati ("quali frutti hanno il miglior rapporto fruttosio/fibre?")
 - [ ] App companion per la scansione dei codici a barre al supermercato

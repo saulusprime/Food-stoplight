@@ -66,7 +66,7 @@ def ricetta_per(campo: str, valore: object) -> pasti_pronti.Ricetta | None:
 
 def alimenti_per_codice(codici: list[str]) -> dict[str, dict[str, Any]]:
     """
-    {codice CREA: alimento} per gli ingredienti (id e nome bastano).
+    {codice CREA: alimento} per gli ingredienti (id, nome e categoria bastano).
     """
     if not codici:
         return {}
@@ -75,7 +75,8 @@ def alimenti_per_codice(codici: list[str]) -> dict[str, dict[str, Any]]:
 
     try:
         righe = conn.execute(
-            f"SELECT id, alimento, codice_crea FROM alimenti WHERE codice_crea IN ({', '.join('?' for _ in codici)})",
+            "SELECT id, alimento, categoria, codice_crea FROM alimenti "
+            f"WHERE codice_crea IN ({', '.join('?' for _ in codici)})",
             codici,
         ).fetchall()
     finally:

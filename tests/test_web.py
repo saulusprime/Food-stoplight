@@ -70,6 +70,7 @@ def test_intestazioni_di_sicurezza(client):
     ("/pasto/svuota", {}),
     ("/profilo", {"condizioni": "diabete"}),
     ("/spesa/genera", {"reparti": "Verdura"}),
+    ("/piano/genera", {"portate_pranzo": "primo"}),
 ])
 def test_csrf_obbligatorio(admin, url, dati):
     prima = conta()

@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ _('Piano settimanale') }}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>🗓️ {{ _('Piano settimanale') }}</h1>
+    <p>
+        {{ _('Pranzi e cene con i pasti pronti, scelti in modo che i rischi restino bilanciati nella settimana: nessun rischio che si accumula, e lo stesso rischio alto mai in due piatti dello stesso giorno.') }}
+        {% if condizioni_profilo %}{{ _('Con il tuo profilo si evitano prima i piatti alti per te, e i rischi del profilo contano il doppio.') }}{% endif %}
+    </p>
+</div>
+
+<div class="row g-3">
+
+    <div class="col-lg-4 d-flex flex-column gap-3 non-stampare">
+        <section class="card grafico-card" aria-labelledby="titolo-genera-piano">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-genera-piano">{{ _('Genera il piano') }}</h2>
+
+                <form
+                    method="post"
+                    action="{{ url_for('piano.genera') }}"
+                    {% if giorni %}
+                        data-conferma="{{ _('Il nuovo piano sostituisce quello attuale, anche i piatti scelti da te.') }}"
+                        data-conferma-titolo="{{ _('Nuovo piano') }}"
+                        data-conferma-pulsante="{{ _('Genera') }}"
+                    {% endif %}
+                >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-7">
+                            <label for="piano-inizio" class="form-label">{{ _('Dal') }}</label>
+                            <input type="date" class="form-control" id="piano-inizio" name="inizio" value="{{ dati.inizio.isoformat() }}">
+                        </div>
+                        <div class="col-5">
+                            <label for="piano-giorni" class="form-label">{{ _('Giorni') }}</label>
+                            <select class="form-select" id="piano-giorni" name="giorni">
+                                {% for n in range(1, giorni_max + 1) %}
+                                    <option value="{{ n }}" {% if n == dati.giorni %}selected{% endif %}>{{ n }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    {% for pasto, etichetta in pasti %}
+                        <fieldset class="mb-3">
+                            <legend class="form-label">{{ etichetta|traduci }}</legend>
+                            {% for portata, _etichetta_portata in portate %}
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="portata-{{ pasto }}-{{ portata }}" name="portate_{{ pasto }}"
+                                           value="{{ portata }}" {% if portata in dati.portate[pasto] %}checked{% endif %}>
+                                    <label class="form-check-label" for="portata-{{ pasto }}-{{ portata }}">{{ etichette_portate[portata]|traduci }}</label>
+                                </div>
+                            {% endfor %}
+                        </fieldset>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-primary">
+                        {{ _('Genera un altro piano') if giorni else _('Genera il piano') }}
+                    </button>
+                    <p class="filtro-nota mt-2 mb-0">{{ _('Una porzione a testa per piatto, ogni volta un piano diverso tra quelli bilanciati. Colazione e spuntini restano liberi.') }}</p>
+                </form>
+            </div>
+        </section>
+
+        {% if giorni %}
+            <section class="card grafico-card" aria-labelledby="titolo-modifica-piano">
+                <div class="card-body">
+                    <h2 class="grafico-titolo" id="titolo-modifica-piano">{{ _('Come modificarlo') }}</h2>
+                    <ul class="mb-2 small">
+                        <li>{{ _('↻ cambia un piatto con il successivo tra i più bilanciati; «Scegli un altro piatto» mette quello che vuoi.') }}</li>
+                        <li>{{ _('Il piatto cambiato o scelto resta fermo (📌) e gli altri si ribilanciano, con meno cambi possibile.') }}</li>
+                        <li>{{ _('«Al pasto» aggiunge al pasto gli ingredienti di una porzione.') }}</li>
+                    </ul>
+                    <p class="mb-0"><a href="{{ url_for('pagine.guida', _anchor='piano') }}">{{ _('Come si bilancia') }}</a></p>
+                </div>
+            </section>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-8">
+        {% if not giorni %}
+            <section class="card grafico-card">
+                <div class="card-body">
+                    <p class="classifica-vuota mb-0">{{ _('Nessun piano: scegli i giorni e le portate di pranzo e cena, poi genera il piano.') }}</p>
+                </div>
+            </section>
+        {% else %}
+            <div class="lista-spesa-testa mb-3">
+                <h2 class="grafico-titolo mb-0">
+                    {{ _('Il tuo piano') }}
+                    <span class="text-muted fw-normal">· {{ ngettext('%(num)d giorno', '%(num)d giorni', giorni|length) }}</span>
+                </h2>
+
+                <div class="d-flex flex-wrap gap-2 non-stampare">
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-stampa hidden>{{ _('Stampa') }}</button>
+                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('piano.scarica_testo') }}" download>{{ _('Scarica come testo') }}</a>
+                    <form
+                        method="post"
+                        action="{{ url_for('piano.svuota') }}"
+                        data-conferma="{{ _('Svuotare il piano?') }}"
+                        data-conferma-titolo="{{ _('Svuota il piano') }}"
+                        data-conferma-pulsante="{{ _('Svuota') }}"
+                    >
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">{{ _('Svuota') }}</button>
+                    </form>
+                </div>
+            </div>
+
+            {% if alti_per_te %}
+                <div class="alert alert-warning">
+                    {{ ngettext("%(num)d piatto è Alto per te: tra i pasti pronti di quella portata non ce n'erano abbastanza degli altri.", "%(num)d piatti sono Alto per te: tra i pasti pronti di quelle portate non ce n'erano abbastanza degli altri.", alti_per_te) }}
+                </div>
+            {% endif %}
+
+            {% for giorno in giorni %}
+                <section class="card grafico-card mb-3 piano-giorno" aria-labelledby="titolo-giorno-{{ giorno.indice }}">
+                    <div class="card-body">
+                        <div class="lista-spesa-testa">
+                            <h3 class="grafico-titolo mb-0" id="titolo-giorno-{{ giorno.indice }}">{{ giorno.nome }}</h3>
+                            <span class="lista-spesa-dati">
+                                <span class="small text-muted">{{ _('%(kcal)s Kcal', kcal=giorno.kcal|numero(0)) }}</span>
+                                {% if giorno.profilo and giorno.profilo.punteggio is not none %}
+                                    <span class="punteggio stato-{{ giorno.profilo.livello.stato }}" title="{{ _('Punteggio del giorno') }}">{{ giorno.profilo.punteggio }}</span>
+                                {% endif %}
+                                {% if giorno.per_te %}
+                                    <span class="badge-risk stato-{{ giorno.per_te.livello.stato }}">{{ _('Per te: %(livello)s', livello=giorno.per_te.livello.etichetta|traduci) }}</span>
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        {% for pasto in giorno.pasti %}
+                            <h4 class="lista-spesa-reparto">{{ pasto.etichetta|traduci }}</h4>
+                            <ul class="lista-spesa">
+                                {% for v in pasto.voci %}
+                                    <li class="lista-spesa-voce piano-voce" id="posto-{{ v.indice }}">
+                                        <div class="lista-spesa-testo">
+                                            <span class="piano-portata">{{ v.etichetta_portata|traduci }}</span>
+                                            {% if v.piatto %}
+                                                <a class="nome-alimento" href="{{ url_for('pagine.scheda', alimento_id=v.piatto.id) }}">{{ v.piatto.alimento }}</a>
+                                                <span class="lista-spesa-dati">
+                                                    <span class="small text-muted">{{ _('%(kcal)s Kcal', kcal=v.kcal|numero(0)) }}</span>
+                                                    {% if v.piatto.punteggio is not none %}
+                                                        {% set liv = livello_punteggio(v.piatto.punteggio) %}
+                                                        <span class="punteggio stato-{{ liv.stato }}" title="{{ _('Punteggio') }}">{{ v.piatto.punteggio }}</span>
+                                                    {% endif %}
+                                                    {% if v.per_te %}
+                                                        <span class="badge-risk stato-{{ v.per_te.livello.stato }}">{{ _('Per te: %(livello)s', livello=v.per_te.livello.etichetta|traduci) }}</span>
+                                                    {% endif %}
+                                                    {% for rischio in v.rischi %}
+                                                        <span class="badge-risk stato-{{ stato_rischio(rischio.valore) }}">{{ rischio.etichetta|traduci }}: {{ rischio.valore|traduci }}</span>
+                                                    {% endfor %}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">{{ _('Nessun piatto') }}</span>
+                                            {% endif %}
+
+                                            {% if v.fisso %}
+                                                <form method="post" action="{{ url_for('piano.libera', indice=v.indice) }}" class="piano-fisso">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <span class="small">📌 {{ _('scelto da te') }}</span>
+                                                    <button type="submit" class="btn btn-link btn-sm p-0 non-stampare">{{ _('lascialo scegliere al piano') }}</button>
+                                                </form>
+                                            {% endif %}
+
+                                            <details class="piano-scegli non-stampare">
+                                                <summary>{{ _('Scegli un altro piatto') }}</summary>
+                                                <form method="post" action="{{ url_for('piano.scegli', indice=v.indice) }}" class="input-group input-group-sm mt-2">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <label class="visually-hidden" for="scegli-{{ v.indice }}">{{ _('Piatto') }}</label>
+                                                    <input type="text" class="form-control" id="scegli-{{ v.indice }}" name="piatto" list="piatti-{{ v.portata }}"
+                                                           autocomplete="off" required placeholder="{{ _('Cerca un piatto') }}">
+                                                    <button type="submit" class="btn btn-outline-primary">{{ _('Metti') }}</button>
+                                                </form>
+                                            </details>
+                                        </div>
+
+                                        <div class="lista-spesa-azioni non-stampare">
+                                            <form method="post" action="{{ url_for('piano.cambia', indice=v.indice) }}">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                                        title="{{ _('Cambia con il piatto successivo tra i più bilanciati') }}"
+                                                        aria-label="{{ _('Cambia il piatto: %(nome)s', nome=v.piatto.alimento if v.piatto else v.etichetta_portata|traduci) }}">↻</button>
+                                            </form>
+                                            {% if v.piatto %}
+                                                <form method="post" action="{{ url_for('pasti_pronti.aggiungi', codice=v.piatto.codice) }}">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <input type="hidden" name="next" value="{{ url_for('piano.pagina') }}#posto-{{ v.indice }}">
+                                                    <input type="hidden" name="porzioni" value="1">
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary"
+                                                            title="{{ _('Aggiungi al pasto gli ingredienti di una porzione') }}"
+                                                            aria-label="{{ _('Aggiungi al pasto gli ingredienti di %(nome)s', nome=v.piatto.alimento) }}">➕ {{ _('Al pasto') }}</button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endfor %}
+
+            {% for portata, nomi in nomi_portate.items() %}
+                <datalist id="piatti-{{ portata }}">
+                    {% for nome in nomi %}<option value="{{ nome }}"></option>{% endfor %}
+                </datalist>
+            {% endfor %}
+
+            <section class="card grafico-card mb-3" aria-labelledby="titolo-rischi-giorni">
+                <div class="card-body">
+                    <h2 class="grafico-titolo" id="titolo-rischi-giorni">{{ _('Rischi giorno per giorno') }}</h2>
+                    <p class="grafico-sottotitolo">{{ _('Livello medio di ogni rischio, pesato sulle Kcal dei piatti: da 0 (Trascurabile) a 3 (Alto).') }}</p>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm piano-rischi mb-0">
+                            <caption class="visually-hidden">{{ _('Livelli medi di rischio per giorno e per la settimana') }}</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">{{ _('Rischio') }}</th>
+                                    {% for giorno in giorni %}
+                                        <th scope="col" class="text-center">{{ giorno.breve }}</th>
+                                    {% endfor %}
+                                    <th scope="col" class="text-center">{{ _('Settimana') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for riga in tabella_rischi %}
+                                    <tr>
+                                        <th scope="row" class="fw-normal">
+                                            {{ riga.etichetta|traduci }}
+                                            {% if riga.campo in campi_profilo %}<span class="etichetta-per-te">{{ _('nel tuo profilo') }}</span>{% endif %}
+                                        </th>
+                                        {% for r in riga.giorni + [riga.settimana] %}
+                                            <td class="text-center">
+                                                {% if r and r.punti is not none %}
+                                                    <span class="badge-risk stato-{{ r.livello.stato }}" title="{{ r.livello.etichetta|traduci }}">{{ r.punti|numero(1) }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">–</span>
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            {% if riepilogo %}
+                {% with prefisso="piano", titolo_nutrienti=_('Nutrienti della settimana'), titolo_profilo=_('Profilo di rischio della settimana') %}
+                    {% include "_riepilogo_pasto.html" %}
+                {% endwith %}
+            {% endif %}
+
+            <section class="card grafico-card mt-3" id="ingredienti" aria-labelledby="titolo-ingredienti">
+                <div class="card-body">
+                    <div class="lista-spesa-testa">
+                        <h2 class="grafico-titolo mb-0" id="titolo-ingredienti">{{ _('Ingredienti') }}</h2>
+
+                        <form method="post" action="{{ url_for('piano.persone') }}" class="d-flex align-items-center gap-2 non-stampare">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <label for="piano-persone" class="small mb-0">{{ _('Persone') }}</label>
+                            <select class="form-select form-select-sm" id="piano-persone" name="persone" onchange="this.form.submit()">
+                                {% for n in range(1, persone_max + 1) %}
+                                    <option value="{{ n }}" {% if n == dati.persone %}selected{% endif %}>{{ n }}</option>
+                                {% endfor %}
+                            </select>
+                            <noscript><button type="submit" class="btn btn-sm btn-outline-secondary">{{ _('Applica') }}</button></noscript>
+                        </form>
+                    </div>
+
+                    <p class="filtro-nota mt-2">
+                        {{ ngettext('Grammi crudi per %(num)d persona, sommati su tutti i piatti del piano. Sale, pepe, spezie e acqua non sono conteggiati.', 'Grammi crudi per %(num)d persone, sommati su tutti i piatti del piano. Sale, pepe, spezie e acqua non sono conteggiati.', dati.persone) }}
+                    </p>
+
+                    {% for reparto, voci in ingredienti %}
+                        <h3 class="lista-spesa-reparto">{{ reparto|traduci if reparto else _('Senza categoria') }}</h3>
+                        <ul class="lista-spesa">
+                            {% for v in voci %}
+                                <li class="lista-spesa-voce">
+                                    <a class="nome-alimento lista-spesa-testo" href="{{ url_for('pagine.scheda', alimento_id=v.id) }}">{{ v.alimento }}</a>
+                                    <span class="piano-grammi">{{ v.grammi|numero(0) }} g</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <p class="small text-muted mt-3 mb-0">
+                {{ _('Il piano bilancia i rischi dei piatti e non sostituisce il parere di un medico o di un nutrizionista: le porzioni non tengono conto del tuo fabbisogno di energia.') }}
+                <a href="{{ url_for('pagine.guida', _anchor='piano') }}" class="non-stampare">{{ _('Come si bilancia') }}</a>
+            </p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

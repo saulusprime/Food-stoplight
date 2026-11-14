@@ -46,6 +46,7 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 - **Calcolatore della porzione** nella scheda: tutti i valori ricalcolati per i grammi scelti (es. 150 g invece di 100 g).
 - **Alternative migliori**: nella scheda, gli alimenti della stessa categoria con punteggio più alto.
 - **Componi un pasto**: somma più alimenti con le loro porzioni e mostra totali e profilo di rischio del pasto.
+- **Piano settimanale bilanciato** (`/piano`): pranzi e cene da 1 a 7 giorni con i pasti pronti, scelti in modo che nessun rischio si accumuli nella settimana e lo stesso rischio alto non capiti due volte nello stesso giorno; con un profilo si evitano prima i piatti alti per te. Ogni piatto si cambia o si sceglie a mano e gli altri si ribilanciano; rischi giorno per giorno, profilo della settimana, ingredienti per il numero di persone, stampa, download come testo e consultazione offline.
 - **Lista della spesa a semaforo verde** (`/spesa`): per i reparti scelti propone alimenti con punteggio verde e nessun rischio oltre Basso (dove non ce ne sono, come per cereali e oli, le scelte migliori senza rischi alti, segnate), ogni volta una scelta diversa; voci da cambiare, togliere o aggiungere, con l'alternativa verde per quelle non verdi; spunte salvate sul dispositivo, stampa, download come testo e consultazione offline.
 - **Diario alimentare** per ogni utente registrato: pasti del giorno, totali di Kcal, Kcal nette e TEF, profilo di rischio della giornata e riepilogo degli ultimi 7 giorni.
 - **Italiano e inglese**: la lingua segue il browser e si cambia dal menu (🌐). Anche export (CSV, Excel, PDF) e messaggi dell'API seguono la lingua; la riga di comando resta in italiano.
@@ -66,6 +67,7 @@ Food-stoplight/
 │   ├── backup.py       # Backup e ripristino (amministratori)
 │   ├── pasto_diario.py # Pasto e diario alimentare
 │   ├── pasti_pronti.py # Pasti pronti: elenco per portata, ingredienti aggiunti al pasto
+│   ├── piano.py        # Piano settimanale: generazione, cambi e scelte con ribilanciamento, ingredienti, testo
 │   ├── spesa.py        # Lista della spesa: generazione, modifiche, testo da scaricare
 │   ├── profilo.py      # Profilo personale: condizioni dell'utente (account o sessione)
 │   ├── accesso.py      # Login, logout, lingua, ruoli e controllo dell'accesso
@@ -88,6 +90,7 @@ Food-stoplight/
 ├── ciqual.py           # Tabella francese Ciqual 2025: gli stessi valori dove CoFID non ha un alimento comparabile
 ├── ricette.py          # Ricette CREA: fruttosio, glucosio, lattosio e saturi calcolati dagli ingredienti
 ├── pasti_pronti.py     # Pasti pronti: lettura dei file e piatto calcolato dagli ingredienti (peso cotto, alcol)
+├── piano.py            # Piano settimanale: posti, costo del bilanciamento dei rischi, generazione e ribilanciamento
 ├── spesa.py            # Lista della spesa a semaforo verde: alimenti proponibili, scelta per reparto, sostituti
 ├── openfoodfacts.py    # Prodotti confezionati per codice a barre (Open Food Facts)
 ├── fonti.py            # Alimenti dalle fonti: CREA + CoFID + USDA + ricette, Open Food Facts, USDA; import e sincronizzazione
@@ -111,6 +114,7 @@ Food-stoplight/
 │   ├── scheda.html     # Scheda del singolo alimento: porzione, nutrienti, radar, alternative
 │   ├── confronto.html  # Confronto affiancato di 2–4 alimenti
 │   ├── pasto.html      # Composizione di un pasto
+│   ├── piano.html      # Piano settimanale dei pasti
 │   ├── spesa.html      # Lista della spesa a semaforo verde
 │   ├── diario.html     # Diario alimentare giornaliero
 │   ├── profilo.html    # Profilo personale: condizioni per il semaforo per te
@@ -222,6 +226,7 @@ flask --app app elimina-utente lucia                   # elimina anche il suo di
 - **Pasto**: dalla scheda di un alimento («Aggiungi al pasto», con la porzione scelta) o dalla pagina *Pasto* con la ricerca. Il pasto resta nella sessione del browser (fino a 30 alimenti) ed è disponibile anche senza login.
 - **Diario**: per gli utenti registrati, sia amministratori sia visitatori; ognuno vede solo il proprio. Si aggiungono alimenti a colazione, pranzo, cena o spuntino, oppure si salva un pasto intero. Ogni voce conserva i valori dell'alimento al momento dell'inserimento, quindi il diario non cambia se l'alimento viene poi modificato o eliminato.
 - **Pasti pronti**: dalla pagina *Pasti pronti* o dalla scheda del piatto, «Al pasto» aggiunge gli ingredienti crudi della ricetta per 1-12 porzioni; un alimento già nel pasto somma i grammi.
+- **Piano settimanale**: ogni pasto ha le sue portate (di base a pranzo primo e contorno, a cena secondo e contorno), una porzione a testa, senza ripetere i piatti. Tra due piani si preferisce, nell'ordine: con un profilo, meno piatti Alto per te e poi meno piatti non classificati per te; meno volte lo stesso rischio Alto in due piatti dello stesso giorno; la somma più bassa dei quadrati delle medie settimanali dei rischi, pesate sulle Kcal come per il pasto (i rischi del profilo contano il doppio, differenze fino a 0,05 sono pari). Il piano si riempie un posto alla volta scegliendo a caso tra i piatti pari, poi si migliora un piatto alla volta; un piatto cambiato o scelto resta fisso e gli altri si ribilanciano con meno cambi possibile (`piano.py`). Il piano resta nella sessione del browser, come il pasto.
 - **Lista della spesa**: un alimento è verde se ha i cinque rischi classificati, nessuno oltre Basso e il punteggio verde (da 84). Si propongono solo prodotti da comprare: niente alimenti cotti («…, cotti, bolliti»), piatti, erbe aromatiche e condimenti (porzione sotto i 30 g), e un alimento per tipo (prima parola del nome). Mai alimenti con un rischio alto o non classificato; con un profilo, prima il semaforo per te più basso. La lista (fino a 40 voci) resta nella sessione del browser, come il pasto; le spunte nel `localStorage` del dispositivo e ripartono da zero con una lista nuova.
 - Il diario sta in `diario.db`, separato dagli altri database ed escluso da git e dai backup.
 
@@ -242,7 +247,7 @@ pybabel compile -d translations
 
 ## 📱 App installabile e offline
 
-Il sito si installa come app (Chrome, Edge, Safari su iPhone con «Aggiungi alla schermata Home»). Il service worker conserva sul dispositivo i file statici, la tabella completa (la versione con tutte le righe: online la tabella è divisa in pagine; la copia si riscarica in background al massimo una volta all'ora) e la guida; le schede degli alimenti e la lista della spesa restano disponibili dopo averle aperte una volta. Senza connessione la tabella usa l'ultima copia salvata: ricerca, filtri (anche per valori e «solo sicuri») e ordinamento funzionano sul dispositivo (`static/js/tabella.js`), con le stesse regole del server (la ricerca è la stessa di `ricerca.py`, un test le confronta); grafici, classifiche ed export tornano con la rete. Le pagine che richiedono la rete (pasto, diario, confronto, amministrazione) lasciano il posto a una pagina offline con l'elenco delle schede salvate.
+Il sito si installa come app (Chrome, Edge, Safari su iPhone con «Aggiungi alla schermata Home»). Il service worker conserva sul dispositivo i file statici, la tabella completa (la versione con tutte le righe: online la tabella è divisa in pagine; la copia si riscarica in background al massimo una volta all'ora) e la guida; le schede degli alimenti, il piano settimanale e la lista della spesa restano disponibili dopo averli aperti una volta. Senza connessione la tabella usa l'ultima copia salvata: ricerca, filtri (anche per valori e «solo sicuri») e ordinamento funzionano sul dispositivo (`static/js/tabella.js`), con le stesse regole del server (la ricerca è la stessa di `ricerca.py`, un test le confronta); grafici, classifiche ed export tornano con la rete. Le pagine che richiedono la rete (pasto, diario, confronto, amministrazione) lasciano il posto a una pagina offline con l'elenco delle schede salvate.
 
 All'uscita dall'account le pagine salvate vengono cancellate, perché possono contenere il nome dell'utente e i pulsanti di amministrazione. A ogni deploy che cambia CSS, JavaScript, icone o traduzioni il service worker si aggiorna da solo. L'app installabile richiede HTTPS (in locale va bene `http://localhost`).
 
