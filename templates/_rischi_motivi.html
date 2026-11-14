@@ -7,7 +7,7 @@
         {% set esito = valutazione[campo] %}
         <li class="rischio-motivo">
             <div class="rischio-motivo-testa">
-                <span class="rischio-motivo-nome">{{ etichetta|traduci }}</span>
+                <span class="rischio-motivo-nome">{{ etichetta|traduci }}{% if campo in campi_profilo %} <span class="etichetta-per-te">{{ _('nel tuo profilo') }}</span>{% endif %}</span>
                 <span class="badge-risk stato-{{ esito.livello.stato }}">{{ esito.livello.etichetta|traduci }}</span>
             </div>
             {% if esito.motivi %}

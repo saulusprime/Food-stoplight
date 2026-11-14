@@ -17,6 +17,7 @@ import sqlite3
 from collections.abc import Callable
 
 import analisi
+import profilo
 
 Migrazione = tuple[int, str, Callable[[sqlite3.Connection], None]]
 
@@ -29,13 +30,15 @@ def connetti(percorso: str) -> sqlite3.Connection:
 
 def connetti_alimenti(percorso: str) -> sqlite3.Connection:
     """
-    Connessione ad alimenti.db con la funzione SQL punteggio(r1..r5)
-    (punteggio sintetico 0-100, usabile in SELECT e ORDER BY).
+    Connessione ad alimenti.db con le funzioni SQL punteggio(r1..r5)
+    (punteggio sintetico 0-100) e per_te(r, ...) (semaforo per te, 0-3, dai
+    rischi del profilo), usabili in SELECT, WHERE e ORDER BY.
     """
     conn = connetti(percorso)
     conn.create_function(
         "punteggio", len(analisi.CAMPI_RISCHIO), analisi.calcola_punteggio, deterministic=True
     )
+    conn.create_function("per_te", -1, profilo.punti_per_te, deterministic=True)
     return conn
 
 
@@ -210,6 +213,14 @@ def _alimenti_5_pasti_pronti(conn: sqlite3.Connection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS pasti_pronti_alimento ON pasti_pronti (alimento_id)")
 
 
+def _alimenti_6_ciqual(conn: sqlite3.Connection) -> None:
+    """
+    Valori presi dalla tabella francese Ciqual (codice e campi), come per CoFID.
+    """
+    for nome in ("codice_ciqual", "campi_ciqual"):
+        conn.execute(f"ALTER TABLE alimenti ADD COLUMN {nome} TEXT")
+
+
 # ---------------------------------------------------------------
 # UTENTI E DIARIO
 # ---------------------------------------------------------------
@@ -225,6 +236,14 @@ def _utenti_1_schema_di_base(conn: sqlite3.Connection) -> None:
             creato_il TEXT
         )
     """)
+
+
+def _utenti_2_profilo(conn: sqlite3.Connection) -> None:
+    """
+    Profilo personale: condizioni scelte dall'utente («diabete,fruttosio»),
+    per il semaforo per te. Si elimina con l'utente.
+    """
+    conn.execute("ALTER TABLE utenti ADD COLUMN condizioni TEXT NOT NULL DEFAULT ''")
 
 
 def _diario_1_schema_di_base(conn: sqlite3.Connection) -> None:
@@ -255,9 +274,11 @@ MIGRAZIONI: dict[str, list[Migrazione]] = {
          _alimenti_3_fonti_e_zuccheri),
         (4, "Valori da CoFID e ricette calcolate dagli ingredienti", _alimenti_4_cofid_e_ricette),
         (5, "Pasti pronti: ricette con ingredienti e grammi", _alimenti_5_pasti_pronti),
+        (6, "Valori da Ciqual", _alimenti_6_ciqual),
     ],
     "utenti": [
         (1, "Schema di base", _utenti_1_schema_di_base),
+        (2, "Profilo personale: condizioni per il semaforo per te", _utenti_2_profilo),
     ],
     "diario": [
         (1, "Schema di base", _diario_1_schema_di_base),

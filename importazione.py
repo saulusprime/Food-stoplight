@@ -29,6 +29,7 @@ from openpyxl.utils.exceptions import InvalidFileException
 
 import analisi
 import calcoli
+import ciqual
 import cofid
 import crea
 import esportazione
@@ -193,6 +194,9 @@ def campo_colonna(intestazione: object) -> str | None:
 
     if "cofid" in norm:
         return "campi_cofid" if "campi" in norm else "codice_cofid"
+
+    if "ciqual" in norm:
+        return "campi_ciqual" if "campi" in norm else "codice_ciqual"
 
     if "ingredient" in norm:
         return "campi_ricetta" if "campi" in norm or "calcolat" in norm else "ingredienti"
@@ -782,7 +786,22 @@ def _normalizza_nutrienti(
         else:
             avvisi.append(gettext("Codice CoFID: «%(testo)s» non valido, ignorato", testo=testo))
 
-    for campo, leggi in (("campi_cofid", cofid.leggi_campi), ("campi_ricetta", ricette.leggi_campi)):
+    testo = grezzo("codice_ciqual")
+
+    if not assente(testo):
+        codici = [c.strip() for c in testo.split(",")]
+
+        if all(ciqual.CODICE_RE.match(c) for c in codici):
+            valori["codice_ciqual"] = ",".join(codici)
+            forniti.append("codice_ciqual")
+        else:
+            avvisi.append(gettext("Codice Ciqual: «%(testo)s» non valido, ignorato", testo=testo))
+
+    for campo, leggi in (
+        ("campi_cofid", cofid.leggi_campi),
+        ("campi_ciqual", ciqual.leggi_campi),
+        ("campi_ricetta", ricette.leggi_campi),
+    ):
         testo = grezzo(campo)
 
         if not assente(testo):

@@ -11,10 +11,11 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 - **Filtri per valori** da / fino a, per 100 g: Kcal, zuccheri, fruttosio, fibre, grassi saturi, sodio, rapporto F/F, punteggio; e il filtro rapido **«Solo alimenti sicuri»** (tutti e cinque i rischi classificati e al massimo Bassi).
 - **Ordinamento multiplo** fino a tre criteri (es. categoria, poi Kcal decrescenti): dai menu «Ordina per / poi per» o con Maiusc+clic sulle intestazioni. I livelli di rischio si ordinano per gravità, i dati mancanti vanno in fondo.
 - **Confronto affiancato** di 2–4 alimenti (`/confronta`): rischi, energia, macro e micronutrienti con barre proporzionali, indice e carico glicemico, NOVA, FODMAP e fonte. Si scelgono con le caselle della tabella (la selezione resta cambiando pagina o ricerca), dalla scheda o dal campo di ricerca della pagina.
-- **Dati reali e tracciabili**: i 900 alimenti delle Tabelle di composizione degli alimenti del CREA (2019), con i valori che il CREA non pubblica (fruttosio, glucosio, grassi saturi) presi da un alimento simile della tabella britannica CoFID 2021 o di USDA FoodData Central, oppure calcolati dagli ingredienti delle ricette CREA; ogni scheda dice da dove viene ogni dato.
+- **Dati reali e tracciabili**: i 900 alimenti delle Tabelle di composizione degli alimenti del CREA (2019), con i valori che il CREA non pubblica (fruttosio, glucosio, grassi saturi) presi da un alimento simile della tabella britannica CoFID 2021, della tabella francese Ciqual 2025 o di USDA FoodData Central, oppure calcolati dagli ingredienti delle ricette CREA; ogni scheda dice da dove viene ogni dato.
 - **Pasti pronti** (`/pasti-pronti`): 200 ricette della cucina italiana (40 antipasti, 60 primi, 60 secondi, 40 contorni, da Wikibooks e Buttalapasta) già convertite negli alimenti della tabella. Un clic aggiunge al pasto gli ingredienti per le porzioni scelte; ogni ricetta è anche un piatto della tabella, con valori per 100 g, porzione e semaforo calcolati dagli ingredienti.
 - **Compila da una fonte**: nel form un alimento si riempie da un codice CREA, da un codice a barre (Open Food Facts) o da un FDC ID USDA.
 - **Sincronizzazione periodica con USDA**: l'app aggiorna da sola i valori presi da USDA (con una chiave personale), con backup prima e storico nella pagina Importa.
+- **Profilo personale e semaforo «Per te»** (`/profilo`): chi ha diabete, ipercolesterolemia o malassorbimento del fruttosio sceglie le sue condizioni e tabella, schede, confronto, pasti pronti, pasto e diario mostrano il livello più alto tra i rischi che lo riguardano, con il filtro «Solo sicuri per il mio profilo», l'ordinamento «Per te» e le alternative migliori per il profilo. Con l'accesso il profilo sta nell'account, senza nella sessione del browser.
 - **Sistema a semaforo** per cinque indicatori di rischio, **calcolati dai valori nutrizionali** con regole documentate e riferimenti bibliografici (Reg. CE 1924/2006, semaforo FSA, OMS, EFSA, LARN, IARC, WCRF, tabelle internazionali dell'indice glicemico, soglie FODMAP):
   - 🩸 Rischio Diabete
   - 🫀 Rischio Colesterolo
@@ -45,6 +46,7 @@ Sviluppata in **Python + Flask** con database **SQLite** e interfaccia basata su
 - **Calcolatore della porzione** nella scheda: tutti i valori ricalcolati per i grammi scelti (es. 150 g invece di 100 g).
 - **Alternative migliori**: nella scheda, gli alimenti della stessa categoria con punteggio più alto.
 - **Componi un pasto**: somma più alimenti con le loro porzioni e mostra totali e profilo di rischio del pasto.
+- **Lista della spesa a semaforo verde** (`/spesa`): per i reparti scelti propone alimenti con punteggio verde e nessun rischio oltre Basso (dove non ce ne sono, come per cereali e oli, le scelte migliori senza rischi alti, segnate), ogni volta una scelta diversa; voci da cambiare, togliere o aggiungere, con l'alternativa verde per quelle non verdi; spunte salvate sul dispositivo, stampa, download come testo e consultazione offline.
 - **Diario alimentare** per ogni utente registrato: pasti del giorno, totali di Kcal, Kcal nette e TEF, profilo di rischio della giornata e riepilogo degli ultimi 7 giorni.
 - **Italiano e inglese**: la lingua segue il browser e si cambia dal menu (🌐). Anche export (CSV, Excel, PDF) e messaggi dell'API seguono la lingua; la riga di comando resta in italiano.
 - **App installabile** su telefono e computer: senza connessione restano consultabili la tabella, la guida e le schede già aperte.
@@ -64,15 +66,18 @@ Food-stoplight/
 │   ├── backup.py       # Backup e ripristino (amministratori)
 │   ├── pasto_diario.py # Pasto e diario alimentare
 │   ├── pasti_pronti.py # Pasti pronti: elenco per portata, ingredienti aggiunti al pasto
+│   ├── spesa.py        # Lista della spesa: generazione, modifiche, testo da scaricare
+│   ├── profilo.py      # Profilo personale: condizioni dell'utente (account o sessione)
 │   ├── accesso.py      # Login, logout, lingua, ruoli e controllo dell'accesso
 │   ├── comandi.py      # Comandi da riga di comando (flask --app app …)
-│   └── comune.py       # Funzioni condivise (database, file da scaricare, ricerca da un campo)
+│   └── comune.py       # Funzioni condivise (database, profilo corrente, file da scaricare, ricerca da un campo)
 ├── api.py              # API REST in sola lettura (/api/alimenti, /api/categorie)
 ├── archivio.py         # Query sugli alimenti (filtri, intervalli, ordinamento multiplo), condivise da pagine e API
 ├── ricerca.py          # Ricerca per nome tollerante (varianti, errori di battitura) e paginazione
 ├── database.py         # Connessioni ai tre database e migrazioni versionate dello schema
 ├── calcoli.py          # Calcoli condivisi: numeri, Kcal e TEF dai macronutrienti, Kcal nette, rapporto F/F
 ├── analisi.py          # Livelli di rischio, punteggio, medaglie e dati per i grafici
+├── profilo.py          # Condizioni del profilo e semaforo per te (alimenti, pasti, funzione SQL per_te)
 ├── importazione.py     # Lettura di CSV/Excel, riconoscimento colonne, piano dell'import (anteprima)
 ├── esportazione.py     # Export CSV, Excel e PDF (tabella e scheda alimento)
 ├── backup.py           # Backup, verifica e ripristino del database alimenti
@@ -80,14 +85,16 @@ Food-stoplight/
 ├── crea.py             # Lettura delle schede delle Tabelle di composizione del CREA
 ├── usda.py             # Valori da USDA FoodData Central per FDC ID
 ├── cofid.py            # Tabella britannica CoFID 2021: profilo degli zuccheri, zuccheri totali e grassi saturi
+├── ciqual.py           # Tabella francese Ciqual 2025: gli stessi valori dove CoFID non ha un alimento comparabile
 ├── ricette.py          # Ricette CREA: fruttosio, glucosio, lattosio e saturi calcolati dagli ingredienti
 ├── pasti_pronti.py     # Pasti pronti: lettura dei file e piatto calcolato dagli ingredienti (peso cotto, alcol)
+├── spesa.py            # Lista della spesa a semaforo verde: alimenti proponibili, scelta per reparto, sostituti
 ├── openfoodfacts.py    # Prodotti confezionati per codice a barre (Open Food Facts)
 ├── fonti.py            # Alimenti dalle fonti: CREA + CoFID + USDA + ricette, Open Food Facts, USDA; import e sincronizzazione
 ├── classificazioni.py  # Bevande, carni rosse e lavorate, zuccheri liberi, NOVA, FODMAP, indice glicemico
 ├── rischi.py           # Regole dei cinque rischi, con motivi e riferimenti bibliografici
 ├── sincronizzazione.py # Sincronizzazione periodica con USDA (automatica nell'app, storico, blocco)
-├── dati/               # Abbinamenti CREA -> USDA e CREA -> CoFID, alimenti CoFID usati, ingredienti delle ricette, indice glicemico, pasti pronti
+├── dati/               # Abbinamenti CREA -> USDA, CoFID e Ciqual, alimenti CoFID e Ciqual usati, ingredienti delle ricette, indice glicemico, pasti pronti
 ├── lingue.py           # Scelta della lingua (italiano, inglese) e traduzione dei valori mostrati
 ├── pwa.py              # App installabile: manifest, service worker, pagina offline
 ├── babel.cfg, translations/   # Estrazione dei testi e traduzione inglese (messages.po / .mo)
@@ -95,7 +102,7 @@ Food-stoplight/
 ├── .env.example        # Modello del file .env
 ├── update.py           # Aggiornamento del database da CSV/Excel da riga di comando (stesse regole dell'import web)
 ├── alimenti.db         # Database SQLite precaricato (900 alimenti CREA e i 200 piatti dei pasti pronti)
-├── utenti.db           # Utenti e password (creato al primo avvio, escluso da git)
+├── utenti.db           # Utenti, password e profili (creato al primo avvio, escluso da git)
 ├── diario.db           # Diario alimentare degli utenti (creato al primo avvio, escluso da git)
 ├── instance/           # Backup del database e file in attesa di import (creata all'uso, esclusa da git)
 ├── templates/          # Template Jinja2
@@ -104,7 +111,9 @@ Food-stoplight/
 │   ├── scheda.html     # Scheda del singolo alimento: porzione, nutrienti, radar, alternative
 │   ├── confronto.html  # Confronto affiancato di 2–4 alimenti
 │   ├── pasto.html      # Composizione di un pasto
+│   ├── spesa.html      # Lista della spesa a semaforo verde
 │   ├── diario.html     # Diario alimentare giornaliero
+│   ├── profilo.html    # Profilo personale: condizioni per il semaforo per te
 │   ├── _radar.html, _riepilogo_pasto.html, _elenco_alimenti.html  # Parti in comune
 │   ├── form.html       # Form nuovo/modifica alimento
 │   ├── import.html     # Caricamento del file da importare (CSV o Excel)
@@ -190,7 +199,7 @@ La configurazione si legge dalle variabili d'ambiente oppure dal file `.env` nel
 | `admin` | Consultazione e gestione completa: nuovo, modifica, elimina, import CSV |
 | `visitatore` | Sola consultazione (utile con `ACCESSO_PUBBLICO=false`) |
 
-Gli utenti si gestiscono da riga di comando; le password sono salvate come hash in `utenti.db`, separato da `alimenti.db` ed escluso da git.
+Gli utenti si gestiscono da riga di comando; le password sono salvate come hash in `utenti.db`, separato da `alimenti.db` ed escluso da git. Nello stesso database c'è il profilo personale di ogni utente (le condizioni scelte in `/profilo`, colonna `condizioni`), che si elimina con l'utente e non entra nei backup.
 
 ```bash
 flask --app app crea-utente mario                      # amministratore (default)
@@ -213,6 +222,7 @@ flask --app app elimina-utente lucia                   # elimina anche il suo di
 - **Pasto**: dalla scheda di un alimento («Aggiungi al pasto», con la porzione scelta) o dalla pagina *Pasto* con la ricerca. Il pasto resta nella sessione del browser (fino a 30 alimenti) ed è disponibile anche senza login.
 - **Diario**: per gli utenti registrati, sia amministratori sia visitatori; ognuno vede solo il proprio. Si aggiungono alimenti a colazione, pranzo, cena o spuntino, oppure si salva un pasto intero. Ogni voce conserva i valori dell'alimento al momento dell'inserimento, quindi il diario non cambia se l'alimento viene poi modificato o eliminato.
 - **Pasti pronti**: dalla pagina *Pasti pronti* o dalla scheda del piatto, «Al pasto» aggiunge gli ingredienti crudi della ricetta per 1-12 porzioni; un alimento già nel pasto somma i grammi.
+- **Lista della spesa**: un alimento è verde se ha i cinque rischi classificati, nessuno oltre Basso e il punteggio verde (da 84). Si propongono solo prodotti da comprare: niente alimenti cotti («…, cotti, bolliti»), piatti, erbe aromatiche e condimenti (porzione sotto i 30 g), e un alimento per tipo (prima parola del nome). Mai alimenti con un rischio alto o non classificato; con un profilo, prima il semaforo per te più basso. La lista (fino a 40 voci) resta nella sessione del browser, come il pasto; le spunte nel `localStorage` del dispositivo e ripartono da zero con una lista nuova.
 - Il diario sta in `diario.db`, separato dagli altri database ed escluso da git e dai backup.
 
 ## 🌐 Lingue
@@ -232,7 +242,7 @@ pybabel compile -d translations
 
 ## 📱 App installabile e offline
 
-Il sito si installa come app (Chrome, Edge, Safari su iPhone con «Aggiungi alla schermata Home»). Il service worker conserva sul dispositivo i file statici, la tabella completa (la versione con tutte le righe: online la tabella è divisa in pagine; la copia si riscarica in background al massimo una volta all'ora) e la guida; le schede degli alimenti restano disponibili dopo averle aperte una volta. Senza connessione la tabella usa l'ultima copia salvata: ricerca, filtri (anche per valori e «solo sicuri») e ordinamento funzionano sul dispositivo (`static/js/tabella.js`), con le stesse regole del server (la ricerca è la stessa di `ricerca.py`, un test le confronta); grafici, classifiche ed export tornano con la rete. Le pagine che richiedono la rete (pasto, diario, confronto, amministrazione) lasciano il posto a una pagina offline con l'elenco delle schede salvate.
+Il sito si installa come app (Chrome, Edge, Safari su iPhone con «Aggiungi alla schermata Home»). Il service worker conserva sul dispositivo i file statici, la tabella completa (la versione con tutte le righe: online la tabella è divisa in pagine; la copia si riscarica in background al massimo una volta all'ora) e la guida; le schede degli alimenti e la lista della spesa restano disponibili dopo averle aperte una volta. Senza connessione la tabella usa l'ultima copia salvata: ricerca, filtri (anche per valori e «solo sicuri») e ordinamento funzionano sul dispositivo (`static/js/tabella.js`), con le stesse regole del server (la ricerca è la stessa di `ricerca.py`, un test le confronta); grafici, classifiche ed export tornano con la rete. Le pagine che richiedono la rete (pasto, diario, confronto, amministrazione) lasciano il posto a una pagina offline con l'elenco delle schede salvate.
 
 All'uscita dall'account le pagine salvate vengono cancellate, perché possono contenere il nome dell'utente e i pulsanti di amministrazione. A ogni deploy che cambia CSS, JavaScript, icone o traduzioni il service worker si aggiorna da solo. L'app installabile richiede HTTPS (in locale va bene `http://localhost`).
 
@@ -242,7 +252,8 @@ All'uscita dall'account le pagine salvate vengono cancellate, perché possono co
 - **USDA FoodData Central** (dominio pubblico) – i valori che il CREA non pubblica, soprattutto fruttosio e glucosio, dall'alimento corrispondente: gli abbinamenti, scelti alimento per alimento, sono in `dati/crea_usda.csv` (441 alimenti). Fruttosio, glucosio e lattosio mantengono la proporzione sugli zuccheri dell'alimento USDA, applicata agli zuccheri del CREA. Negli alimenti di origine animale il fruttosio è 0; nel latte e nei latticini non zuccherati gli zuccheri sono lattosio.
 - **Open Food Facts** (licenza ODbL) – prodotti confezionati per codice a barre, dal form.
 - **CoFID 2021** – [McCance and Widdowson's Composition of Foods Integrated Dataset](https://www.gov.uk/government/publications/composition-of-foods-integrated-dataset-cofid) (Public Health England, Open Government Licence v3.0), prima di USDA: profilo degli zuccheri di prodotti europei (senza lo sciroppo di mais dei prodotti USA), applicato agli zuccheri totali del CREA o, se il CREA non li pubblica, a quelli USDA o CoFID; grassi saturi come percentuale degli acidi grassi, convertiti con i grassi totali del CREA e lo stesso fattore FAO, o, dove CoFID non dà la percentuale, con la quota dei saturi sui grassi. Un alimento solo simile si abbina quando il livello di rischio non dipende dalla scelta. Abbinamenti in `dati/crea_cofid.csv` (una riga per gruppo di campi, con una nota sulla scelta); in `dati/cofid.csv` solo gli alimenti CoFID usati, rigenerabili dal file Excel ufficiale con `flask cofid-estrai`.
-- **Ricette CREA** – per i 53 piatti con la lista degli ingredienti, fruttosio, glucosio, lattosio e saturi che il CREA non pubblica si calcolano dagli ingredienti (abbinati agli alimenti CREA in `dati/ingredienti_crea.csv`): la composizione degli ingredienti si applica a zuccheri e grassi del piatto. Si ricalcolano dopo ogni import, modifica o sincronizzazione.
+- **Ciqual 2025** – [Table de composition nutritionnelle des aliments](https://ciqual.anses.fr/) dell'Anses ([doi:10.57745/RDMHWY](https://doi.org/10.57745/RDMHWY), [Licence Ouverte 2.0](https://www.etalab.gouv.fr/licence-ouverte-open-licence/)), dopo CoFID e prima di USDA, dove CoFID non ha un alimento comparabile o non ne ha i dati: frattaglie, piccione, capretto, panettone, babà, pappa reale, riso alla cantonese e altri. Stesse regole di CoFID: profilo degli zuccheri applicato agli zuccheri del CREA, grassi saturi con la quota dei saturi sui grassi. Per i valori sotto il limite di quantificazione («< 0,2») il fruttosio vale il limite, ma non più degli zuccheri non spiegati dagli altri zuccheri misurati, glucosio e lattosio valgono 0, i saturi il limite. Un gruppo di campi viene da una tabella sola. Abbinamenti in `dati/crea_ciqual.csv`, con la nota sulla scelta; in `dati/ciqual.csv` solo gli alimenti usati, rigenerabili dal file Excel ufficiale con `flask ciqual-estrai`.
+- **Ricette CREA** – per i 53 piatti con la lista degli ingredienti, fruttosio, glucosio, lattosio e saturi che il CREA non pubblica si calcolano dagli ingredienti (abbinati agli alimenti CREA in `dati/ingredienti_crea.csv`): la composizione degli ingredienti si applica a zuccheri e grassi del piatto. Carne e pesce, senza fruttosio, hanno pochi zuccheri che vengono dal glicogeno: dove manca il glucosio contano come glucosio, nelle ricette e nei pasti pronti. Si ricalcolano dopo ogni import, modifica o sincronizzazione.
 - **Pasti pronti** – ricette dal [Libro di cucina di Wikibooks](https://it.wikibooks.org/wiki/Libro_di_cucina) (licenza [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.it)) e da [Buttalapasta](https://www.buttalapasta.it/) (riuso consentito citando la fonte). Si riprendono solo nome, porzioni e ingredienti con le quantità, con il link alla pagina; il procedimento resta lì. GialloZafferano e altri siti che vietano la lettura automatica o l'estrazione di dati (robots.txt, riserva TDM) non sono stati usati. In `dati/pasti_pronti.csv` le ricette, in `dati/pasti_pronti_ingredienti.csv` gli ingredienti con il codice CREA dell'alimento, i grammi crudi dell'intera ricetta, la resa in cottura e una nota sulle stime; i due file, derivati in parte da Wikibooks, sono distribuiti con la stessa licenza CC BY-SA 4.0. `flask pasti-importa` li carica e calcola i piatti: nutrienti degli ingredienti divisi per il peso cotto, alcol del vino al 35% (tabelle USDA dei fattori di ritenzione), sale aggiunto non conteggiato. I piatti si ricalcolano con le ricette CREA.
 - **Indice glicemico** – Atkinson et al., *Diabetes Care* 2008: tabella 1 (medie di più studi) e, dove manca, tabella A1 dell'appendice online (singoli studi, preferiti quelli italiani ed europei, media delle voci che corrispondono); 190 alimenti in `dati/indice_glicemico.csv`, con la voce e i numeri delle voci usate.
 - **NOVA, FODMAP, rischi** – regole documentate in `classificazioni.py` e `rischi.py`, spiegate nella pagina Guida con i riferimenti.
@@ -255,6 +266,7 @@ flask --app app usda-sincronizza                    # aggiorna subito i valori U
 flask --app app ricalcola-rischi                    # ricalcola i livelli dopo aver cambiato le regole
 flask --app app ricalcola-ricette                   # ricalcola i valori delle ricette dagli ingredienti
 flask --app app cofid-estrai CoFID_2021.xlsx        # rigenera dati/cofid.csv dal file Excel ufficiale
+flask --app app ciqual-estrai Table_Ciqual_2025.xlsx  # rigenera dati/ciqual.csv dal file Excel ufficiale
 flask --app app pasti-importa                       # carica i pasti pronti da dati/ e ricalcola i piatti
 ```
 
@@ -344,9 +356,10 @@ python update.py --db altro.db --csv dati.csv
 - **Kcal Nette** = Kcal totali − TEF (Kcal).
 - **Rapporto Fruttosio/Fibre** = fruttosio ÷ fibre (0 se le fibre sono 0): indicatore utile per la valutazione del malassorbimento del fruttosio; più è basso, meglio è, perché le fibre ne favoriscono la tolleranza.
 - **Indicatori di rischio**: calcolati dai valori nutrizionali a ogni salvataggio, import e sincronizzazione (`rischi.py`), mai scritti a mano. Per i nutrienti da limitare la scala è comune, per 100 g (bevande per 100 ml): Trascurabile fino alla soglia «senza» del Reg. CE 1924/2006, Basso fino a «a basso contenuto» (verde FSA), Medio nell'ambra e Alto nel rosso del semaforo FSA. Diabete: carico glicemico della porzione e zuccheri liberi, un livello in meno con molte fibre. Colesterolo: grassi saturi, e colesterolo della porzione oltre il limite giornaliero dei LARN. Malassorbimento: fruttosio in eccesso sul glucosio nella porzione rispetto alla soglia FODMAP (Varney 2017). Metabolico: densità energetica (WCRF) e zuccheri liberi. Tumorale: alcol e carni lavorate (IARC gruppo 1), carne rossa, sale, ultra-trasformati, bevande zuccherate; fibre protettive. Regole e riferimenti completi nella Guida.
+- **Semaforo per te**: per ogni condizione del profilo conta un rischio (diabete → rischio diabete, ipercolesterolemia → rischio colesterolo, malassorbimento del fruttosio → rischio malassorbimento) e vale il più alto, senza soglie nuove. Un rischio Alto basta per dare Alto; altrimenti, se un rischio del profilo non è classificato, il semaforo per te resta non classificato. «Solo sicuri per il mio profilo» tiene gli alimenti con il semaforo per te al massimo Basso. Le alternative mettono prima quelle con il semaforo per te più basso, poi il punteggio più alto. Per pasti e giornate la stessa regola si applica ai livelli medi. Gli export applicano il filtro ma non hanno la colonna; l'API non usa il profilo.
 - **Punteggio complessivo** = 100 × (1 − media dei punti ÷ 3), con Trascurabile = 0, Basso = 1, Medio = 2, Alto = 3 punti, calcolato sui rischi disponibili. Il colore del punteggio corrisponde al livello medio: oltre 83 Trascurabile, 51–83 Basso, 17–50 Medio, fino a 16 Alto.
 - **Medaglie**: primi 10 dell'intero database per punteggio (a parità, più fibre), per rapporto fruttosio/fibre (solo alimenti con almeno 1 g di fruttosio) e per Kcal (esclusi i valori a 0, che indicano dati mancanti).
-- **Origine dei dati**: vedi *Fonti dei dati*. Dove una fonte non dà un valore il campo resta vuoto e il rischio che ne dipende «Non classificato»: oggi il colesterolo di 29 alimenti (frattaglie e carni rare, biscotti e dolci industriali di cui non si conosce il tipo di grasso, alcune ricette) e il malassorbimento di 55 (soprattutto verdure, ricette, cereali e legumi senza un equivalente). Le regole sono descritte, con domande aperte, in `docs/revisione_regole.md`, il dossier per la revisione di un nutrizionista.
+- **Origine dei dati**: vedi *Fonti dei dati*. Dove una fonte non dà un valore il campo resta vuoto e il rischio che ne dipende «Non classificato»: oggi il colesterolo di 16 alimenti (soprattutto biscotti, cracker e merendine industriali di cui non si conosce il tipo di grasso) e il malassorbimento di 39 (soprattutto verdure ed erbe, cereali, legumi e olive senza un equivalente con il dettaglio degli zuccheri). Le regole sono descritte, con domande aperte, in `docs/revisione_regole.md`, il dossier per la revisione di un nutrizionista.
 - **Dati nutrizionali**: valori per 100 g; un campo vuoto significa «non disponibile», 0 è un valore misurato.
 - **Carico glicemico** = indice glicemico × carboidrati disponibili della porzione ÷ 100. I carboidrati sono quelli disponibili (senza fibre), come nelle etichette europee e nel CREA; da USDA si sottraggono le fibre. Soglie: indice basso fino a 55, medio 56–69, alto da 70; carico per porzione basso fino a 10, medio 11–19, alto da 20.
 - **FODMAP**: livello Basso / Medio / Alto per fruttani, GOS, lattosio, fruttosio in eccesso e polioli, come il semaforo delle tabelle Monash; il complessivo è il più alto dei cinque.
@@ -366,7 +379,7 @@ python update.py --db altro.db --csv dati.csv
 | Frontend | Jinja2, Bootstrap Italia 2.18.3, service worker (app installabile) |
 | Lingue | Flask-Babel (italiano, inglese) |
 | Import / Export | openpyxl (Excel), fpdf2 (PDF) |
-| Dati | CREA (Tabelle di composizione degli alimenti), USDA FoodData Central, Open Food Facts (requests) |
+| Dati | CREA (Tabelle di composizione degli alimenti), CoFID 2021, Ciqual 2025, USDA FoodData Central, Open Food Facts (requests) |
 | Qualità | pytest, ruff, mypy, GitHub Actions |
 | Deploy | Docker, Render |
 

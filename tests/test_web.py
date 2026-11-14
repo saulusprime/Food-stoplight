@@ -68,6 +68,8 @@ def test_intestazioni_di_sicurezza(client):
     ("/importa/conferma", {"modalita": "aggiorna"}),
     ("/backup/crea", {}),
     ("/pasto/svuota", {}),
+    ("/profilo", {"condizioni": "diabete"}),
+    ("/spesa/genera", {"reparti": "Verdura"}),
 ])
 def test_csrf_obbligatorio(admin, url, dati):
     prima = conta()

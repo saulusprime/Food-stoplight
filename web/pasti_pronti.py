@@ -27,9 +27,10 @@ import archivio
 import fonti
 import nutrienti
 import pasti_pronti
+import profilo
 from lingue import N_
 from web.accesso import url_sicuro
-from web.comune import get_db
+from web.comune import condizioni_utente, get_db
 from web.pasto_diario import PASTO_MAX_VOCI, leggi_pasto
 
 bp = Blueprint("pasti_pronti", __name__)
@@ -122,8 +123,11 @@ def elenco() -> ResponseReturnValue:
     piatti = archivio.get_alimenti_per_id([r["alimento_id"] for r in ricette if r["alimento_id"]])
     portata = request.args.get("portata", "")
     portata = portata if portata in pasti_pronti.CHIAVI_PORTATE else ""
+    condizioni = condizioni_utente()
+    # Con un profilo si ordina anche per semaforo per te
+    ordinamenti = {**ORDINAMENTI, archivio.PER_TE: N_("Per te")} if condizioni else ORDINAMENTI
     ordina = request.args.get("ordina", "nome")
-    ordina = ordina if ordina in ORDINAMENTI else "nome"
+    ordina = ordina if ordina in ordinamenti else "nome"
 
     voci = []
 
@@ -135,13 +139,21 @@ def elenco() -> ResponseReturnValue:
             "piatto": piatto,
             "kcal_porzione": (piatto["kcal"] or 0) * porzione / 100 if piatto and porzione else None,
             "rischi": rischi_in_evidenza(piatto),
+            "per_te": profilo.per_te(piatto, condizioni) if piatto else None,
         })
 
-    def chiave(voce: dict[str, Any]) -> tuple[float, str]:
+    def chiave(voce: dict[str, Any]) -> tuple[Any, ...]:
         # Senza piatto o senza dato in fondo; a parità, per nome
         nome = voce["nome"].casefold()
         punteggio = (voce["piatto"] or {}).get("punteggio")
 
+        if ordina == archivio.PER_TE:
+            punti = (voce["per_te"] or {}).get("punti")
+            return (
+                punti if punti is not None else float("inf"),
+                -punteggio if punteggio is not None else 1.0,
+                nome,
+            )
         if ordina == "punteggio":
             return (-punteggio if punteggio is not None else 1.0, nome)
         if ordina == "kcal":
@@ -162,7 +174,7 @@ def elenco() -> ResponseReturnValue:
         portate=pasti_pronti.PORTATE,
         portata=portata,
         ordina=ordina,
-        ordinamenti=ORDINAMENTI,
+        ordinamenti=ordinamenti,
         conteggi=Counter(r["portata"] for r in ricette),
         totale=len(ricette),
         fonti_ricette=pasti_pronti.FONTI,

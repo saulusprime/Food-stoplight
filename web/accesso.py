@@ -40,6 +40,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import lingue
 from lingue import N_
 from web.comune import (
+    CHIAVE_SESSIONE_PROFILO,
     get_db_utenti,
 )
 
@@ -74,6 +75,8 @@ class Utente(UserMixin):
         self.id = row["id"]
         self.username = row["username"]
         self.ruolo = row["ruolo"]
+        # Condizioni del profilo personale («diabete,fruttosio»), vedi profilo.py
+        self.condizioni = row["condizioni"] or ""
 
     @property
     def is_admin(self) -> bool:
@@ -93,7 +96,7 @@ login_manager.anonymous_user = Anonimo
 def carica_utente(user_id: str) -> Utente | None:
     conn = get_db_utenti()
     row = conn.execute(
-        "SELECT id, username, ruolo FROM utenti WHERE id = ?",
+        "SELECT id, username, ruolo, condizioni FROM utenti WHERE id = ?",
         (user_id,)
     ).fetchone()
     conn.close()
@@ -195,6 +198,9 @@ def login() -> ResponseReturnValue:
 
         if row and password_ok:
             login_user(Utente(row))
+            # Con l'accesso vale il profilo dell'account, non quello della sessione
+            session.pop(CHIAVE_SESSIONE_PROFILO, None)
+            session["svuota_cache"] = True
             flash(_("Accesso effettuato come %(nome)s.", nome=row["username"]), "success")
             return redirect(url_sicuro(request.args.get("next")) or url_for("pagine.index"))
 
@@ -207,6 +213,8 @@ def login() -> ResponseReturnValue:
 @bp.route("/logout", methods=["POST"])
 def logout() -> ResponseReturnValue:
     logout_user()
+    # Il profilo personale non resta nel browser dopo l'uscita
+    session.pop(CHIAVE_SESSIONE_PROFILO, None)
     # La pagina successiva chiede al service worker di cancellare le pagine salvate
     session["svuota_cache"] = True
     flash(_("Disconnessione effettuata."), "info")

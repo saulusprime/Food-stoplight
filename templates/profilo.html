@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ _('Il tuo profilo') }}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>{{ _('Il tuo profilo') }}</h1>
+    <p>
+        {{ _('Scegli le condizioni che ti riguardano: tabella, schede, confronto, pasti pronti, pasto e diario mostrano il semaforo «Per te», il livello più alto tra i rischi che contano per il tuo profilo.') }}
+    </p>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <section class="card grafico-card" aria-labelledby="titolo-condizioni">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-condizioni">{{ _('Condizioni') }}</h2>
+                <p class="grafico-sottotitolo">{{ _('Puoi sceglierne più di una, oppure nessuna.') }}</p>
+
+                <form method="post" action="{{ url_for('profilo.pagina') }}" class="profilo-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <fieldset>
+                        <legend class="visually-hidden">{{ _('Condizioni') }}</legend>
+
+                        {% for c in condizioni %}
+                            <div class="form-check profilo-condizione">
+                                <input class="form-check-input" type="checkbox" id="condizione-{{ c.chiave }}" name="condizioni" value="{{ c.chiave }}"
+                                       aria-describedby="descrizione-{{ c.chiave }}" {% if c.chiave in scelte %}checked{% endif %}>
+                                <label class="form-check-label" for="condizione-{{ c.chiave }}">{{ c.etichetta|traduci }}</label>
+                                <p class="profilo-descrizione" id="descrizione-{{ c.chiave }}">{{ c.descrizione|traduci }}</p>
+                            </div>
+                        {% endfor %}
+                    </fieldset>
+
+                    <button type="submit" class="btn btn-primary">{{ _('Salva il profilo') }}</button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-5 d-flex flex-column gap-3">
+        <section class="card grafico-card" aria-labelledby="titolo-come-funziona">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-come-funziona">{{ _('Come funziona') }}</h2>
+                <ul class="mb-2">
+                    <li>{{ _('Il semaforo per te usa i livelli già calcolati per ogni alimento, senza soglie diverse.') }}</li>
+                    <li>{{ _('Vale il livello più alto tra i rischi del profilo: con diabete e colesterolo, un alimento con diabete Basso e colesterolo Medio è Medio per te.') }}</li>
+                    <li>{{ _('Se un rischio del profilo non è classificato, il semaforo per te resta non classificato, salvo che un altro sia già Alto.') }}</li>
+                </ul>
+                <p class="mb-0"><a href="{{ url_for('pagine.guida', _anchor='per-te') }}">{{ _('Dettagli nella guida') }}</a></p>
+            </div>
+        </section>
+
+        <section class="card grafico-card" aria-labelledby="titolo-privacy">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-privacy">{{ _('Dove resta il profilo') }}</h2>
+                <p class="mb-2">
+                    {% if current_user.is_authenticated %}
+                        {{ _('Il profilo è salvato nel tuo account e lo vedi solo tu. Per cancellarlo togli tutte le condizioni e salva.') }}
+                    {% else %}
+                        {{ _('Senza accesso il profilo resta solo in questo browser, fino alla chiusura della sessione.') }}
+                    {% endif %}
+                </p>
+                <p class="mb-0 small text-muted">
+                    {{ _('Il semaforo per te descrive un alimento alla volta e non sostituisce il parere di un medico o di un nutrizionista.') }}
+                </p>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+codice_crea,alimento_crea,campi,codice_ciqual,nome_ciqual,nota
+000510,Pane di segale,zuccheri,7106,"Pain complet au seigle, préemballé","stesso tipo di pane: fruttosio 13% degli zuccheri (pane di segale e frumento 12%), sotto il 17% oltre cui la porzione supererebbe la soglia"
+000970,"Biscotti, integrali, con soia",zuccheri,24006,"Biscuit sec au soja, enrichi en vitamines et minéraux","stesso tipo di biscotto: con 1,1 g di zuccheri il fruttosio della porzione resta sotto la soglia finché è meno del 45% degli zuccheri (qui 7%)"
+001010,"Crackers, alla soia",zuccheri,7351,Cracker de table au froment,"approssimato: cracker di frumento; nei cracker Ciqual con il fruttosio misurato è dal 3 al 7% degli zuccheri, sotto l'8% oltre cui la porzione supererebbe la soglia"
+004115,"Fagioli, Borlotti, freschi, cotti, bolliti",zuccheri,20293,"Haricot coco, bouilli/cuit à l'eau","fagiolo da sgranare simile (haricot coco): zuccheri spiegati da glucosio e saccarosio; con 0,5 g di zuccheri la porzione resta sotto la soglia finché il fruttosio è meno del 20% degli zuccheri"
+006590,"Gnocchi di patate, crudi",saturi,26264,"Gnocchi à la pomme de terre, à cuire",stesso alimento
+006591,"Gnocchi di patate, cotti",saturi,25510,"Gnocchi à la pomme de terre, cuit",stesso alimento
+006860,"Salvia, fresco",zuccheri,11069,"Sauge, fraîche","stesso alimento: gli zuccheri misurati sono glucosio, il fruttosio è sotto il limite"
+104300,"Capretto, crudo",saturi,21800,"Chevreau, viande crue",stesso alimento
+108520,"Piccione giovane, crudo",saturi,36600,"Pigeon, viande crue",stesso alimento
+115220,Cuore di equini,saturi,40052,"Coeur, boeuf, cru","approssimato: cuore di bovino; con la quota di saturi dei cuori di bovino, suino, ovino, pollo e tacchino in Ciqual e CoFID (da 0,25 a 0,49 dei grassi) il livello resta Medio"
+115240,Cuore di pollo,saturi,40054,"Coeur, poulet, cru",stesso alimento
+115249,"Cuore di pollo, cotto",saturi,40056,"Coeur, poulet, cuit",stesso alimento
+115260,Cuore di tacchino,saturi,40055,"Coeur, dinde, cru",stesso alimento
+115269,"Cuore di tacchino, cotto",saturi,40057,"Coeur, dinde, cuit",stesso alimento
+202500,"Gomme da masticare, lastrine e confetti",zuccheri,31007,"Chewing-gum, sucré","stesso prodotto (gomma zuccherata): zuccheri quasi tutti saccarosio e glucosio"
+206260,"Gelato confezionato, biscotto con crema, zabaione e cioccolato",zuccheri,39509,"Glace ou crème glacée, cône (taille standard)","approssimato: cono gelato; in tutti i gelati Ciqual il glucosio supera il fruttosio, quindi il livello resta Basso"
+207010,Baba' al rhum,saturi,23021,"Baba au rhum, artisanal","stesso dolce; con la quota del babà confezionato (0,77 invece di 0,65) il livello resta Medio"
+208500,"Crostata, con crema al cacao, industriale",saturi,24052,"Biscuit sec (tartelette), nappé au chocolat, préemballé","approssimato: crostatina al cioccolato confezionata (0,59 dei grassi; tarte al cioccolato 0,62); con 24,7 g di grassi il livello è Alto per qualunque quota di saturi sopra 0,20"
+216000,Panettone,saturi,7719,"Panettone (brioche italienne aux raisins secs et écorces d'orange confite), préemballée",stesso dolce
+507100,Pappa reale,zuccheri,31108,Gelée royale,stesso alimento
+509030,"Soia, yogurt",zuccheri,20929,"Dessert au soja, rayon frais (aliment moyen)","media dei dessert di soia; in tutti, naturali, aromatizzati o alla frutta, il glucosio pareggia o supera il fruttosio, quindi il livello resta Basso"
+PE0001,Riso Cantonese,zuccheri,25088,"Riz cantonais, préemballé",stesso piatto
+PE0009,Spaghetti fritti,zuccheri,9085,"Nouilles asiatiques cuisinées (boeuf, poulet, légumes…) non instantanées","stesso tipo di piatto (noodles saltati); anche con i noodles ai gamberi il fruttosio non supera il glucosio"

@@ -11,8 +11,11 @@ Per i valori che il CREA non pubblica, in quest'ordine:
    europei e grassi saturi come percentuale degli acidi grassi (cofid.py);
    il profilo si applica agli zuccheri totali del CREA, altrimenti a quelli
    USDA, altrimenti a quelli CoFID;
-2. USDA FoodData Central (dati/crea_usda.csv): gli altri campi mancanti;
-3. ricette CREA: fruttosio, glucosio, lattosio e saturi dagli ingredienti
+2. Ciqual 2025 (dati/crea_ciqual.csv), dove CoFID non ha un alimento
+   comparabile: profilo degli zuccheri e quota dei saturi sui grassi, con le
+   stesse regole (ciqual.py);
+3. USDA FoodData Central (dati/crea_usda.csv): gli altri campi mancanti;
+4. ricette CREA: fruttosio, glucosio, lattosio e saturi dagli ingredienti
    (ricette.py), calcolati dopo aver costruito tutti gli alimenti.
 Gli abbinamenti sono scelti alimento per alimento.
 
@@ -30,6 +33,7 @@ from pathlib import Path
 from typing import Any
 
 import calcoli
+import ciqual
 import classificazioni
 import cofid
 import crea
@@ -220,11 +224,69 @@ def da_cofid(valori: dict[str, Any], scheda: Mapping[str, Any]) -> tuple[list[st
     return presi, riservati
 
 
+def da_ciqual(
+    valori: dict[str, Any], scheda: Mapping[str, Any], riservati_cofid: set[str] | None = None,
+) -> tuple[list[str], set[str]]:
+    """
+    Valori ancora mancanti dall'alimento Ciqual abbinato alla scheda CREA,
+    come da_cofid: profilo degli zuccheri e grassi saturi. I campi riservati
+    da CoFID (un profilo degli zuccheri viene da una fonte sola) restano.
+    Restituisce (campi presi, campi riservati, che non si prendono da USDA).
+    """
+    bloccati = riservati_cofid or set()
+    gruppi = ciqual.abbinamenti().get(scheda["codice"], {})
+    presi: list[str] = []
+    riservati: set[str] = set()
+    usati: list[str] = []
+
+    zuccheri = ciqual.alimenti().get(gruppi.get(ciqual.ZUCCHERI, ""))
+
+    if zuccheri and valori.get("zuccheri") is None and "zuccheri" not in bloccati:
+        totale = ciqual.zuccheri_totali(zuccheri, valori.get("carboidrati"))
+
+        if totale is not None:
+            valori["zuccheri"] = totale
+            presi.append("zuccheri")
+            riservati.add("zuccheri")
+
+    if zuccheri and any(valori.get(c) is None and c not in bloccati for c in ciqual.CAMPI_ZUCCHERI):
+        profilo = ciqual.profilo_zuccheri(zuccheri, valori.get("zuccheri"))
+
+        for campo, valore in profilo.items():
+            if valori.get(campo) is None and campo not in bloccati:
+                riservati.add(campo)
+
+                if valore is not None:
+                    valori[campo] = valore
+                    presi.append(campo)
+
+        if profilo or "zuccheri" in presi:
+            usati.append(zuccheri["codice"])
+
+    saturi = ciqual.alimenti().get(gruppi.get(ciqual.SATURI, ""))
+
+    if saturi and valori.get("grassi_saturi") is None and "grassi_saturi" not in bloccati:
+        valore = ciqual.saturi(saturi, valori.get("grassi"))
+
+        if valore is not None:
+            valori["grassi_saturi"] = valore
+            presi.append("grassi_saturi")
+            riservati.add("grassi_saturi")
+            usati.append(saturi["codice"])
+
+    if presi:
+        valori["codice_ciqual"] = ",".join(dict.fromkeys(usati))
+        valori["campi_ciqual"] = ",".join(c for c in ciqual.CAMPI_FORNIBILI if c in presi)
+
+    return presi, riservati
+
+
 def da_crea(scheda: Mapping[str, Any], alimento_usda: Mapping[str, Any] | None = None) -> dict[str, Any]:
     """
     Alimento da una scheda CREA; i nutrienti che il CREA non pubblica si
     prendono dall'alimento CoFID abbinato (elencati in campi_cofid), poi da
-    quello USDA (in campi_usda). Le ricette portano con sé gli ingredienti.
+    quello Ciqual (in campi_ciqual), poi da quello USDA (in campi_usda). Le
+    ricette portano con sé gli ingredienti.
     """
     valori = crea.valori(dict(scheda))
     regole_zuccheri(valori, scheda["categoria"], scheda["nome"])
@@ -241,6 +303,12 @@ def da_crea(scheda: Mapping[str, Any], alimento_usda: Mapping[str, Any] | None =
 
     if presi_cofid:
         fonti.extend(cofid.descrizione(cofid.alimenti()[c]) for c in cofid.leggi_codici(valori["codice_cofid"]))
+
+    presi_ciqual, riservati_ciqual = da_ciqual(valori, scheda, riservati)
+    riservati |= riservati_ciqual
+
+    if presi_ciqual:
+        fonti.extend(ciqual.descrizione(ciqual.alimenti()[c]) for c in ciqual.leggi_codici(valori["codice_ciqual"]))
 
     if alimento_usda:
         da_usda = scala_zuccheri(da_usda, valori.get("zuccheri"))

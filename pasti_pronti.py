@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Any
 
 import nutrienti
-from classificazioni import CARTELLA_DATI
+from classificazioni import CARTELLA_DATI, glucosio
 from lingue import N_
 
 FILE_PASTI = CARTELLA_DATI / "pasti_pronti.csv"
@@ -312,7 +312,8 @@ def calcola(ricetta: Ricetta, alimenti: Mapping[str, Mapping[str, Any]]) -> dict
         parti = []
 
         for alimento, grammi, _resa in voci:
-            valore = alimento.get(campo)
+            # Per carne e pesce senza glucosio, gli zuccheri (dal glicogeno)
+            valore = glucosio(alimento) if campo == "glucosio" else alimento.get(campo)
 
             if valore is None and campo in ZERO_SE_MANCA:
                 valore = 0.0

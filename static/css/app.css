@@ -2406,3 +2406,163 @@ html.js .barra-confronto:not(.attiva) {
         flex: 1 1 auto;
     }
 }
+
+/* ---------------------------------------------------------------
+   Profilo personale e semaforo per te (profilo.py)
+   --------------------------------------------------------------- */
+
+/* «nel tuo profilo» accanto ai rischi che contano per il profilo */
+.etichetta-per-te {
+    display: inline-block;
+    margin-left: 0.3rem;
+    padding: 0 0.4rem;
+    border: 1px solid var(--accento);
+    border-radius: 999px;
+    color: var(--accento);
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.3rem;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* Scheda: riquadro con il bordo nel colore del livello */
+.per-te-card {
+    border-left: 4px solid var(--stato-colore, var(--stato-nd));
+}
+
+.per-te-livello {
+    margin: 0 0 0.6rem;
+    font-size: 1.15rem;
+}
+
+.per-te-voci {
+    list-style: none;
+    margin: 0 0 0.5rem;
+    padding: 0;
+}
+
+.per-te-voci li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px dotted var(--bordo);
+}
+
+.per-te-nota {
+    margin-top: 0.35rem;
+}
+
+/* Pagina del profilo */
+.profilo-condizione {
+    margin-bottom: 1rem;
+}
+
+.profilo-condizione .form-check-label {
+    font-weight: 600;
+}
+
+.profilo-descrizione {
+    margin: 0.1rem 0 0;
+    font-size: 0.875rem;
+    color: var(--testo-tenue);
+}
+
+/* ---------------------------------------------------------------
+   Lista della spesa (spesa.py)
+   --------------------------------------------------------------- */
+.lista-spesa-testa {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.lista-spesa-reparto {
+    margin: 1.25rem 0 0.4rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--testo-secondario);
+}
+
+.lista-spesa {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.lista-spesa-voce {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px dotted var(--bordo);
+}
+
+.lista-spesa-preso {
+    flex: none;
+    margin-top: 0.25rem;
+}
+
+.lista-spesa-testo {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.lista-spesa-dati {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: 0.4rem;
+}
+
+.lista-spesa-azioni {
+    display: flex;
+    flex: none;
+    gap: 0.35rem;
+}
+
+.lista-spesa-presa .nome-alimento {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.etichetta-verde {
+    display: inline-block;
+    padding: 0 0.45rem;
+    border-radius: 999px;
+    background: var(--stato-good);
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.3rem;
+}
+
+/* Stampa: solo il contenuto della pagina, senza menu, notifiche e comandi */
+@media print {
+    .navbar,
+    .notifiche,
+    .salta-al-contenuto,
+    .dialogo,
+    .non-stampare {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff;
+        color: #000000;
+    }
+
+    .grafico-card {
+        border: 0;
+        box-shadow: none;
+    }
+
+    .lista-spesa-voce {
+        break-inside: avoid;
+    }
+}

@@ -46,6 +46,7 @@ import api
 import database
 import lingue
 import nutrienti
+import profilo
 import pwa
 import rischi
 from config import carica_config
@@ -53,8 +54,10 @@ from web import accesso, comandi, import_export, pagine, pasto_diario
 from web import alimenti as alimenti_web
 from web import backup as backup_web
 from web import pasti_pronti as pasti_pronti_web
+from web import profilo as profilo_web
+from web import spesa as spesa_web
 from web.accesso import pagina_precedente
-from web.comune import filtro_numero, get_db, get_db_utenti, init_db
+from web.comune import condizioni_utente, filtro_numero, get_db, get_db_utenti, init_db
 from web.pagine import CONFRONTO_MAX
 
 app = Flask(__name__)
@@ -174,6 +177,10 @@ def contesto_comune() -> dict[str, Any]:
         "testi_js": testi_js(),
         # Pagine salvate in anticipo dal service worker: non consumano i messaggi flash
         "precarica": request.headers.get(pwa.INTESTAZIONE_PRECARICA) == "1",
+        # Condizioni del profilo personale (semaforo per te), vuoto se non impostato,
+        # e campi dei rischi che contano per il profilo
+        "condizioni_profilo": condizioni_utente(),
+        "campi_profilo": profilo.campi(condizioni_utente()),
     }
 
 
@@ -270,7 +277,7 @@ def intestazioni_sicurezza(response: Response) -> Response:
 # ---------------------------------------------------------------
 
 for blueprint in (api.bp, pwa.bp, accesso.bp, pagine.bp, alimenti_web.bp, import_export.bp, backup_web.bp,
-                  pasto_diario.bp, pasti_pronti_web.bp, comandi.bp):
+                  pasto_diario.bp, pasti_pronti_web.bp, spesa_web.bp, profilo_web.bp, comandi.bp):
     app.register_blueprint(blueprint)
 
 

@@ -25,6 +25,7 @@ from flask_babel import gettext as _
 import analisi
 import archivio
 import calcoli
+import ciqual
 import classificazioni
 import cofid
 import crea
@@ -33,6 +34,7 @@ import lingue
 import nutrienti
 import openfoodfacts
 import pasti_pronti
+import profilo
 import ricerca
 import ricette
 import rischi
@@ -41,6 +43,7 @@ from archivio import Alimento
 from lingue import N_
 from web import pasti_pronti as pasti_pronti_web
 from web.comune import (
+    condizioni_utente,
     get_alimenti,
     get_alimento,
     get_stats,
@@ -61,6 +64,7 @@ ETICHETTE_ORDINE = {
     "alimento": N_("Alimento"),
     "categoria": N_("Categoria"),
     "punteggio": N_("Punteggio"),
+    archivio.PER_TE: N_("Per te"),
     "kcal": N_("Kcal"),
     "kcal_nette": N_("Kcal nette"),
     "tef_percent": N_("TEF (%)"),
@@ -104,7 +108,7 @@ def url_tabella(**cambi: Any) -> str:
     return url_for("pagine.index", **{k: v for k, v in parametri.items() if v not in (None, "")})
 
 
-def ordine_colonne(criteri: list[tuple[str, str]]) -> dict[str, dict[str, Any]]:
+def ordine_colonne(criteri: list[tuple[str, str]], condizioni: Sequence[str] = ()) -> dict[str, dict[str, Any]]:
     """
     Per ogni colonna ordinabile: posizione tra i criteri (1, 2, 3 o None),
     direzione, indirizzo del clic (ordina solo per questa colonna, o ne
@@ -113,7 +117,7 @@ def ordine_colonne(criteri: list[tuple[str, str]]) -> dict[str, dict[str, Any]]:
     """
     colonne = {}
 
-    for campo in archivio.SORT_EXPRESSIONS:
+    for campo in archivio.espressioni_ordinamento(condizioni):
         posizione = next((i for i, (c, _) in enumerate(criteri) if c == campo), None)
         direzione = criteri[posizione][1] if posizione is not None else None
         nuova = "desc" if posizione == 0 and direzione == "asc" else "asc"
@@ -137,8 +141,9 @@ def ordine_colonne(criteri: list[tuple[str, str]]) -> dict[str, dict[str, Any]]:
 
 @bp.route("/")
 def index() -> ResponseReturnValue:
+    condizioni = condizioni_utente()
     filtri, sort, direction = leggi_filtri()
-    criteri = archivio.ordinamenti(sort.split(","), direction.split(","), bool(filtri["q"]))
+    criteri = archivio.ordinamenti(sort.split(","), direction.split(","), bool(filtri["q"]), condizioni)
     per_pagina = ricerca.leggi_per_pagina(request.args.get("per_pagina"))
     g.parametri_tabella = parametri_vista(filtri, sort, direction, per_pagina)
 
@@ -159,6 +164,7 @@ def index() -> ResponseReturnValue:
 
     for a in righe:
         a["medaglie"] = medaglie.get(a["id"], [])
+        a["per_te"] = profilo.per_te(a, condizioni)
         # Valori per filtri e ordinamento sul dispositivo (static/js/tabella.js)
         a["_rischi"] = "|".join(a.get(campo) or "" for campo in analisi.CAMPI_RISCHIO)
         a["_valori"] = "|".join(
@@ -201,15 +207,18 @@ def index() -> ResponseReturnValue:
             "rischi": analisi.CAMPI_RISCHIO,
             "valori": archivio.CAMPI_NUMERICI_ORDINABILI,
             "intervalli": list(archivio.CAMPI_INTERVALLO),
-            "ordinabili": list(archivio.SORT_EXPRESSIONS),
+            "ordinabili": list(archivio.espressioni_ordinamento(condizioni)),
             "ordinamenti_max": archivio.ORDINAMENTI_MAX,
+            # Rischi del semaforo per te, tra quelli di data-r (vuoto senza profilo)
+            "per_te": list(profilo.campi(condizioni)),
+            "per_te_adatti": profilo.PUNTI_ADATTI,
         },
         criteri=criteri,
-        colonne=ordine_colonne(criteri),
+        colonne=ordine_colonne(criteri, condizioni),
         opzioni_ordine=[
             (campo, etichetta)
             for campo, etichetta in ETICHETTE_ORDINE.items()
-            if campo != archivio.PERTINENZA or filtri["q"]
+            if (campo != archivio.PERTINENZA or filtri["q"]) and (campo != archivio.PER_TE or condizioni)
         ],
         ordinamenti_max=archivio.ORDINAMENTI_MAX,
         per_pagina_opzioni=ricerca.PER_PAGINA,
@@ -234,6 +243,7 @@ def scheda(alimento_id: int) -> ResponseReturnValue:
     grammi = nutrienti.leggi_grammi(request.args.get("grammi")) or 100.0
     tutti = get_alimenti()
     medaglie = analisi.medaglie_per_alimento(tutti).get(alimento_id, [])
+    condizioni = condizioni_utente()
 
     return render_template(
         "scheda.html",
@@ -253,7 +263,8 @@ def scheda(alimento_id: int) -> ResponseReturnValue:
         disponibili=nutrienti.carboidrati_disponibili(item),
         fodmap=nutrienti.fodmap_complessivo(item),
         nova=nutrienti.gruppo_nova(item),
-        alternative=nutrienti.alternative(item, tutti),
+        alternative=nutrienti.alternative(item, tutti, condizioni=condizioni),
+        per_te=profilo.per_te(item, condizioni),
         valutazione=rischi.valuta(item),
         riferimenti=rischi.RIFERIMENTI,
         fonti_dati=fonti_alimento(item),
@@ -286,6 +297,7 @@ def fonti_alimento(item: Alimento) -> dict[str, Any]:
     """
     campi_usda = usda.leggi_campi(item.get("campi_usda"))
     campi_cofid = cofid.leggi_campi(item.get("campi_cofid"))
+    campi_ciqual = ciqual.leggi_campi(item.get("campi_ciqual"))
     campi_ricetta = ricette.leggi_campi(item.get("campi_ricetta"))
     indice = classificazioni.indice_glicemico(item)
 
@@ -303,6 +315,12 @@ def fonti_alimento(item: Alimento) -> dict[str, Any]:
         ] if campi_cofid else [],
         "cofid_url": cofid.URL,
         "campi_cofid": etichette(campi_cofid),
+        "ciqual": [
+            (codice, (ciqual.alimenti().get(codice) or {}).get("nome") or "")
+            for codice in ciqual.leggi_codici(item.get("codice_ciqual"))
+        ] if campi_ciqual else [],
+        "ciqual_url": ciqual.URL,
+        "campi_ciqual": etichette(campi_ciqual),
         "campi_ricetta": etichette(campi_ricetta),
         "ingredienti": ricette.leggi_ingredienti(item.get("ingredienti")),
         "off": openfoodfacts.URL_SCHEDA.format(codice=item["codice_barre"]) if item.get("codice_barre") else None,
@@ -421,10 +439,12 @@ def confronta() -> ResponseReturnValue:
         return redirect(url_for("pagine.confronta", id=[i for i in ids if i in trovati]))
 
     alimenti = [trovati[i] for i in ids]
+    condizioni = condizioni_utente()
 
     return render_template(
         "confronto.html",
         alimenti=alimenti,
+        per_te=[profilo.per_te(a, condizioni) for a in alimenti] if condizioni else [],
         ids=ids,
         confronto_max=CONFRONTO_MAX,
         energia=righe_numeriche(alimenti, CONFRONTO_ENERGIA),
@@ -462,7 +482,10 @@ def guida() -> ResponseReturnValue:
         kcal_per_grammo=calcoli.KCAL_PER_GRAMMO,
         cofid_url=cofid.URL,
         cofid_licenza=cofid.URL_LICENZA,
+        ciqual_url=ciqual.URL,
+        ciqual_licenza=ciqual.URL_LICENZA,
         nova=nutrienti.NOVA.values(),
+        condizioni=profilo.CONDIZIONI,
         livelli_fodmap=nutrienti.LIVELLI_FODMAP,
         fodmap=nutrienti.FODMAP,
         totale_alimenti=get_stats()[0],

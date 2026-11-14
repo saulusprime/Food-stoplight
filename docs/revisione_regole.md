@@ -1,7 +1,7 @@
 # Food-stoplight: regole dei rischi da rivedere
 
 Documento per la revisione da parte di un nutrizionista o di un medico.
-Dati e regole aggiornati al 10 novembre 2026 (900 alimenti delle Tabelle di composizione CREA).
+Dati e regole aggiornati al 14 novembre 2026: 900 alimenti delle Tabelle di composizione CREA e, a parte, 200 pasti pronti calcolati dagli ingredienti (sezione 3).
 
 ## 1. Cosa Le chiediamo
 
@@ -13,7 +13,7 @@ Le chiediamo di dirci se queste regole sono ragionevoli per un pubblico generale
 - se i casi della sezione 6, che a noi sembrano discutibili, lo sono davvero;
 - le risposte alle domande della sezione 7.
 
-Può rispondere come preferisce: commenti a margine di questo documento, oppure una riga per domanda con «va bene», «da cambiare» o «non so» e un commento. In allegato può ricevere l'export Excel di tutti i 900 alimenti con valori e livelli, per controllare i casi che Le interessano.
+Può rispondere come preferisce: commenti a margine di questo documento, oppure una riga per domanda con «va bene», «da cambiare» o «non so» e un commento. In allegato può ricevere l'export Excel di tutti gli alimenti con valori e livelli, per controllare i casi che Le interessano: i 900 del CREA e i 200 pasti pronti, che si riconoscono dalla colonna «Fonte nutrienti» («Calcolato dagli ingredienti»).
 
 L'app non dà consigli personalizzati e non sostituisce il parere di un professionista: i livelli descrivono un alimento alla volta, non una dieta.
 
@@ -36,24 +36,44 @@ Alcuni criteri valgono **per 100 g** (bevande per 100 ml), altri **per la porzio
 
 Il **punteggio complessivo** (0–100) è 100 × (1 − media dei punti ÷ 3), con Trascurabile = 0, Basso = 1, Medio = 2, Alto = 3, sui rischi classificati.
 
-Il filtro **«Solo alimenti sicuri»** mostra gli alimenti con tutti e cinque i rischi classificati e al massimo Bassi: oggi sono 171 su 900.
+Il filtro **«Solo alimenti sicuri»** mostra gli alimenti con tutti e cinque i rischi classificati e al massimo Bassi: oggi sono 184 su 900.
 
 ## 3. Da dove vengono i dati
 
 | Dato | Fonte |
 |---|---|
 | Valori nutrizionali, porzione tipica | CREA, Tabelle di composizione degli alimenti (aggiornamento 2019) |
-| Fruttosio, glucosio, lattosio dove il CREA non li pubblica | profilo degli zuccheri di un alimento simile della tabella britannica CoFID 2021 o di USDA FoodData Central, riportato agli zuccheri totali del CREA (se il CREA non li pubblica, a quelli di USDA o, in mancanza, di CoFID) |
-| Grassi saturi dove il CREA non pubblica la composizione in acidi grassi | percentuale di acidi grassi saturi di un alimento simile di CoFID 2021 (o, se CoFID non la dà, la sua quota di saturi sui grassi), applicata ai grassi del CREA |
-| Ricette CREA senza dettaglio di zuccheri o saturi | composizione calcolata dagli ingredienti della ricetta, applicata a zuccheri e grassi del piatto |
+| Fruttosio, glucosio, lattosio dove il CREA non li pubblica | profilo degli zuccheri di un alimento simile della tabella britannica CoFID 2021, della tabella francese Ciqual 2025 (dove CoFID non ha un alimento comparabile) o di USDA FoodData Central, riportato agli zuccheri totali del CREA (se il CREA non li pubblica, a quelli di USDA o, in mancanza, di CoFID o Ciqual) |
+| Grassi saturi dove il CREA non pubblica la composizione in acidi grassi | percentuale di acidi grassi saturi di un alimento simile di CoFID 2021 (o, se CoFID non la dà, la sua quota di saturi sui grassi) oppure quota di saturi sui grassi di un alimento simile di Ciqual 2025, applicata ai grassi del CREA |
+| Ricette CREA senza dettaglio di zuccheri o saturi | composizione calcolata dagli ingredienti della ricetta, applicata a zuccheri e grassi del piatto; i pochi zuccheri di carne e pesce (dal glicogeno, senza fruttosio) contano come glucosio |
 | Indice glicemico | Atkinson et al. 2008: tabella 1 (medie di più studi) e tabella A1 dell'appendice (singoli studi); 190 alimenti |
 | Gruppo NOVA, FODMAP | regole sul nome e sulla categoria (Monteiro 2019) e soglie FODMAP (Varney 2017, Sultan 2022) |
 
-Gli abbinamenti con gli alimenti simili sono scelti uno per uno. Dove non c'è un alimento davvero comparabile il dato resta mancante. Un alimento solo simile (per esempio la coscia di pollo per la faraona) si usa quando il livello di rischio non cambierebbe con nessuna composizione plausibile; se il risultato finirebbe a cavallo di una soglia, il dato resta mancante.
+Gli abbinamenti con gli alimenti simili sono scelti uno per uno. Dove non c'è un alimento davvero comparabile il dato resta mancante. Un alimento solo simile (per esempio la coscia di pollo per la faraona) si usa quando il livello di rischio non cambierebbe con nessuna composizione plausibile; se il risultato finirebbe a cavallo di una soglia, il dato resta mancante. Lo stesso vale per i prodotti industriali, la cui composizione dipende dalla ricetta del produttore. In Ciqual alcuni valori sono sotto il limite di quantificazione («< 0,2»): per il fruttosio si usa il limite (stima prudente), per glucosio e lattosio zero.
 
 Restano non classificati, per dati mancanti:
-- **colesterolo:** 29 alimenti: carni rare e frattaglie (9), biscotti, grissini e dolci industriali di cui non si conosce il tipo di grasso (10), ricette (6) e altri 4;
-- **malassorbimento:** 55 alimenti: verdure ed erbe senza un equivalente con il dettaglio degli zuccheri (13), ricette e piatti pronti (10), cereali e derivati (9), legumi e frutta secca (6), olive (4) e altri 13.
+- **colesterolo:** 16 alimenti: biscotti, cracker, grissini e merendine industriali di cui non si conosce il tipo di grasso (7), piatti del CREA (3: frutta caramellata, gelato fritto, ravioli al vapore), frattaglie (2: fegato di cavallo, milza di bovino, con la quota di saturi delle altre frattaglie a cavallo della soglia) e altri 4 (minestrone liofilizzato, pappa reale, tè in foglie, bottarga);
+- **malassorbimento:** 39 alimenti: verdure ed erbe senza un equivalente con il dettaglio degli zuccheri, o con fonti in disaccordo come per la cicoria (12), cereali e derivati (6), legumi e frutta secca (5), olive (4), piatti del CREA (3) e altri 9 (caffè tostato, dado, fecola, lievito, due minestre in scatola, cheeseburger, crostata industriale, margarina).
+
+### Pasti pronti
+
+Oltre ai 900 alimenti, l'app contiene 200 pasti pronti della cucina italiana (40 antipasti, 60 primi, 60 secondi, 40 contorni), con le ricette del Libro di cucina di Wikibooks e di Buttalapasta.
+- Ogni ingrediente è abbinato a un alimento CREA, con i grammi crudi dell'intera ricetta.
+- I valori per 100 g del piatto sono la somma degli ingredienti divisa per il peso cotto: la resa in cottura viene dalle coppie crudo/cotto del CREA, l'alcol del vino si riduce al 35% (fattori di ritenzione USDA), il sale aggiunto non si conta.
+- I livelli si calcolano con le stesse regole degli alimenti.
+- Sono stime, annotate ingrediente per ingrediente: i pesi di pezzi, cucchiai e «q.b.», e le sostituzioni degli ingredienti che il CREA non ha (per esempio guanciale → pancetta tesa, cavolo nero → broccoletti di rapa).
+
+Distribuzioni, esempi e non classificati di questo documento riguardano solo i 900 alimenti CREA. Per i pasti pronti:
+
+| Rischio | Trascurabile | Basso | Medio | Alto | Non classificato |
+|---|---|---|---|---|---|
+| Diabete | 16 | 54 | 35 | 95 | 0 |
+| Colesterolo | 0 | 66 | 92 | 32 | 10 |
+| Malassorbimento | 43 | 103 | 8 | 12 | 34 |
+| Metabolico | 54 | 113 | 26 | 7 | 0 |
+| Tumorale | 18 | 179 | 2 | 1 | 0 |
+
+Carne rossa e carne lavorata contano solo come caratteristica dell'alimento, quindi nel piatto non pesano, come già nelle ricette CREA. Dei 36 pasti con carne lavorata, 29 risultano Basso: per esempio carbonara e amatriciana, mentre la pancetta da sola è Alto. I 21 pasti con sola carne rossa sono tutti Basso: per esempio l'abbacchio a scottadito, mentre l'agnello da solo è Medio. Vedi la domanda 14.
 
 ## 4. Le regole
 
@@ -95,11 +115,11 @@ Distribuzione:
 
 | Livello | Alimenti | Esempi |
 |---|---|---|
-| Trascurabile | 239 | riso, mele, merluzzo, patate, carote, pomodori |
-| Basso | 271 | pane, pasta, arance, petto di pollo, ceci, lenticchie |
-| Medio | 175 | latte intero, yogurt intero, uova, lombata di bovino, salmone, mandorle |
-| Alto | 186 | Parmigiano, burro, olio extravergine, salame, noci, cioccolato fondente |
-| Non classificato | 29 | |
+| Trascurabile | 241 | riso, mele, merluzzo, patate, carote, pomodori |
+| Basso | 274 | pane, pasta, arance, petto di pollo, ceci, lenticchie |
+| Medio | 181 | latte intero, yogurt intero, uova, lombata di bovino, salmone, mandorle |
+| Alto | 188 | Parmigiano, burro, olio extravergine, salame, noci, cioccolato fondente |
+| Non classificato | 16 | |
 
 ### Malassorbimento del fruttosio
 
@@ -117,11 +137,11 @@ Fruttani, GOS e polioli sono classificati a parte (sezione FODMAP della scheda) 
 
 | Livello | Alimenti | Esempi |
 |---|---|---|
-| Trascurabile | 534 | pane, pasta, riso, latte, yogurt, Parmigiano |
-| Basso | 179 | patate, carote, zucchine, pizza margherita, lasagna, pasta al pomodoro |
+| Trascurabile | 542 | pane, pasta, riso, latte, yogurt, Parmigiano |
+| Basso | 187 | patate, carote, zucchine, pizza margherita, lasagna, pasta al pomodoro |
 | Medio | 29 | |
 | Alto | 103 | mele, arance, pomodori, miele, uva |
-| Non classificato | 55 | |
+| Non classificato | 39 | |
 
 ### Metabolico
 
@@ -133,8 +153,9 @@ Fruttani, GOS e polioli sono classificati a parte (sezione FODMAP della scheda) 
 |---|---|---|
 | Trascurabile | 396 | mele, arance, latte, yogurt, petto di pollo, merluzzo |
 | Basso | 172 | pasta cotta, uova, lombata, salmone, ceci, lasagna |
-| Medio | 60 | pane bianco, pizza margherita |
-| Alto | 271 | riso (crudo), Parmigiano, burro, olio extravergine, salame, noci |
+| Medio | 59 | pane bianco, pizza margherita |
+| Alto | 272 | riso (crudo), Parmigiano, burro, olio extravergine, salame, noci |
+| Non classificato | 1 | caffè tostato (trattato come bevanda, senza dato sugli zuccheri) |
 
 ### Tumorale
 
@@ -197,8 +218,11 @@ Fruttani, GOS e polioli sono classificati a parte (sezione FODMAP della scheda) 
 9. **Metabolico:** le soglie di densità energetica del WCRF (125, 225, 275 kcal/100 g) sono un buon criterio?
 10. **«Solo alimenti sicuri»:** la definizione (tutti i rischi classificati e al massimo Bassi) e il nome sono appropriati, oppure il nome rischia di essere frainteso? Possibili alternative: «semaforo verde», «poco impegnativi».
 11. **Punteggio complessivo:** i cinque rischi pesano allo stesso modo. Andrebbero pesati diversamente, oppure il punteggio va tolto?
-12. **Dati stimati:** sono accettabili i valori presi da alimenti simili (CoFID, USDA) e quelli calcolati dagli ingredienti delle ricette? La scheda indica sempre quali sono.
+12. **Dati stimati:** sono accettabili i valori presi da alimenti simili (CoFID, Ciqual, USDA) e quelli calcolati dagli ingredienti delle ricette, dove i pochi zuccheri di carne e pesce contano come glucosio? La scheda indica sempre quali sono.
 13. **Linguaggio:** la parola «rischio» riferita a un singolo alimento può spaventare o essere fraintesa. Preferisce un'altra etichetta (per esempio «attenzione per…»)? Ci sono avvertenze da aggiungere?
+14. **Pasti pronti** (sezione 3):
+    - Sono accettabili le sostituzioni degli ingredienti che il CREA non ha (guanciale → pancetta tesa, cavolo nero → broccoletti di rapa, gallinella → scorfano, vodka → whisky, funghi secchi → porcini freschi in quantità equivalente)? Possiamo allegare l'elenco completo delle stime, ingrediente per ingrediente.
+    - Un piatto con carne lavorata o carne rossa dovrebbe prendere il livello tumorale dell'ingrediente (Alto o Medio)? Sempre, oppure solo oltre una quota minima del piatto?
 
 ## 8. Riferimenti
 
@@ -221,3 +245,4 @@ Fruttani, GOS e polioli sono classificati a parte (sezione FODMAP della scheda) 
 17. CREA – Centro di ricerca Alimenti e Nutrizione. Tabelle di composizione degli alimenti, aggiornamento 2019.
 18. Public Health England. McCance and Widdowson's Composition of Foods Integrated Dataset (CoFID) 2021, Open Government Licence v3.0.
 19. U.S. Department of Agriculture. FoodData Central (SR Legacy, Foundation Foods).
+20. Anses. Table de composition nutritionnelle des aliments Ciqual 2025 (doi:10.57745/RDMHWY), Licence Ouverte / Open Licence 2.0.

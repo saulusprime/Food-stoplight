@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ _('Lista della spesa') }}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>🛒 {{ _('Lista della spesa') }}</h1>
+    <p>
+        {{ _('Una lista a semaforo verde: per ogni reparto, alimenti con il punteggio verde e nessun rischio oltre Basso. Dove non ce ne sono, come tra cereali e oli, le scelte migliori senza rischi alti, segnate come non verdi.') }}
+        {% if condizioni_profilo %}{{ _('Con il tuo profilo vengono prima quelli con il semaforo per te più basso.') }}{% endif %}
+    </p>
+</div>
+
+<div class="row g-3">
+
+    <div class="col-lg-4 d-flex flex-column gap-3 non-stampare">
+        <section class="card grafico-card" aria-labelledby="titolo-genera">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-genera">{{ _('Genera la lista') }}</h2>
+
+                <form
+                    method="post"
+                    action="{{ url_for('spesa.genera') }}"
+                    {% if voci %}
+                        data-conferma="{{ _('La nuova lista sostituisce quella attuale.') }}"
+                        data-conferma-titolo="{{ _('Nuova lista') }}"
+                        data-conferma-pulsante="{{ _('Genera') }}"
+                    {% endif %}
+                >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <fieldset class="mb-3">
+                        <legend class="form-label">{{ _('Reparti') }}</legend>
+                        {% for reparto in reparti %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="reparto-{{ loop.index }}" name="reparti"
+                                       value="{{ reparto }}" {% if reparto in opzioni.reparti %}checked{% endif %}>
+                                <label class="form-check-label" for="reparto-{{ loop.index }}">{{ reparto|traduci }}</label>
+                            </div>
+                        {% endfor %}
+                    </fieldset>
+
+                    <label for="per-reparto" class="form-label">{{ _('Alimenti per reparto') }}</label>
+                    <select class="form-select mb-3" id="per-reparto" name="per_reparto">
+                        {% for n in range(1, per_reparto_max + 1) %}
+                            <option value="{{ n }}" {% if n == opzioni.per_reparto %}selected{% endif %}>{{ n }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <button type="submit" class="btn btn-primary">
+                        {{ _("Genera un'altra lista") if voci else _('Genera la lista') }}
+                    </button>
+                    <p class="filtro-nota mt-2 mb-0">{{ _('Ogni volta una scelta diversa tra gli alimenti verdi di ciascun reparto.') }}</p>
+                </form>
+            </div>
+        </section>
+
+        <section class="card grafico-card" aria-labelledby="titolo-aggiungi-spesa">
+            <div class="card-body">
+                <h2 class="grafico-titolo" id="titolo-aggiungi-spesa">{{ _('Aggiungi un alimento') }}</h2>
+                {% include "_elenco_alimenti.html" %}
+                <form method="post" action="{{ url_for('spesa.aggiungi') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <label for="cerca-spesa" class="visually-hidden">{{ _('Alimento') }}</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="cerca-spesa" name="cerca" list="elenco-alimenti"
+                               autocomplete="off" required placeholder="{{ _('Cerca un alimento') }}">
+                        <button type="submit" class="btn btn-outline-primary">{{ _('Aggiungi') }}</button>
+                    </div>
+                    <p class="filtro-nota mt-2 mb-0">{{ _("Puoi aggiungere anche alimenti non verdi: la lista propone l'alternativa verde dello stesso reparto, se c'è.") }}</p>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-8">
+        <section class="card grafico-card" aria-labelledby="titolo-lista-spesa">
+            <div class="card-body">
+                <div class="lista-spesa-testa">
+                    <h2 class="grafico-titolo mb-0" id="titolo-lista-spesa">
+                        {{ _('La tua lista') }} <span class="text-muted fw-normal">· {{ ngettext('%(num)d alimento', '%(num)d alimenti', voci) }}</span>
+                    </h2>
+
+                    {% if voci %}
+                        <div class="d-flex flex-wrap gap-2 non-stampare">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-stampa hidden>{{ _('Stampa') }}</button>
+                            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('spesa.scarica_testo') }}" download>{{ _('Scarica come testo') }}</a>
+                            <form
+                                method="post"
+                                action="{{ url_for('spesa.svuota') }}"
+                                data-conferma="{{ _('Svuotare la lista della spesa?') }}"
+                                data-conferma-titolo="{{ _('Svuota la lista') }}"
+                                data-conferma-pulsante="{{ _('Svuota') }}"
+                            >
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">{{ _('Svuota') }}</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if not voci %}
+                    <p class="classifica-vuota mt-3 mb-0">{{ _('La lista è vuota: scegli i reparti e genera la lista, oppure aggiungi gli alimenti uno per uno.') }}</p>
+                {% else %}
+                    <p class="filtro-nota mt-2 non-stampare" data-spesa-versione="{{ versione }}">{{ _('Spunta gli alimenti man mano che li prendi: le spunte restano su questo dispositivo, e la lista resta consultabile anche senza connessione.') }}</p>
+
+                    {% for reparto, voci_reparto in gruppi %}
+                        <h3 class="lista-spesa-reparto">{{ reparto|traduci if reparto else _('Senza categoria') }}</h3>
+                        <ul class="lista-spesa">
+                            {% for v in voci_reparto %}
+                                {% set liv = livello_punteggio(v.punteggio) %}
+                                <li class="lista-spesa-voce" id="voce-{{ v.id }}">
+                                    <input type="checkbox" class="form-check-input lista-spesa-preso" data-spesa-preso="{{ v.id }}"
+                                           aria-label="{{ _('Preso: %(nome)s', nome=v.alimento) }}">
+
+                                    <div class="lista-spesa-testo">
+                                        <a class="nome-alimento" href="{{ url_for('pagine.scheda', alimento_id=v.id) }}">{{ v.alimento }}</a>
+                                        <span class="lista-spesa-dati">
+                                            {% if v.punteggio is not none %}
+                                                <span class="punteggio stato-{{ liv.stato }}" title="{{ _('Punteggio') }}">{{ v.punteggio }}</span>
+                                            {% endif %}
+                                            {% if v.verde %}
+                                                <span class="etichetta-verde">{{ _('verde') }}</span>
+                                            {% else %}
+                                                <span class="small text-muted">{{ _('non verde') }}</span>
+                                            {% endif %}
+                                            {% if v.per_te %}
+                                                <span class="badge-risk stato-{{ v.per_te.livello.stato }}">{{ _('Per te: %(livello)s', livello=v.per_te.livello.etichetta|traduci) }}</span>
+                                            {% endif %}
+                                        </span>
+
+                                        {% if v.alternativa %}
+                                            <form method="post" action="{{ url_for('spesa.cambia', alimento_id=v.id) }}" class="non-stampare">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <input type="hidden" name="con" value="{{ v.alternativa.id }}">
+                                                <button type="submit" class="btn btn-link btn-sm p-0 text-start">
+                                                    {{ _("Sostituisci con l'alternativa verde: %(nome)s", nome=v.alternativa.alimento) }}
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="lista-spesa-azioni non-stampare">
+                                        <form method="post" action="{{ url_for('spesa.cambia', alimento_id=v.id) }}">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                                    title="{{ _('Cambia con un altro alimento del reparto') }}"
+                                                    aria-label="{{ _('Cambia %(nome)s con un altro alimento del reparto', nome=v.alimento) }}">↻</button>
+                                        </form>
+                                        <form method="post" action="{{ url_for('spesa.togli', alimento_id=v.id) }}">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    title="{{ _('Togli') }}"
+                                                    aria-label="{{ _('Togli %(nome)s dalla lista', nome=v.alimento) }}">✕</button>
+                                        </form>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endfor %}
+
+                    <p class="small text-muted mt-3 mb-0">
+                        {{ _('Il semaforo descrive un alimento alla volta e non sostituisce il parere di un medico o di un nutrizionista.') }}
+                        <a href="{{ url_for('pagine.guida', _anchor='spesa') }}" class="non-stampare">{{ _('Come si sceglie') }}</a>
+                    </p>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+</div>
+{% endblock %}

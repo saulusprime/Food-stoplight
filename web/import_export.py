@@ -40,6 +40,7 @@ import sincronizzazione
 import usda
 from web.accesso import solo_admin
 from web.comune import (
+    condizioni_utente,
     get_alimenti,
     get_alimento,
     get_db,
@@ -64,6 +65,7 @@ FORMATI_EXPORT = {
 ETICHETTE_ORDINAMENTO = {
     **importazione.ETICHETTE,
     "punteggio": "Punteggio",
+    archivio.PER_TE: "Per te",
     archivio.PERTINENZA: "Pertinenza alla ricerca",
 }
 
@@ -79,6 +81,9 @@ def filtro_esportato(campo: str, valore: str) -> tuple[str, str]:
     if campo == "sicuri":
         return _("Solo alimenti sicuri"), _("sì")
 
+    if campo == archivio.PER_TE:
+        return _("Solo sicuri per il mio profilo"), _("sì")
+
     if campo in archivio.FILTRI_UGUALI:
         nome = _("Categoria") if campo == "categoria" else lingue.traduci(importazione.ETICHETTE[campo])
         return nome, lingue.traduci(valore)
@@ -89,7 +94,7 @@ def filtro_esportato(campo: str, valore: str) -> tuple[str, str]:
 
 
 def info_export(filtri: archivio.Filtri, sort: str, direction: str, totale: int) -> esportazione.InfoExport:
-    criteri = archivio.ordinamenti(sort.split(","), direction.split(","), bool(filtri.get("q")))
+    criteri = archivio.ordinamenti(sort.split(","), direction.split(","), bool(filtri.get("q")), condizioni_utente())
 
     def descrizione(campo: str, direzione: str) -> str:
         etichetta = lingue.traduci(ETICHETTE_ORDINAMENTO.get(campo, campo))

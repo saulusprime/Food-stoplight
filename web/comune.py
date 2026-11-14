@@ -1,8 +1,8 @@
 """
 Funzioni condivise dalle pagine: connessioni ai database (dalla
-configurazione dell'app attiva), query sugli alimenti, data e ora per i
-salvataggi, file da scaricare, alimento scelto da un campo di ricerca,
-ricalcolo delle ricette dopo una modifica.
+configurazione dell'app attiva), profilo dell'utente corrente, query sugli
+alimenti, data e ora per i salvataggi, file da scaricare, alimento scelto da
+un campo di ricerca, ricalcolo delle ricette dopo una modifica.
 """
 
 from __future__ import annotations
@@ -19,14 +19,17 @@ from flask import (
     current_app,
     request,
     send_file,
+    session,
 )
 from flask_babel import gettext as _
+from flask_login import current_user
 
 import archivio
 import backup
 import database
 import fonti
 import lingue
+import profilo
 from archivio import Alimento
 
 # ---------------------------------------------------------------
@@ -52,15 +55,38 @@ def get_db_diario() -> sqlite3.Connection:
     return database.connetti(current_app.config["DIARIO_DB_PATH"])
 
 
-# Query sugli alimenti (in archivio.py, condivise con l'API)
+# ---------------------------------------------------------------
+# PROFILO DELL'UTENTE CORRENTE
+# Con l'accesso le condizioni stanno nell'account (utenti.db), senza
+# nella sessione del browser, come il pasto.
+# ---------------------------------------------------------------
+
+CHIAVE_SESSIONE_PROFILO = "profilo"
+
+
+def condizioni_utente() -> tuple[str, ...]:
+    if current_user.is_authenticated:
+        return profilo.leggi(getattr(current_user, "condizioni", ""))
+
+    return profilo.leggi(session.get(CHIAVE_SESSIONE_PROFILO, ""))
+
+
+# Query sugli alimenti (in archivio.py, condivise con l'API, che non usa il profilo)
 get_alimento = archivio.get_alimento
-get_alimenti = archivio.get_alimenti
 get_stats = archivio.get_stats
-SORT_EXPRESSIONS = archivio.SORT_EXPRESSIONS
+
+
+def get_alimenti(
+    filtri: Mapping[str, str] | None = None, sort: str = "alimento", direction: str = "asc"
+) -> list[Alimento]:
+    """
+    Come archivio.get_alimenti, con il profilo dell'utente corrente.
+    """
+    return archivio.get_alimenti(filtri, sort, direction, condizioni_utente())
 
 
 def leggi_filtri() -> tuple[archivio.Filtri, str, str]:
-    return archivio.leggi_filtri(request.args)
+    return archivio.leggi_filtri(request.args, condizioni_utente())
 
 
 

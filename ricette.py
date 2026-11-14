@@ -12,7 +12,9 @@ zuccheri e ai grassi del piatto pubblicati dal CREA, così cottura e
 perdita d'acqua sono già comprese (EuroFIR, calcolo delle ricette).
 
 Se gli ingredienti senza il dato portano più del 5% degli zuccheri (o dei
-grassi) della ricetta, il valore resta non disponibile.
+grassi) della ricetta, il valore resta non disponibile. Per carne e pesce
+senza il glucosio, gli zuccheri (dal glicogeno) contano come glucosio
+(classificazioni.glucosio).
 """
 
 from __future__ import annotations
@@ -157,7 +159,7 @@ def composizione(
 
         if z is None or z > 0:
             for campo, parti in zuccheri.items():
-                valore = alimento.get(campo)
+                valore = classificazioni.glucosio(alimento) if campo == "glucosio" else alimento.get(campo)
                 parti.append((peso * (z if z is not None else 100) / 100,
                               None if valore is None or z is None else peso * valore / 100))
 

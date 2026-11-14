@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import math
 import sqlite3
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import datetime
 from typing import Any
 
@@ -19,6 +19,7 @@ import analisi
 import database
 import importazione
 import lingue
+import profilo
 import ricerca
 from lingue import N_
 
@@ -60,6 +61,27 @@ CAMPI_NUMERICI_ORDINABILI = tuple(
 PERTINENZA = "pertinenza"
 ORDINAMENTI_MAX = 3
 
+# Semaforo per te (profilo.py): ordinamento e filtro solo con un profilo
+PER_TE = "per_te"
+
+
+def espressione_per_te(condizioni: Sequence[str]) -> str | None:
+    """
+    Espressione SQL del semaforo per te (punti 0-3, NULL se non classificato)
+    per le condizioni del profilo; None senza condizioni.
+    """
+    campi = profilo.campi(condizioni)
+    return f"per_te({', '.join(campi)})" if campi else None
+
+
+def espressioni_ordinamento(condizioni: Sequence[str] = ()) -> dict[str, str]:
+    """
+    Espressioni di ordinamento valide: quelle fisse più il semaforo per te,
+    se c'è un profilo.
+    """
+    per_te = espressione_per_te(condizioni)
+    return {**SORT_EXPRESSIONS, PER_TE: per_te} if per_te else SORT_EXPRESSIONS
+
 # Filtri di uguaglianza (menu della home), con le etichette per i file esportati
 FILTRI_UGUALI = {
     "categoria": "Categoria",
@@ -88,6 +110,7 @@ ETICHETTE_FILTRI = {
     "q": "Ricerca",
     **FILTRI_UGUALI,
     "sicuri": "Solo alimenti sicuri",
+    PER_TE: "Solo sicuri per il mio profilo",
     **{
         f"{campo}_{limite}": f"{etichetta} {parola}"
         for campo, etichetta in CAMPI_INTERVALLO.items()
@@ -127,12 +150,16 @@ def _valori(args: Mapping[str, str], nome: str) -> list[str]:
     return [v.strip() for v in valori]
 
 
-def ordinamenti(campi: list[str], direzioni: list[str], ricerca: bool) -> list[tuple[str, str]]:
+def ordinamenti(
+    campi: list[str], direzioni: list[str], ricerca: bool, condizioni: Sequence[str] = ()
+) -> list[tuple[str, str]]:
     """
     Criteri di ordinamento validi, (campo, "asc"/"desc"), al massimo
     ORDINAMENTI_MAX e senza ripetizioni. Senza criteri: per pertinenza se
-    c'è un testo cercato, altrimenti per nome.
+    c'è un testo cercato, altrimenti per nome. Il semaforo per te vale solo
+    con le condizioni di un profilo.
     """
+    validi = espressioni_ordinamento(condizioni)
     scelti: list[tuple[str, str]] = []
 
     for i, campo in enumerate(campi):
@@ -142,7 +169,7 @@ def ordinamenti(campi: list[str], direzioni: list[str], ricerca: bool) -> list[t
             valido = ricerca and not scelti
             direzione = "desc"
         else:
-            valido = campo in SORT_EXPRESSIONS
+            valido = campo in validi
 
         if valido and campo not in (c for c, _ in scelti):
             scelti.append((campo, direzione if direzione in ("asc", "desc") else "asc"))
@@ -153,20 +180,25 @@ def ordinamenti(campi: list[str], direzioni: list[str], ricerca: bool) -> list[t
     return scelti[:ORDINAMENTI_MAX]
 
 
-def leggi_filtri(args: Mapping[str, str]) -> tuple[Filtri, str, str]:
+def _attivo(valore: object) -> bool:
+    return str(valore or "").strip().lower() in ("1", "on", "true", "si", "sì")
+
+
+def leggi_filtri(args: Mapping[str, str], condizioni: Sequence[str] = ()) -> tuple[Filtri, str, str]:
     """
     (filtri, sort, direction) dalla query string, già validati. sort e
     direction possono avere più criteri separati da virgole («categoria,kcal»
-    con «asc,desc»).
+    con «asc,desc»). Filtro e ordinamento per te solo con le condizioni di un profilo.
     """
     filtri = {campo: (args.get(campo) or "").strip() for campo in FILTRI_UGUALI}
     q = " ".join((args.get("q") or "").split())[: ricerca.LUNGHEZZA_MASSIMA]
-    sicuri = (args.get("sicuri") or "").strip().lower() in ("1", "on", "true", "si", "sì")
+    per_te = bool(profilo.leggi(list(condizioni))) and _attivo(args.get(PER_TE))
 
     filtri = {
         "q": q,
         **filtri,
-        "sicuri": "1" if sicuri else "",
+        "sicuri": "1" if _attivo(args.get("sicuri")) else "",
+        PER_TE: "1" if per_te else "",
         **{
             nome: _numero_filtro(args.get(nome))
             for nome in ETICHETTE_FILTRI
@@ -174,7 +206,7 @@ def leggi_filtri(args: Mapping[str, str]) -> tuple[Filtri, str, str]:
         },
     }
 
-    criteri = ordinamenti(_valori(args, "sort"), _valori(args, "dir"), bool(q))
+    criteri = ordinamenti(_valori(args, "sort"), _valori(args, "dir"), bool(q), condizioni)
     sort = ",".join(campo for campo, _ in criteri)
     direction = ",".join(direzione for _, direzione in criteri)
 
@@ -185,15 +217,19 @@ def get_alimenti(
     filtri: Mapping[str, str] | None = None,
     sort: str = "alimento",
     direction: str = "asc",
+    condizioni: Sequence[str] = (),
 ) -> list[Alimento]:
     """
     Alimenti filtrati e ordinati: categoria e rischi uguali (maiuscole
-    indifferenti), «sicuri», intervalli di valori, ricerca nel nome
-    (ricerca.py). sort e direction come da leggi_filtri.
+    indifferenti), «sicuri», sicuri per il profilo, intervalli di valori,
+    ricerca nel nome (ricerca.py). sort e direction come da leggi_filtri;
+    condizioni: il profilo per il filtro e l'ordinamento per te.
     """
     filtri = filtri or {}
     q = (filtri.get("q") or "").strip()
-    criteri = ordinamenti(sort.split(","), direction.split(","), bool(q))
+    criteri = ordinamenti(sort.split(","), direction.split(","), bool(q), condizioni)
+    espressioni = espressioni_ordinamento(condizioni)
+    per_te = espressione_per_te(condizioni)
 
     clausole = []
     parametri: list[Any] = []
@@ -212,6 +248,10 @@ def get_alimenti(
             clausole.append(f"LOWER(TRIM(COALESCE({campo}, ''))) IN ({segnaposti})")
             parametri.extend(LIVELLI_SICURI)
 
+    if filtri.get(PER_TE) and per_te:
+        clausole.append(f"({per_te}) IS NOT NULL AND ({per_te}) <= ?")
+        parametri.append(profilo.PUNTI_ADATTI)
+
     for campo in CAMPI_INTERVALLO:
         espressione = SORT_EXPRESSIONS[campo]
 
@@ -228,7 +268,7 @@ def get_alimenti(
         sql += " WHERE " + " AND ".join(clausole)
 
     ordine = [
-        f"({SORT_EXPRESSIONS[campo]}) IS NULL, ({SORT_EXPRESSIONS[campo]}) {direzione.upper()}"
+        f"({espressioni[campo]}) IS NULL, ({espressioni[campo]}) {direzione.upper()}"
         for campo, direzione in criteri
         if campo != PERTINENZA
     ]

@@ -6,6 +6,7 @@
 {% set t = riepilogo.totali %}
 {% set m = riepilogo.mancanti %}
 {% set p = riepilogo.profilo %}
+{% set pt = riepilogo.per_te %}
 
 {% macro nota_mancanti(campo) %}{% if m[campo] %} <small class="text-muted">({{ ngettext('%(num)d senza dato', '%(num)d senza dato', m[campo]) }})</small>{% endif %}{% endmacro %}
 
@@ -42,6 +43,12 @@
             {% else %}
                 <p class="stat-valore">–</p>
                 <p class="stat-nota">{{ _('nessun rischio classificato') }}</p>
+            {% endif %}
+            {% if pt %}
+                <p class="stat-nota per-te-nota">
+                    <a href="{{ url_for('profilo.pagina') }}">{{ _('Per te') }}</a>:
+                    <span class="badge-risk stato-{{ pt.livello.stato }}">{{ pt.livello.etichetta|traduci }}</span>
+                </p>
             {% endif %}
         </div></div>
     </div>
@@ -110,9 +117,10 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% set campi_per_te = pt.voci|map(attribute='rischio')|list if pt else [] %}
                         {% for r in p.rischi %}
                             <tr>
-                                <th scope="row" class="fw-normal">{{ r.etichetta|traduci }}</th>
+                                <th scope="row" class="fw-normal">{{ r.etichetta|traduci }}{% if r.campo in campi_per_te %} <span class="etichetta-per-te">{{ _('nel tuo profilo') }}</span>{% endif %}</th>
                                 <td><span class="badge-risk stato-{{ r.livello.stato }}">{{ r.livello.etichetta|traduci }}</span></td>
                                 <td class="text-end">{{ r.punti|numero(1) if r.punti is not none else '–' }}</td>
                                 <td class="small">{{ r.principale or '–' }}</td>

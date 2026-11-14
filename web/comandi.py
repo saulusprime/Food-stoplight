@@ -19,6 +19,7 @@ from flask import (
 from werkzeug.security import generate_password_hash
 
 import backup
+import ciqual
 import cofid
 import crea
 import database
@@ -379,6 +380,29 @@ def cofid_estrai_cmd(file_excel: Path) -> None:
     cofid.scrivi_dati(righe)
     trovati = {r["codice"] for r in righe}
     click.echo(f"{len(righe)} alimenti CoFID scritti in {cofid.FILE_DATI.name}.")
+
+    if codici - trovati:
+        click.echo(f"Codici non trovati nel file: {', '.join(sorted(codici - trovati))}", err=True)
+
+
+@bp.cli.command("ciqual-estrai")
+@click.argument("file_excel", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+def ciqual_estrai_cmd(file_excel: Path) -> None:
+    """
+    Rigenera dati/ciqual.csv dal file Excel ufficiale di Ciqual 2025, con i
+    soli alimenti abbinati in dati/crea_ciqual.csv. Poi «flask crea-importa»
+    con i codici CREA interessati aggiorna gli alimenti.
+    """
+    codici = {codice for gruppi in ciqual.abbinamenti().values() for codice in gruppi.values()}
+
+    try:
+        righe = ciqual.estrai_excel(file_excel, codici)
+    except (KeyError, ValueError, OSError) as exc:
+        raise click.ClickException(f"File Ciqual non leggibile: {exc}") from None
+
+    ciqual.scrivi_dati(righe)
+    trovati = {r["codice"] for r in righe}
+    click.echo(f"{len(righe)} alimenti Ciqual scritti in {ciqual.FILE_DATI.name}.")
 
     if codici - trovati:
         click.echo(f"Codici non trovati nel file: {', '.join(sorted(codici - trovati))}", err=True)

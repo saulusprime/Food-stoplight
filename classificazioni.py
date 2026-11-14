@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import csv
 import re
+from collections.abc import Mapping
 from functools import cache
 from pathlib import Path
 from typing import Any, NamedTuple
@@ -96,6 +97,24 @@ CATEGORIE_ZUCCHERI_INTRINSECI = {"Frutta", "Verdura", "Legumi/Frutta Secca", "Ca
 LATTICINI_DOLCI_RE = _parole("alla frutta", "con frutta", "(?<!non )zuccherat", "gelat", "budino",
                              "panna cotta", "dessert", "condensato", "aromatizzat", "dolcificat", "al cacao",
                              "cioccolat")
+
+
+# Carne e pesce: pochi zuccheri, dal glicogeno, senza fruttosio né lattosio
+CATEGORIE_GLICOGENO = ("Carne", "Pesce")
+
+
+def glucosio(a: Mapping[str, Any]) -> float | None:
+    """
+    Glucosio dell'alimento, per il calcolo di ricette e pasti pronti. Per
+    carne e pesce senza il dato valgono gli zuccheri: vengono dal glicogeno
+    e, senza fruttosio, sono glucosio.
+    """
+    valore = a.get("glucosio")
+
+    if valore is None and a.get("categoria") in CATEGORIE_GLICOGENO and a.get("fruttosio") == 0:
+        return a.get("zuccheri")
+
+    return valore
 
 
 def zuccheri_liberi(alimento: Alimento) -> float | None:

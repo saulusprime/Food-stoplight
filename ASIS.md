@@ -129,7 +129,7 @@ Commit `6289fec` — 10 novembre 2026 — non classificati: colesterolo da 52 a 
 
 ## 🛠️ Ritocchi: legenda e import CREA
 
-Commit `880ebc2` — 11 novembre 2026 — legenda e pulsante delle colonne non occupano più una riga a sé; un import CREA con USDA non disponibile non cancella più i valori USDA
+Commit `880ebc2` — 12 novembre 2026 — legenda e pulsante delle colonne non occupano più una riga a sé; un import CREA con USDA non disponibile non cancella più i valori USDA
 
 - [x] Legenda della tabella sulla riga dell'ordinamento, accanto a «Righe per pagina» e con l'aspetto delle select; aperta si sovrappone alla tabella senza spostarla e si chiude con Esc o con un clic fuori
 - [x] «Mostra tutte le colonne» sulla riga del titolo, accanto all'export; offline, quando l'export è nascosto, il pulsante resta
@@ -148,11 +148,42 @@ Commit `5e1b3f9` — 12 novembre 2026 — 100 ricette della cucina italiana (20 
 
 ## 🍝 Altri 100 pasti pronti
 
-12 novembre 2026 — i pasti pronti passano da 100 a 200 (40 antipasti, 60 primi, 60 secondi, 40 contorni), senza doppioni
+Commit `6a71f07` — 13 novembre 2026 — i pasti pronti passano da 100 a 200 (40 antipasti, 60 primi, 60 secondi, 40 contorni), senza doppioni
 
 - [x] 100 ricette nuove, 83 da Buttalapasta e 17 dal Libro di cucina di Wikibooks (in tutto 137 e 63), con le stesse regole di conversione e il caricamento con `flask pasti-importa`
 - [x] Doppioni esclusi confrontando i candidati con i 100 pasti già presenti e con tutti gli alimenti del database, non solo per nome: fuori i piatti che hanno già un alimento CREA (patatine fritte, minestrone, pollo arrosto) e quelli troppo simili a un pasto esistente (zuppa di cozze e cozze alla tarantina, tiella di polpo e polpo con patate, peperoni in padella e peperonata; il baccalà mantecato di Wikibooks è in realtà un baccalà alla vicentina). Nessun nome nuovo coincide con un alimento: non serve il suffisso «(pasto pronto)»
 - [x] Scartate le ricette senza quantità per l'ingrediente principale o senza elenco degli ingredienti, e la bagna càuda: è la sola salsa, senza le verdure da intingere
 - [x] Regole di conversione precisate: capperi non conteggiati; olio, burro e brodo usati solo nel procedimento in una riga «(nel procedimento)»; impasti fatti in casa (farina 1,8 nella pasta bollita, acqua dell'impasto 0,6 in forno); parte edibile di pesci interi e asparagi; porzioni ricalcolate, con una nota, quando la fonte ne indica di inverosimili
 - [x] La guida descrive i pasti pronti senza numeri fissi, così non va aggiornata a ogni aggiunta
-- [x] Calcolo di pasti pronti e ricette CREA identico su ogni versione di Python: le somme dei nutrienti usano `math.fsum`, perché dalla 3.12 `sum` somma i float in modo diverso e gli zuccheri delle sogliole alla mugnaia (1,145) si arrotondavano a 1,14 su Python 3.11 e a 1,15 dalla 3.12. I valori salvati non cambiano
+- [x] Calcolo di pasti pronti e ricette CREA identico su ogni versione di Python (commit `9067c3b`): le somme dei nutrienti usano `math.fsum`, perché dalla 3.12 `sum` somma i float in modo diverso e gli zuccheri delle sogliole alla mugnaia (1,145) si arrotondavano a 1,14 su Python 3.11 e a 1,15 dalla 3.12. I valori salvati non cambiano
+
+## 👤 Profili utente e semaforo per te
+
+14 novembre 2026 — ogni utente sceglie le sue condizioni e l'app mostra il semaforo «Per te» accanto al punteggio, senza soglie nuove
+
+- [x] Pagina «Profilo» (`/profilo`) con tre condizioni: diabete, ipercolesterolemia, malassorbimento del fruttosio. Con l'accesso il profilo si salva nell'account (migrazione 2 di `utenti.db`, colonna `condizioni`), senza nella sessione del browser, come il pasto: gli utenti si creano solo da riga di comando, quindi il pubblico è quasi tutto anonimo. All'accesso e all'uscita il profilo della sessione si cancella
+- [x] Semaforo per te (`profilo.py`): il livello più alto tra i rischi delle condizioni scelte. Un rischio Alto basta per dare Alto; altrimenti un rischio del profilo non classificato lascia il semaforo per te non classificato
+- [x] Tabella: colonna «Per te», ordinamento e filtro «Solo sicuri per il mio profilo» (funzione SQL `per_te`), anche offline in `static/js/tabella.js`; gli export applicano filtro e ordinamento senza aggiungere la colonna, l'API non usa il profilo
+- [x] Scheda: riquadro «Per te» con il livello di ogni condizione, rischi del profilo segnati nei motivi, alternative ordinate prima per semaforo per te e poi per punteggio
+- [x] Confronto, pasti pronti (anche ordinati «Per te»), pasto e diario (stessa regola sui livelli medi) mostrano il semaforo per te; sezione nella guida
+- [x] Salvando il profilo, all'accesso e all'uscita la pagina successiva chiede al service worker di riscaricare le pagine salvate, che contengono il semaforo per te
+
+## 🌐 Integrazione dati: Ciqual e ricette
+
+14 novembre 2026 — nuova fonte Ciqual 2025 (tabella francese dell'Anses, Licence Ouverte 2.0); non classificati: colesterolo da 29 a 16 alimenti, malassorbimento da 55 a 39; nei pasti pronti malassorbimento da 63 a 34
+
+- [x] Ciqual 2025 come terza tabella, dopo CoFID e prima di USDA, con le stesse regole: profilo degli zuccheri sugli zuccheri del CREA, quota dei saturi sui grassi (`ciqual.py`, migrazione 6 di `alimenti.db` con `codice_ciqual` e `campi_ciqual`, comando `flask ciqual-estrai`); valori sotto il limite di quantificazione con una stima prudente per il fruttosio
+- [x] 23 abbinamenti in `dati/crea_ciqual.csv`, ognuno con la nota: cuori di pollo, tacchino e cavallo, capretto, piccione, panettone, babà, crostata industriale al cacao, pappa reale, yogurt di soia, pane di segale, riso alla cantonese, spaghetti fritti, salvia, gomme da masticare, gelato confezionato, borlotti cotti, cracker e biscotti integrali alla soia, gnocchi di patate; un alimento solo simile, o un prodotto industriale, solo se il livello non dipende dalla scelta. Restano fuori, a cavallo della soglia o con fonti in disaccordo: cheeseburger, biscotti alla soia, merendine, cicoria, borlotti crudi, fegato di cavallo, milza
+- [x] Ricette CREA: abbinati salsa tahina (olio di sesamo, per i grassi) e brodo vegetale (senza grassi né zuccheri rilevanti), quindi hummus e risotto alla parmigiana classificati; con i saturi degli gnocchi e gli zuccheri della salvia anche gnocchi al sugo e ravioli burro e salvia
+- [x] Carne e pesce, senza fruttosio, senza il glucosio: nelle ricette e nei pasti pronti i loro zuccheri (dal glicogeno) contano come glucosio. Classificati alici marinate, spigola al cartoccio e 29 pasti pronti di pesce o carne
+- [x] Il gelato confezionato con biscotto prende gli zuccheri totali da Ciqual e passa da Medio ad Alto nel rischio metabolico, come gli altri gelati confezionati
+
+## 🛒 Lista della spesa a semaforo verde
+
+14 novembre 2026 — pagina «Spesa» (`/spesa`): una lista per reparti generata dai semafori, da modificare, stampare, scaricare e usare offline al supermercato
+
+- [x] Semaforo verde della lista (`spesa.py`): i cinque rischi classificati, nessuno oltre Basso e punteggio verde (da 84). Nei reparti senza verdi (con le regole attuali cereali, oli e grassi) le scelte migliori senza rischi alti, segnate come non verdi; mai alimenti con un rischio alto o non classificato
+- [x] Solo prodotti da comprare: niente alimenti cotti, piatti, erbe aromatiche e condimenti (porzione sotto i 30 g); un alimento per tipo; reparti nell'ordine del supermercato; con un profilo prima il semaforo per te più basso
+- [x] Generazione con reparti e alimenti per reparto a scelta, ogni volta diversa tra i verdi del reparto; avviso per i reparti senza niente da proporre
+- [x] Voci da cambiare (verde successivo dello stesso reparto, o il successivo non verde dove non ci sono verdi), togliere o aggiungere dalla ricerca; per un alimento non verde l'alternativa verde del reparto
+- [x] Spunte salvate sul dispositivo, che ripartono da zero con una lista nuova; stampa senza menu e comandi, download come testo, copia offline nel service worker; voce «Spesa» nel menu con il numero di alimenti e sezione nella guida

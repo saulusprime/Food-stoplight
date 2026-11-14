@@ -120,9 +120,17 @@
                         </td>
                     {% endfor %}
                 </tr>
+                {% if per_te %}
+                    <tr class="riga-per-te">
+                        <th scope="row"><a href="{{ url_for('profilo.pagina') }}">{{ _('Per te') }}</a></th>
+                        {% for pt in per_te %}
+                            <td><span class="badge-risk stato-{{ pt.livello.stato }}">{{ pt.livello.etichetta|traduci }}</span></td>
+                        {% endfor %}
+                    </tr>
+                {% endif %}
                 {% for campo, etichetta in rischi_elenco %}
                     <tr>
-                        <th scope="row">{{ etichette_rischi[campo]|traduci }}</th>
+                        <th scope="row">{{ etichette_rischi[campo]|traduci }}{% if campo in campi_profilo %} <span class="etichetta-per-te">{{ _('nel tuo profilo') }}</span>{% endif %}</th>
                         {% for a in alimenti %}
                             <td>
                                 {% if a[campo] %}

@@ -22,6 +22,7 @@ from flask_babel import gettext as _
 
 import archivio
 import calcoli
+import ciqual
 import cofid
 import crea
 import fonti
@@ -147,7 +148,7 @@ def parse_form() -> tuple[dict[str, Any], list[str]]:
     porzione = numero("porzione", N_("Porzione tipica (g)"), nutrienti.GRAMMI_MIN, nutrienti.GRAMMI_MAX)
     valori["porzione"] = porzione
 
-    for campo in ("codice_crea", "codice_barre", "codice_cofid"):
+    for campo in ("codice_crea", "codice_barre", "codice_cofid", "codice_ciqual"):
         valori[campo] = (form.get(campo) or "").strip() or None
 
     if valori["codice_crea"] and not crea.CODICE_RE.match(valori["codice_crea"]):
@@ -164,9 +165,18 @@ def parse_form() -> tuple[dict[str, Any], list[str]]:
 
         valori["codice_cofid"] = ",".join(codici)
 
+    if valori["codice_ciqual"]:
+        codici = [c.strip() for c in valori["codice_ciqual"].split(",")]
+
+        if not all(ciqual.CODICE_RE.match(c) for c in codici):
+            errori.append(_("Codice Ciqual: un numero, es. 24006 (più codici separati da virgola)."))
+
+        valori["codice_ciqual"] = ",".join(codici)
+
     # Provenienza dei valori (campi nascosti del form): restano com'erano
     valori["campi_usda"] = ",".join(usda.leggi_campi(form.get("campi_usda"))) or None
     valori["campi_cofid"] = ",".join(cofid.leggi_campi(form.get("campi_cofid"))) or None
+    valori["campi_ciqual"] = ",".join(ciqual.leggi_campi(form.get("campi_ciqual"))) or None
     valori["campi_ricetta"] = ",".join(ricette.leggi_campi(form.get("campi_ricetta"))) or None
     valori["ingredienti"] = ricette.scrivi_ingredienti(ricette.leggi_ingredienti(form.get("ingredienti")))
 

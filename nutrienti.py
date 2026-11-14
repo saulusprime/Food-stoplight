@@ -22,6 +22,7 @@ from collections.abc import Sequence
 from typing import Any
 
 import analisi
+import profilo
 from analisi import Alimento, Livello
 from lingue import N_
 
@@ -99,7 +100,7 @@ NOVA = {
 
 CAMPI_FONTE = (
     "fonte_nutrienti", "url_fonte", "fdc_id", "codice_crea", "codice_barre", "campi_usda",
-    "codice_cofid", "campi_cofid", "campi_ricetta", "ingredienti",
+    "codice_cofid", "campi_cofid", "codice_ciqual", "campi_ciqual", "campi_ricetta", "ingredienti",
 )
 
 # Porzione tipica quando la fonte non ne indica una
@@ -110,7 +111,7 @@ PORZIONE_PREDEFINITA = 100.0
 CAMPI_NUMERICI_NULLABILI = (*CAMPI_NUTRIENTI, "indice_glicemico", "nova", "fdc_id", "porzione")
 CAMPI_TESTO_NULLABILI = (
     *CAMPI_FODMAP, "fonte_nutrienti", "url_fonte", "codice_crea", "codice_barre", "campi_usda",
-    "codice_cofid", "campi_cofid", "campi_ricetta", "ingredienti", "note",
+    "codice_cofid", "campi_cofid", "codice_ciqual", "campi_ciqual", "campi_ricetta", "ingredienti", "note",
 )
 CAMPI_NULLABILI = (*CAMPI_NUMERICI_NULLABILI, *CAMPI_TESTO_NULLABILI)
 
@@ -138,6 +139,8 @@ ETICHETTE = {
     "campi_usda": N_("Campi da USDA"),
     "codice_cofid": N_("Codice CoFID"),
     "campi_cofid": N_("Campi da CoFID"),
+    "codice_ciqual": N_("Codice Ciqual"),
+    "campi_ciqual": N_("Campi da Ciqual"),
     "campi_ricetta": N_("Campi calcolati dagli ingredienti"),
     "ingredienti": N_("Ingredienti della ricetta"),
     "porzione": N_("Porzione tipica (g)"),
@@ -376,30 +379,58 @@ def profilo_rischio(voci: Sequence[Voce]) -> dict[str, Any]:
 SUGGERIMENTI_MAX = 5
 
 
-def alternative(item: Alimento, alimenti: list[Alimento], n: int = SUGGERIMENTI_MAX) -> list[Alimento]:
+def alternative(
+    item: Alimento, alimenti: list[Alimento], n: int = SUGGERIMENTI_MAX, condizioni: Sequence[str] = ()
+) -> list[Alimento]:
     """
     Alimenti della stessa categoria con punteggio più alto: prima i migliori,
     a parità quelli con Kcal più vicine. Esclude gli omonimi.
+    Con un profilo (condizioni) contano prima i rischi del profilo: alimenti
+    con un semaforo per te più basso, oppure uguale e punteggio più alto;
+    in ordine di semaforo per te, poi come sopra. Ogni alternativa ha
+    "per_te" (profilo.per_te) e "guadagno" (punti di punteggio in più, anche negativi).
     """
     punteggio = item.get("punteggio")
     categoria = (item.get("categoria") or "").strip().casefold()
     nome = (item.get("alimento") or "").strip().casefold()
+    campi_profilo = profilo.campi(condizioni)
+    punti_item = profilo.punti_per_te(*(item.get(c) for c in campi_profilo)) if campi_profilo else None
+    personali = punti_item is not None
 
-    if punteggio is None or not categoria:
+    if not categoria or (punteggio is None and not personali):
         return []
 
     kcal = item.get("kcal") or 0
+
+    def punti(a: Alimento) -> int | None:
+        return profilo.punti_per_te(*(a.get(c) for c in campi_profilo)) if personali else None
+
+    def migliore(a: Alimento) -> bool:
+        if a.get("punteggio") is None:
+            return False
+
+        if not personali:
+            return a["punteggio"] > punteggio
+
+        punti_a = punti(a)
+
+        if punti_a is None or punti_item is None:
+            return False
+
+        return punti_a < punti_item or (
+            punti_a == punti_item and punteggio is not None and a["punteggio"] > punteggio
+        )
 
     candidati = [
         a for a in alimenti
         if a["id"] != item.get("id")
         and (a.get("categoria") or "").strip().casefold() == categoria
         and (a.get("alimento") or "").strip().casefold() != nome
-        and a.get("punteggio") is not None
-        and a["punteggio"] > punteggio
+        and migliore(a)
     ]
 
     candidati.sort(key=lambda a: (
+        punti(a) or 0,
         -a["punteggio"],
         abs((a.get("kcal") or 0) - kcal),
         (a.get("alimento") or "").casefold(),
@@ -416,7 +447,11 @@ def alternative(item: Alimento, alimenti: list[Alimento], n: int = SUGGERIMENTI_
             continue
 
         visti.add(chiave)
-        scelti.append({**a, "guadagno": a["punteggio"] - punteggio})
+        scelti.append({
+            **a,
+            "guadagno": a["punteggio"] - punteggio if punteggio is not None else None,
+            "per_te": profilo.per_te(a, condizioni) if personali else None,
+        })
 
         if len(scelti) == n:
             break

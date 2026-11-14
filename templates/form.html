@@ -205,7 +205,9 @@
                  aiuto=_('Con un FDC ID la sincronizzazione aggiorna i valori presi da USDA.')) }}
         {{ campo('codice_cofid', _('Codice CoFID'), col='col-md-3',
                  aiuto=_('Tabella britannica CoFID 2021, es. 11-1145.')) }}
-        {% for nascosto in ('campi_usda', 'campi_cofid', 'campi_ricetta', 'ingredienti') %}
+        {{ campo('codice_ciqual', _('Codice Ciqual'), col='col-md-3',
+                 aiuto=_('Tabella francese Ciqual 2025, es. 24006.')) }}
+        {% for nascosto in ('campi_usda', 'campi_cofid', 'campi_ciqual', 'campi_ricetta', 'ingredienti') %}
             <input type="hidden" name="{{ nascosto }}" value="{{ item[nascosto] if item and item[nascosto] else '' }}">
         {% endfor %}
 

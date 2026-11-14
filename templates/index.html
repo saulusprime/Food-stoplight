@@ -104,6 +104,19 @@
             </div>
             <p class="filtro-nota" id="nota-sicuri">{{ _('Tutti e cinque i rischi trascurabili o bassi') }}</p>
         </div>
+
+        {% if condizioni_profilo %}
+            <div class="col-12 col-md-auto filtro-sicuri">
+                <div class="toggles">
+                    <label for="filtro-per_te">
+                        {{ _('Solo sicuri per il mio profilo') }}
+                        <input type="checkbox" id="filtro-per_te" name="per_te" value="1" aria-describedby="nota-per_te" onchange="this.form.submit()" {% if filtri.per_te %}checked{% endif %}>
+                        <span class="lever"></span>
+                    </label>
+                </div>
+                <p class="filtro-nota" id="nota-per_te"><a href="{{ url_for('profilo.pagina') }}">{{ _('I rischi del tuo profilo trascurabili o bassi') }}</a></p>
+            </div>
+        {% endif %}
     </div>
 
     <div class="row g-2 align-items-end">
@@ -159,6 +172,7 @@
     {% set attivi = [] %}
     {% if filtri.q %}{% set _a = attivi.append((_('Ricerca: «%(testo)s»', testo=filtri.q), url_tabella(q=none))) %}{% endif %}
     {% if filtri.sicuri %}{% set _a = attivi.append((_('Solo alimenti sicuri'), url_tabella(sicuri=none))) %}{% endif %}
+    {% if filtri.per_te %}{% set _a = attivi.append((_('Solo sicuri per il mio profilo'), url_tabella(per_te=none))) %}{% endif %}
     {% for campo, etichetta in campi_intervallo.items() %}
         {% set da, a = intervalli[campo] %}
         {% if da or a %}
@@ -448,6 +462,10 @@
                 <dl class="legenda-definizioni">
                     <dt>{{ _('Punteggio') }}</dt>
                     <dd>{{ _('sintesi dei cinque rischi: 100 = tutti trascurabili, 0 = tutti alti.') }}</dd>
+                    {% if condizioni_profilo %}
+                        <dt>{{ _('Per te') }}</dt>
+                        <dd>{{ _('il livello più alto tra i rischi del tuo profilo.') }} <a href="{{ url_for('profilo.pagina') }}">{{ _('Cambia profilo') }}</a></dd>
+                    {% endif %}
                     <dt>{{ _('TEF') }}</dt>
                     <dd>{{ _("energia spesa per digerire l'alimento, in Kcal e in percentuale delle Kcal.") }}</dd>
                     <dt>{{ _('Kcal nette') }}</dt>
@@ -478,7 +496,7 @@
     'rapporto': _('Rapporto F/F'), 'colesterolo': _('Colesterolo'), 'diabete': _('Diabete'),
     'malassorbimento': _('Malassorbimento'), 'metabolico': _('Metabolico'), 'tumorale': _('Tumorale'),
     'modifica': _('Modifica'), 'elimina': _('Elimina'), 'elimina_alimento': _('Elimina alimento'),
-    'confronta': _('Seleziona per il confronto:'),
+    'confronta': _('Seleziona per il confronto:'), 'per_te': _('Per te'),
 } %}
 {% set LIVELLI_TRADOTTI = {} %}
 {% set TITOLI_LIVELLO = {} %}
@@ -487,12 +505,13 @@
     {% set _aggiunto = TITOLI_LIVELLO.update({liv.etichetta: _('Livello medio: %(livello)s', livello=liv.etichetta|traduci)}) %}
 {% endfor %}
 {% set CATEGORIE_TRADOTTE = {} %}
+{% set colonne_tabella = 15 + (1 if current_user.is_admin else 0) + (1 if condizioni_profilo else 0) %}
 
 {# Etichette dei valori nelle schede su mobile: una regola per colonna invece
    di un attributo in ogni cella #}
 <style>
 @media (max-width: 767.98px) {
-{%- for colonna in ('kcal', 'tef_kcal', 'tef_percent', 'kcal_nette', 'fruttosio', 'fibre', 'rapporto', 'colesterolo', 'diabete', 'malassorbimento', 'metabolico', 'tumorale') %}
+{%- for colonna in ('per_te', 'kcal', 'tef_kcal', 'tef_percent', 'kcal_nette', 'fruttosio', 'fibre', 'rapporto', 'colesterolo', 'diabete', 'malassorbimento', 'metabolico', 'tumorale') %}
     .tabella-alimenti .col-{{ colonna }}::before { content: {{ T[colonna]|css_testo }} " "; }
 {%- endfor %}
 }
@@ -512,6 +531,7 @@
                     {{ th_sortable('alimento', _('Alimento')) }}
                     {{ th_sortable('categoria', _('Categoria')) }}
                     {{ th_sortable('punteggio', _('Punteggio'), 'text-end') }}
+                    {% if condizioni_profilo %}{{ th_sortable('per_te', _('Per te')) }}{% endif %}
 
                     {{ th_sortable('kcal', _('Kcal'), 'text-end') }}
                     {{ th_sortable('tef_kcal', _('TEF (Kcal)'), 'text-end col-secondaria') }}
@@ -566,6 +586,9 @@
                                 <span class="punteggio stato-{{ liv.stato }}" title="{{ TITOLI_LIVELLO[liv.etichetta] }}">{{ a.punteggio }}</span>
                             {%- else %}-{% endif -%}
                         </td>
+                        {%- if a.per_te %}
+                        <td class="col-rischio col-per_te">{% if a.per_te.punti is not none %}<span class="badge-risk stato-{{ a.per_te.livello.stato }}">{{ LIVELLI_TRADOTTI[a.per_te.livello.etichetta] }}</span>{% else %}-{% endif %}</td>
+                        {%- endif %}
                         <td class="text-end col-valore col-kcal">{{ (a.kcal or 0)|numero }}</td>
                         <td class="text-end col-valore col-secondaria col-tef_kcal">{{ (a.tef_kcal or 0)|numero }}</td>
                         <td class="text-end col-valore col-secondaria col-tef_percent">{{ (a.tef_percent or 0)|numero }}</td>
@@ -609,7 +632,7 @@
                     </tr>
                 {%- else %}
                     <tr>
-                        <td colspan="{{ 16 if current_user.is_admin else 15 }}" class="text-center py-4">
+                        <td colspan="{{ colonne_tabella }}" class="text-center py-4">
                             {% if filtri.q %}
                                 {{ _('Nessun alimento trovato per «%(testo)s» con i filtri correnti.', testo=filtri.q) }}
                             {% else %}
@@ -620,7 +643,7 @@
                 {%- endfor %}
                 {%- if alimenti %}
                     <tr id="tabella-vuota-offline" hidden>
-                        <td colspan="{{ 16 if current_user.is_admin else 15 }}" class="text-center py-4">
+                        <td colspan="{{ colonne_tabella }}" class="text-center py-4">
                             {{ _('Nessun alimento trovato con i filtri correnti.') }}
                         </td>
                     </tr>

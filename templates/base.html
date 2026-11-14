@@ -60,11 +60,20 @@
                         {{ _('Pasti pronti') }}
                     </a>
 
+                    {% set voci_spesa = session.get('spesa', [])|length %}
+                    <a class="nav-link" href="{{ url_for('spesa.lista') }}">
+                        {{ _('Spesa') }}{% if voci_spesa %} <span class="contatore-pasto" aria-label="{{ ngettext('%(num)d alimento nella lista della spesa', '%(num)d alimenti nella lista della spesa', voci_spesa) }}">{{ voci_spesa }}</span>{% endif %}
+                    </a>
+
                     {% if current_user.is_authenticated %}
                         <a class="nav-link" href="{{ url_for('pasto_diario.diario') }}">
                             {{ _('Diario') }}
                         </a>
                     {% endif %}
+
+                    <a class="nav-link" href="{{ url_for('profilo.pagina') }}">
+                        {{ _('Profilo') }}{% if condizioni_profilo %} <span class="contatore-pasto" aria-label="{{ ngettext('%(num)d condizione nel profilo', '%(num)d condizioni nel profilo', condizioni_profilo|length) }}">{{ condizioni_profilo|length }}</span>{% endif %}
+                    </a>
 
                     <a class="nav-link" href="{{ url_for('pagine.guida') }}">
                         {{ _('Guida') }}

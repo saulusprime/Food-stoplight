@@ -67,6 +67,9 @@
                             </p>
                             {% if voce.piatto %}
                                 <p class="pasto-pronto-rischi mb-0">
+                                    {% if voce.per_te %}
+                                        <span class="badge-risk stato-{{ voce.per_te.livello.stato }}">{{ _('Per te: %(livello)s', livello=voce.per_te.livello.etichetta|traduci) }}</span>
+                                    {% endif %}
                                     {% if voce.piatto.punteggio is not none %}
                                         {% set liv = livello_punteggio(voce.piatto.punteggio) %}
                                         <span class="punteggio stato-{{ liv.stato }}" title="{{ _('Punteggio') }}">{{ voce.piatto.punteggio }}</span>

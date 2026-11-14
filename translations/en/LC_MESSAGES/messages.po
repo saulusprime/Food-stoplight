@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Food-stoplight 1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-12 21:46+0100\n"
+"POT-Creation-Date: 2026-11-14 08:42+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -144,10 +144,22 @@ msgstr[0] "%(num)d food in the meal"
 msgstr[1] "%(num)d foods in the meal"
 
 #, python-format
+msgid "%(num)d alimento nella lista della spesa"
+msgid_plural "%(num)d alimenti nella lista della spesa"
+msgstr[0] "%(num)d food on the shopping list"
+msgstr[1] "%(num)d foods on the shopping list"
+
+#, python-format
 msgid "%(num)d attivo"
 msgid_plural "%(num)d attivi"
 msgstr[0] "%(num)d active"
 msgstr[1] "%(num)d active"
+
+#, python-format
+msgid "%(num)d condizione nel profilo"
+msgid_plural "%(num)d condizioni nel profilo"
+msgstr[0] "%(num)d condition in the profile"
+msgstr[1] "%(num)d conditions in the profile"
 
 #, python-format
 msgid "%(num)d eliminato"
@@ -342,6 +354,10 @@ msgstr "Added to the diary: %(nome)s, %(grammi)s g."
 msgid "Aggiunto al pasto: %(nome)s, %(grammi)s g."
 msgstr "Added to the meal: %(nome)s, %(grammi)s g."
 
+#, python-format
+msgid "Aggiunto alla lista: %(nome)s."
+msgstr "Added to the list: %(nome)s."
+
 msgid "Al pasto"
 msgstr "To meal"
 
@@ -363,6 +379,9 @@ msgstr "Foods in the meal"
 
 msgid "Alimenti per categoria"
 msgstr "Foods by category"
+
+msgid "Alimenti per reparto"
+msgstr "Foods per aisle"
 
 msgid "Alimenti trasformati"
 msgstr "Processed foods"
@@ -405,6 +424,9 @@ msgstr "Empty food name"
 
 msgid "Alternative con profilo migliore"
 msgstr "Alternatives with a better profile"
+
+msgid "Alternative migliori per te"
+msgstr "Better alternatives for you"
 
 msgid "Alto"
 msgstr "High"
@@ -537,8 +559,21 @@ msgstr "Calculated when saving: fructose ÷ fiber."
 msgid "Calcolatore della porzione"
 msgstr "Portion calculator"
 
+#, python-format
+msgid "Cambia %(nome)s con un altro alimento del reparto"
+msgstr "Swap %(nome)s for another food from the aisle"
+
+msgid "Cambia con un altro alimento del reparto"
+msgstr "Swap for another food from the aisle"
+
+msgid "Cambia profilo"
+msgstr "Change profile"
+
 msgid "Campi calcolati dagli ingredienti"
 msgstr "Fields calculated from the ingredients"
+
+msgid "Campi da Ciqual"
+msgstr "Fields from Ciqual"
 
 msgid "Campi da CoFID"
 msgstr "Fields from CoFID"
@@ -659,6 +694,16 @@ msgstr "CREA code: 6 characters needed, digits or capital letters (e.g. 007000).
 msgid "Codice CREA: «%(testo)s» non valido, ignorato"
 msgstr "CREA code: “%(testo)s” is not valid, ignored"
 
+msgid "Codice Ciqual"
+msgstr "Ciqual code"
+
+msgid "Codice Ciqual: un numero, es. 24006 (più codici separati da virgola)."
+msgstr "Ciqual code: a number, e.g. 24006 (several codes separated by commas)."
+
+#, python-format
+msgid "Codice Ciqual: «%(testo)s» non valido, ignorato"
+msgstr "Ciqual code: “%(testo)s” is not valid, ignored"
+
 msgid "Codice CoFID"
 msgstr "CoFID code"
 
@@ -689,6 +734,13 @@ msgstr "Breakfast"
 msgid "Colesterolo"
 msgstr "Cholesterol"
 
+msgid ""
+"Colesterolo alto: conta il rischio colesterolo (grassi saturi e "
+"colesterolo della porzione)."
+msgstr ""
+"High cholesterol: the cholesterol risk counts (saturated fat and "
+"cholesterol per serving)."
+
 #, python-format
 msgid ""
 "Colesterolo: %(mg)s mg nella porzione, quanto il limite giornaliero di "
@@ -709,6 +761,9 @@ msgstr "Columns in the file"
 msgid "Colonne riconosciute"
 msgstr "Recognized columns"
 
+msgid "Come funziona"
+msgstr "How it works"
+
 msgid ""
 "Come leggere i livelli di rischio, il punteggio, il TEF e gli altri "
 "indicatori della tabella e delle schede."
@@ -728,6 +783,9 @@ msgstr "How they are calculated"
 msgid "Come si calcolano TEF e Kcal nette"
 msgstr "How TEF and net Kcal are calculated"
 
+msgid "Come si sceglie"
+msgstr "How foods are chosen"
+
 msgid "Come sono calcolati"
 msgstr "How they are calculated"
 
@@ -745,8 +803,38 @@ msgstr "Fill in the values and save: the levels will appear on the food page."
 msgid "Componi un pasto"
 msgstr "Build a meal"
 
+msgid "Con il tuo profilo vengono prima quelli con il semaforo per te più basso."
+msgstr ""
+"With your profile, those with the lowest “for you” traffic light come "
+"first."
+
+msgid ""
+"Con l'accesso il profilo è salvato nel tuo account; senza, resta nella "
+"sessione del browser. Gli export applicano il filtro per il profilo ma "
+"non hanno la colonna «Per te»; l'API non usa il profilo."
+msgstr ""
+"When you are signed in the profile is saved in your account; otherwise it"
+" stays in the browser session. Exports apply the profile filter but have "
+"no “For you” column; the API does not use the profile."
+
+msgid ""
+"Con le regole attuali alcuni reparti non hanno alimenti verdi: pane, "
+"pasta e riso hanno il rischio diabete alto o medio, oli e grassi il "
+"rischio metabolico alto per la densità energetica. Lì la lista propone le"
+" scelte migliori senza rischi alti, segnate come non verdi; gli alimenti "
+"con un rischio alto o non classificato non vengono mai proposti."
+msgstr ""
+"With the current rules some aisles have no green foods: bread, pasta and "
+"rice have a high or medium diabetes risk, oils and fats a high metabolic "
+"risk because of their energy density. There the list suggests the best "
+"choices without high risks, marked as not green; foods with a high or "
+"unclassified risk are never suggested."
+
 msgid "Con un FDC ID la sincronizzazione aggiorna i valori presi da USDA."
 msgstr "With an FDC ID, the sync updates the values taken from USDA."
+
+msgid "Condizioni"
+msgstr "Conditions"
 
 msgid "Conferma"
 msgstr "Confirm"
@@ -775,6 +863,11 @@ msgstr "Comparison"
 
 msgid "Confronto tra alimenti"
 msgstr "Food comparison"
+
+msgid ""
+"Conta il rischio malassorbimento (fruttosio in eccesso sul glucosio nella"
+" porzione)."
+msgstr "The malabsorption risk counts (fructose in excess of glucose per serving)."
 
 #, python-format
 msgid "Contiene alcol (%(grammi)s g per 100 g): cancerogeno del gruppo 1 IARC."
@@ -820,6 +913,19 @@ msgstr ""
 "noreferrer\">CoFID 2021</a> table (food %(alimenti)s), where CREA lacks "
 "them: %(campi)s. Fructose, glucose and lactose keep the CoFID food's "
 "share of the total sugars, saturated fat its share of the fat."
+
+#, python-format
+msgid ""
+"Dalla tabella francese <a href=\"%(url)s\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">Ciqual 2025</a> (Anses, alimento "
+"%(alimenti)s), dove mancano nel CREA: %(campi)s. Fruttosio, glucosio e "
+"lattosio seguono le proporzioni dell'alimento Ciqual sugli zuccheri "
+"totali, i grassi saturi la sua quota sui grassi."
+msgstr ""
+"From the French <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">Ciqual 2025</a> table (Anses, food %(alimenti)s), where CREA"
+" lacks them: %(campi)s. Fructose, glucose and lactose keep the Ciqual "
+"food's share of the total sugars, saturated fat its share of the fat."
 
 msgid "Data"
 msgstr "Date"
@@ -896,6 +1002,13 @@ msgstr "Back online."
 msgid "Diabete"
 msgstr "Diabetes"
 
+msgid ""
+"Diabete o prediabete: conta il rischio diabete (carico glicemico e "
+"zuccheri liberi)."
+msgstr ""
+"Diabetes or prediabetes: the diabetes risk counts (glycemic load and free"
+" sugars)."
+
 msgid "Diario"
 msgstr "Diary"
 
@@ -913,6 +1026,9 @@ msgstr "Signed out."
 
 msgid "Dolci e Snack"
 msgstr "Sweets and snacks"
+
+msgid "Dove resta il profilo"
+msgstr "Where the profile is kept"
 
 msgid "EEE d/M"
 msgstr "EEE M/d"
@@ -1302,6 +1418,15 @@ msgstr "Fructose/fiber"
 msgid "GOS (galatto-oligosaccaridi)"
 msgstr "GOS (galacto-oligosaccharides)"
 
+msgid "Genera"
+msgstr "Generate"
+
+msgid "Genera la lista"
+msgstr "Generate the list"
+
+msgid "Genera un'altra lista"
+msgstr "Generate another list"
+
 msgid "Giorno"
 msgstr "Day"
 
@@ -1429,6 +1554,9 @@ msgstr ""
 "target=\"_blank\" rel=\"noopener noreferrer\">Open Food Facts</a> (ODbL "
 "license)."
 
+msgid "I rischi del tuo profilo trascurabili o bassi"
+msgstr "Your profile's risks negligible or low"
+
 msgid ""
 "I valori calcolati (TEF, Kcal nette, rapporto F/F) sono già inclusi; "
 "nelle righe aggiornate sono evidenziate le celle che cambiano."
@@ -1445,10 +1573,14 @@ msgid ""
 "noreferrer\">Open Government Licence v3.0</a>) per il profilo degli "
 "zuccheri di prodotti europei (e per gli zuccheri totali, se mancano anche"
 " in USDA) e per i grassi saturi, come percentuale degli acidi grassi o "
-"come quota sui grassi; poi dall'alimento corrispondente di USDA FoodData "
-"Central (dominio pubblico) per gli altri campi. Gli abbinamenti sono "
-"scelti alimento per alimento e la scheda indica quali valori vengono da "
-"dove."
+"come quota sui grassi; dove CoFID non ha un alimento comparabile, dalla "
+"tabella francese <a href=\"%(url_ciqual)s\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">Ciqual 2025</a> (Anses, <a "
+"href=\"%(licenza_ciqual)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">Licence Ouverte 2.0</a>), con le stesse regole; poi "
+"dall'alimento corrispondente di USDA FoodData Central (dominio pubblico) "
+"per gli altri campi. Gli abbinamenti sono scelti alimento per alimento e "
+"la scheda indica quali valori vengono da dove."
 msgstr ""
 "Values that CREA doesn't publish come, in this order: from the UK <a "
 "href=\"%(url)s\" target=\"_blank\" rel=\"noopener noreferrer\">CoFID "
@@ -1456,10 +1588,14 @@ msgstr ""
 "href=\"%(licenza)s\" target=\"_blank\" rel=\"noopener noreferrer\">Open "
 "Government Licence v3.0</a>) for the sugar profile of European products "
 "(and for total sugars, if USDA lacks them too) and for saturated fat, as "
-"a percentage of fatty acids or as a share of the fat; then from the "
-"matching USDA FoodData Central food (public domain) for the other fields."
-" Matches are chosen food by food, and the food page shows which values "
-"come from where."
+"a percentage of fatty acids or as a share of the fat; where CoFID has no "
+"comparable food, from the French <a href=\"%(url_ciqual)s\" "
+"target=\"_blank\" rel=\"noopener noreferrer\">Ciqual 2025</a> table "
+"(Anses, <a href=\"%(licenza_ciqual)s\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">Licence Ouverte 2.0</a>), with the same rules; then from the"
+" matching USDA FoodData Central food (public domain) for the other "
+"fields. Matches are chosen food by food, and the food page shows which "
+"values come from where."
 
 msgid "I valori indicati con «–» non sono disponibili."
 msgstr "Values shown as “–” are not available."
@@ -1581,6 +1717,9 @@ msgstr ""
 msgid "Il livello medio indicato accanto al punteggio:"
 msgstr "The average level shown next to the score:"
 
+msgid "Il livello più alto tra i rischi del tuo profilo."
+msgstr "The highest level among your profile's risks."
+
 #, python-format
 msgid "Il pasto può contenere al massimo %(n)d alimenti."
 msgstr "A meal can contain at most %(n)d foods."
@@ -1623,7 +1762,8 @@ msgid ""
 "rel=\"noopener noreferrer\">tabelle USDA dei fattori di ritenzione</a> "
 "per 30 minuti di cottura. Un valore resta non disponibile se gli "
 "ingredienti senza quel dato ne portano più del 5%%, come per le ricette "
-"CREA."
+"CREA; come lì, gli zuccheri di carne e pesce senza il glucosio contano "
+"come glucosio."
 msgstr ""
 "The dish in the table is calculated like the recipes in food composition "
 "tables: the nutrients of the raw ingredients are added up and divided by "
@@ -1636,7 +1776,8 @@ msgstr ""
 "of the <a href=\"%(url_usda)s\" target=\"_blank\" rel=\"noopener "
 "noreferrer\">USDA table of nutrient retention factors</a> for 30 minutes "
 "of cooking. A value stays unavailable if the ingredients without it carry"
-" more than 5%% of it, as for CREA recipes."
+" more than 5%% of it, as for CREA recipes; as there, the sugars of meat "
+"and fish without glucose count as glucose."
 
 msgid ""
 "Il più alto tra il livello del carico glicemico della porzione tipica e "
@@ -1663,6 +1804,13 @@ msgstr ""
 "fall between two levels (for example 1.4 of 3)."
 
 msgid ""
+"Il profilo è salvato nel tuo account e lo vedi solo tu. Per cancellarlo "
+"togli tutte le condizioni e salva."
+msgstr ""
+"The profile is saved in your account and only you can see it. To delete "
+"it, clear all conditions and save."
+
+msgid ""
 "Il punteggio riassume i cinque rischi in un numero da 0 a 100: 100 se "
 "sono tutti trascurabili, 0 se sono tutti alti. È la media dei punti dei "
 "rischi noti (da 0 a 3) riportata su 100: punteggio = 100 × (1 − media ÷ "
@@ -1672,6 +1820,42 @@ msgstr ""
 "are all negligible, 0 if they are all high. It is the average of the "
 "points of the known risks (0 to 3) scaled to 100: score = 100 × (1 − "
 "average ÷ 3)."
+
+msgid ""
+"Il semaforo descrive un alimento alla volta e non sostituisce il parere "
+"di un medico o di un nutrizionista."
+msgstr ""
+"The traffic light describes one food at a time and does not replace the "
+"advice of a doctor or a dietitian."
+
+msgid ""
+"Il semaforo per te descrive un alimento alla volta e non sostituisce il "
+"parere di un medico o di un nutrizionista."
+msgstr ""
+"The “for you” traffic light describes one food at a time and does not "
+"replace the advice of a doctor or a dietitian."
+
+msgid ""
+"Il semaforo per te usa i livelli già calcolati per ogni alimento, senza "
+"soglie diverse."
+msgstr ""
+"The “for you” traffic light uses the levels already calculated for each "
+"food, with no different thresholds."
+
+msgid ""
+"Il semaforo per te è il livello più alto tra i rischi del tuo profilo: "
+"non usa soglie diverse, guarda solo i rischi che contano per te. Un "
+"rischio Alto basta per dare Alto; altrimenti, se un rischio del profilo "
+"non è classificato, anche il semaforo per te resta non classificato."
+msgstr ""
+"The “for you” traffic light is the highest level among your profile's "
+"risks: it uses no different thresholds, it only looks at the risks that "
+"matter to you. One High risk is enough to give High; otherwise, if a risk"
+" of the profile is not classified, the “for you” traffic light is not "
+"classified either."
+
+msgid "Il tuo profilo"
+msgstr "Your profile"
 
 msgid "Il vecchio formato .xls non è supportato: salva il file come .xlsx o .csv."
 msgstr "The old .xls format is not supported: save the file as .xlsx or .csv."
@@ -1797,6 +1981,9 @@ msgstr "Unchanged"
 msgid "Invariato"
 msgstr "Unchanged"
 
+msgid "Ipercolesterolemia"
+msgstr "High cholesterol"
+
 msgid "Kcal"
 msgstr "Kcal"
 
@@ -1862,6 +2049,18 @@ msgstr ""
 "The order does not matter and missing columns can be left out: only "
 "“Alimento” is required."
 
+#, python-format
+msgid ""
+"La <a href=\"%(url)s\">lista della spesa</a> propone, per ogni reparto "
+"scelto, alimenti a semaforo verde: i cinque rischi tutti classificati, "
+"nessuno oltre Basso, e un punteggio verde (da 84). Ogni volta che la "
+"generi la scelta tra gli alimenti verdi del reparto cambia."
+msgstr ""
+"The <a href=\"%(url)s\">shopping list</a> suggests, for each chosen "
+"aisle, green traffic light foods: all five risks classified, none above "
+"Low, and a green score (84 or more). Each time you generate it, the "
+"choice among the green foods of the aisle changes."
+
 msgid ""
 "La classificazione NOVA divide gli alimenti in quattro gruppi secondo "
 "quanto sono trasformati industrialmente."
@@ -1869,8 +2068,25 @@ msgstr ""
 "The NOVA classification divides foods into four groups according to how "
 "much they are industrially processed."
 
+#, python-format
+msgid "La lista può contenere al massimo %(n)d alimenti."
+msgstr "The list can hold at most %(n)d foods."
+
+msgid ""
+"La lista è vuota: scegli i reparti e genera la lista, oppure aggiungi gli"
+" alimenti uno per uno."
+msgstr ""
+"The list is empty: choose the aisles and generate the list, or add foods "
+"one by one."
+
+msgid "La nuova lista sostituisce quella attuale."
+msgstr "The new list replaces the current one."
+
 msgid "La tabella «alimenti» non ha le colonne attese."
 msgstr "The “alimenti” table does not have the expected columns."
+
+msgid "La tua lista"
+msgstr "Your list"
 
 msgid "Latticini e Uova"
 msgstr "Dairy and eggs"
@@ -1936,6 +2152,20 @@ msgstr "Level legend"
 msgid "Legumi/Frutta Secca"
 msgstr "Legumes/Nuts"
 
+msgid "Lista della spesa"
+msgstr "Shopping list"
+
+#, python-format
+msgid "Lista della spesa del %(data)s"
+msgstr "Shopping list of %(data)s"
+
+#, python-format
+msgid "Lista della spesa pronta: %(n)d alimenti."
+msgstr "Shopping list ready: %(n)d foods."
+
+msgid "Lista della spesa svuotata."
+msgstr "Shopping list emptied."
+
 msgid "Livelli calcolati dai valori nutrizionali con regole documentate."
 msgstr "Levels calculated from the nutrition values with documented rules."
 
@@ -1983,6 +2213,9 @@ msgstr "Malabs."
 msgid "Malassorbimento"
 msgstr "Malabsorption"
 
+msgid "Malassorbimento del fruttosio"
+msgstr "Fructose malabsorption"
+
 msgid ""
 "Malassorbimento del fruttosio, valutato sul fruttosio in eccesso sul "
 "glucosio nella porzione tipica, con la soglia dei FODMAP di Varney et al."
@@ -1999,6 +2232,9 @@ msgstr ""
 "threshold; Medium if it exceeds it but a half serving stays below (up to "
 "0.30 g); High beyond that. Without measured data, the list of foods rich "
 "in excess fructose applies."
+
+msgid "Mancano i dati per classificare almeno un rischio del tuo profilo."
+msgstr "Data is missing to classify at least one risk of your profile."
 
 msgid "Manuale"
 msgstr "Manual"
@@ -2121,6 +2357,14 @@ msgstr ""
 " none. The other categories stay unclassified: Monash University's full "
 "data isn't public."
 
+#, python-format
+msgid ""
+"Nel <a href=\"%(url)s\">profilo</a> scegli le condizioni che ti "
+"riguardano. Ognuna corrisponde a uno dei cinque rischi:"
+msgstr ""
+"In your <a href=\"%(url)s\">profile</a> you choose the conditions that "
+"apply to you. Each one matches one of the five risks:"
+
 msgid "Nel database manca la tabella «alimenti»."
 msgstr "The database lacks the “alimenti” table."
 
@@ -2131,6 +2375,25 @@ msgid ""
 msgstr ""
 "In the %(categoria)s category, highest score first; on a tie, closest "
 "Kcal."
+
+#, python-format
+msgid ""
+"Nella categoria %(categoria)s: prima il semaforo per te più basso, poi il"
+" punteggio più alto."
+msgstr ""
+"In the %(categoria)s category: lowest “for you” traffic light first, then"
+" highest score."
+
+msgid ""
+"Nella tabella il filtro «Solo sicuri per il mio profilo» mostra gli "
+"alimenti con il semaforo per te trascurabile o basso; nelle schede le "
+"alternative mettono prima quelle con il semaforo per te più basso. Per un"
+" pasto o una giornata la regola è la stessa, sui livelli medi dei rischi."
+msgstr ""
+"In the table the “Safe for my profile only” filter shows the foods whose "
+"“for you” traffic light is negligible or low; on food pages the "
+"alternatives with the lowest “for you” traffic light come first. For a "
+"meal or a day the rule is the same, applied to the average risk levels."
 
 #, python-format
 msgid ""
@@ -2149,6 +2412,9 @@ msgstr "No foods to compare."
 msgid "Nessun alimento della categoria ha un punteggio più alto."
 msgstr "No food in the category has a higher score."
 
+msgid "Nessun alimento della categoria ha un semaforo per te migliore."
+msgstr "No food in the category has a better “for you” traffic light."
+
 msgid "Nessun alimento registrato per questo giorno."
 msgstr "No foods recorded for this day."
 
@@ -2162,6 +2428,9 @@ msgstr "No foods found for “%(testo)s” with the current filters."
 #, python-format
 msgid "Nessun alimento «%(testo)s»: scegline uno dall'elenco."
 msgstr "No food named “%(testo)s”: choose one from the list."
+
+msgid "Nessun altro alimento da proporre in questo reparto."
+msgstr "No other food to suggest in this aisle."
 
 msgid "Nessun avviso: tutti i valori sono stati riconosciuti."
 msgstr "No warnings: all values were recognized."
@@ -2214,6 +2483,10 @@ msgstr "None: the file matches the data in the database."
 msgid "Nessuno zucchero libero."
 msgstr "No free sugars."
 
+#, python-format
+msgid "Niente da proporre senza rischi alti per: %(reparti)s."
+msgstr "Nothing to suggest without high risks for: %(reparti)s."
+
 msgid "Nome"
 msgstr "Name"
 
@@ -2258,6 +2531,9 @@ msgid ""
 "Numero di alimenti per categoria. Seleziona una barra per filtrare la "
 "tabella."
 msgstr "Number of foods per category. Select a bar to filter the table."
+
+msgid "Nuova lista"
+msgstr "New list"
 
 msgid "Nuovi"
 msgstr "New"
@@ -2310,6 +2586,9 @@ msgstr ""
 
 msgid "Ogni riga diventa un nuovo alimento, anche se esiste già."
 msgstr "Each row becomes a new food, even if it already exists."
+
+msgid "Ogni volta una scelta diversa tra gli alimenti verdi di ciascun reparto."
+msgstr "Each time a different choice among the green foods of each aisle."
 
 msgid "Open Food Facts (codice a barre)"
 msgstr "Open Food Facts (barcode)"
@@ -2418,6 +2697,13 @@ msgstr "To sync, a personal USDA key is needed (USDA_API_KEY)."
 msgid "Per sostituire l'intera tabella spunta la casella di conferma."
 msgstr "To replace the whole table, tick the confirmation box."
 
+msgid "Per te"
+msgstr "For you"
+
+#, python-format
+msgid "Per te: %(livello)s"
+msgstr "For you: %(livello)s"
+
 msgid "Perché questi livelli"
 msgstr "Why these levels"
 
@@ -2499,6 +2785,10 @@ msgstr ""
 "Takes the name and nutrition values from CREA, Open Food Facts or USDA; "
 "before saving you can check and correct them."
 
+#, python-format
+msgid "Preso: %(nome)s"
+msgstr "Got it: %(nome)s"
+
 msgid "Prima del caricamento dei pasti pronti"
 msgstr "Before loading the ready meals"
 
@@ -2536,6 +2826,9 @@ msgstr "First courses"
 msgid "Processazione (NOVA)"
 msgstr "Processing (NOVA)"
 
+msgid "Profilo"
+msgstr "Profile"
+
 msgid "Profilo di rischio"
 msgstr "Risk profile"
 
@@ -2544,6 +2837,12 @@ msgstr "Risk profile of the meal"
 
 msgid "Profilo di rischio della giornata"
 msgstr "Risk profile of the day"
+
+msgid "Profilo salvato: tabella e schede mostrano il semaforo per te."
+msgstr "Profile saved: the table and food pages show the “for you” traffic light."
+
+msgid "Profilo vuoto: il semaforo per te non viene mostrato."
+msgstr "Empty profile: the “for you” traffic light is not shown."
 
 msgid "Pronti per il confronto."
 msgstr "Ready to compare."
@@ -2576,6 +2875,13 @@ msgstr "Points"
 msgid "Punti (0–3)"
 msgstr "Points (0–3)"
 
+msgid ""
+"Puoi aggiungere anche alimenti non verdi: la lista propone l'alternativa "
+"verde dello stesso reparto, se c'è."
+msgstr ""
+"You can also add foods that are not green: the list suggests the green "
+"alternative from the same aisle, if there is one."
+
 #, python-format
 msgid ""
 "Puoi anche comporre un pasto in <a href=\"%(url)s\">Pasto</a> e salvarlo "
@@ -2596,12 +2902,16 @@ msgstr ""
 msgid "Puoi confrontare al massimo %(n)d alimenti."
 msgstr "You can compare up to %(n)d foods."
 
+msgid "Puoi sceglierne più di una, oppure nessuna."
+msgstr "You can choose more than one, or none."
+
 msgid ""
 "Questa pagina richiede la connessione. Senza rete puoi consultare la "
-"tabella, la guida e le schede degli alimenti che hai già aperto."
+"tabella, la guida, la lista della spesa e le schede degli alimenti che "
+"hai già aperto."
 msgstr ""
-"This page needs a connection. Offline you can browse the table, the guide"
-" and the food pages you have already opened."
+"This page needs a connection. Offline you can browse the table, the "
+"guide, the shopping list and the food pages you have already opened."
 
 msgid "Quota"
 msgstr "Share"
@@ -2623,6 +2933,9 @@ msgstr "Lowest ratio among foods with at least 1 g of fructose."
 
 msgid "Reimportare"
 msgstr "Importing again"
+
+msgid "Reparti"
+msgstr "Aisles"
 
 msgid "Reset"
 msgstr "Reset"
@@ -2648,14 +2961,17 @@ msgid ""
 "(quanta parte degli zuccheri è fruttosio, quanta parte dei grassi è "
 "satura) e si applica agli zuccheri e ai grassi del piatto. Se gli "
 "ingredienti senza il dato portano più del 5%% degli zuccheri o dei "
-"grassi, il valore resta non disponibile."
+"grassi, il valore resta non disponibile. Carne e pesce, senza fruttosio, "
+"hanno pochi zuccheri che vengono dal glicogeno: dove manca il glucosio, i"
+" loro zuccheri contano come glucosio."
 msgstr ""
 "CREA recipes: where CREA doesn't publish the breakdown of sugars or fatty"
 " acids, the composition is calculated from the recipe ingredients (how "
 "much of the sugars is fructose, how much of the fat is saturated) and "
 "applied to the sugars and fat of the dish. If the ingredients without the"
 " value bring more than 5%% of the sugars or fat, the value stays "
-"unavailable."
+"unavailable. Meat and fish, with no fructose, have few sugars, which come"
+" from glycogen: where glucose is missing, their sugars count as glucose."
 
 #, python-format
 msgid ""
@@ -2793,6 +3109,9 @@ msgstr "Save"
 msgid "Salva i grammi di %(nome)s"
 msgstr "Save the grams of %(nome)s"
 
+msgid "Salva il profilo"
+msgstr "Save profile"
+
 msgid "Salva nel diario"
 msgstr "Save to the diary"
 
@@ -2808,12 +3127,18 @@ msgstr[1] "Saved %(num)d foods to the diary."
 msgid "Scarica"
 msgstr "Download"
 
+msgid "Scarica come testo"
+msgstr "Download as text"
+
 #, python-format
 msgid "Scarica il backup del %(data)s"
 msgstr "Download the backup of %(data)s"
 
 msgid "Scarica il database"
 msgstr "Download the database"
+
+msgid "Scegli almeno un reparto."
+msgstr "Choose at least one aisle."
 
 msgid "Scegli cosa fare con le righe del file."
 msgstr "Choose what to do with the rows of the file."
@@ -2823,6 +3148,15 @@ msgstr "Choose the day"
 
 msgid "Scegli il pasto: colazione, pranzo, cena o spuntino."
 msgstr "Choose the meal: breakfast, lunch, dinner or snack."
+
+msgid ""
+"Scegli le condizioni che ti riguardano: tabella, schede, confronto, pasti"
+" pronti, pasto e diario mostrano il semaforo «Per te», il livello più "
+"alto tra i rischi che contano per il tuo profilo."
+msgstr ""
+"Choose the conditions that apply to you: the table, food pages, "
+"comparison, ready meals, meal and diary show the “For you” traffic light,"
+" the highest level among the risks that matter for your profile."
 
 msgid "Scegli un alimento dall'elenco."
 msgstr "Choose a food from the list."
@@ -2835,6 +3169,13 @@ msgstr "Type to search"
 
 msgid "Scrivi per cercare, es. mela"
 msgstr "Type to search, e.g. apple"
+
+msgid ""
+"Se un rischio del profilo non è classificato, il semaforo per te resta "
+"non classificato, salvo che un altro sia già Alto."
+msgstr ""
+"If a risk of the profile is not classified, the “for you” traffic light "
+"is not classified either, unless another one is already High."
 
 msgid "Secondi piatti"
 msgstr "Main courses"
@@ -2870,6 +3211,16 @@ msgstr "Select for comparison:"
 msgid "Seleziona un file CSV o Excel da importare."
 msgstr "Select a CSV or Excel file to import."
 
+msgid "Semaforo per te"
+msgstr "“For you” traffic light"
+
+msgid ""
+"Senza accesso il profilo resta solo in questo browser, fino alla chiusura"
+" della sessione."
+msgstr ""
+"Without signing in, the profile stays only in this browser until the "
+"session ends."
+
 msgid "Senza categoria"
 msgstr "No category"
 
@@ -2903,6 +3254,26 @@ msgid ""
 "Si possono confrontare al massimo %(n)d alimenti: togline uno prima di "
 "aggiungerne un altro."
 msgstr "Up to %(n)d foods can be compared: remove one before adding another."
+
+msgid ""
+"Si propone solo quello che si compra: niente alimenti cotti, piatti "
+"pronti, erbe aromatiche e condimenti (porzione sotto i 30 g, che puoi "
+"aggiungere a mano), e un alimento per tipo (le mele una volta sola, anche"
+" se le varietà sono tante). Con un profilo vengono prima gli alimenti con"
+" il semaforo per te più basso. Ogni voce si può cambiare con un'altra "
+"dello stesso reparto o togliere, e se aggiungi un alimento non verde la "
+"lista propone l'alternativa verde. La lista resta nella sessione del "
+"browser e, una volta aperta, anche offline; si stampa o si scarica come "
+"testo."
+msgstr ""
+"Only what you buy is suggested: no cooked foods, ready meals, herbs or "
+"seasonings (servings under 30 g, which you can add by hand), and one food"
+" per kind (apples once, however many varieties there are). With a "
+"profile, foods with the lowest “for you” traffic light come first. Each "
+"item can be swapped for another from the same aisle or removed, and if "
+"you add a food that is not green the list suggests the green alternative."
+" The list stays in the browser session and, once opened, offline too; you"
+" can print it or download it as text."
 
 msgid "Significato"
 msgstr "Meaning"
@@ -2945,6 +3316,9 @@ msgstr "Safe foods only"
 msgid "Solo le colonne principali"
 msgstr "Main columns only"
 
+msgid "Solo sicuri per il mio profilo"
+msgstr "Safe for my profile only"
+
 msgid "Somma delle porzioni. Tra parentesi gli alimenti senza quel dato."
 msgstr "Sum of the portions. In brackets, the foods without that value."
 
@@ -2961,6 +3335,10 @@ msgid ""
 msgstr ""
 "Replaces all foods with those in the file. The current database is first "
 "saved among the backups on the server."
+
+#, python-format
+msgid "Sostituisci con l'alternativa verde: %(nome)s"
+msgstr "Replace with the green alternative: %(nome)s"
 
 #, python-format
 msgid "Sostituisci l'alimento attuale"
@@ -2985,8 +3363,21 @@ msgstr ""
 "dense); also High with more than 22.5 g of free sugars. For drinks "
 "density doesn't apply: free sugars count."
 
+msgid "Spesa"
+msgstr "Shopping"
+
+msgid ""
+"Spunta gli alimenti man mano che li prendi: le spunte restano su questo "
+"dispositivo, e la lista resta consultabile anche senza connessione."
+msgstr ""
+"Tick foods off as you pick them up: the ticks stay on this device, and "
+"the list remains available offline."
+
 msgid "Spuntino"
 msgstr "Snack"
+
+msgid "Stampa"
+msgstr "Print"
 
 msgid "Successiva"
 msgstr "Next"
@@ -2999,6 +3390,12 @@ msgstr "Clear the comparison"
 
 msgid "Svuota il pasto"
 msgstr "Empty the meal"
+
+msgid "Svuota la lista"
+msgstr "Empty the list"
+
+msgid "Svuotare la lista della spesa?"
+msgstr "Empty the shopping list?"
 
 msgid "TEF"
 msgstr "TEF"
@@ -3042,6 +3439,9 @@ msgstr "UK CoFID 2021 table, e.g. 11-1145."
 msgid "Tabella degli alimenti"
 msgstr "Food table"
 
+msgid "Tabella francese Ciqual 2025, es. 24006."
+msgstr "French Ciqual 2025 table, e.g. 24006."
+
 #, python-format
 msgid "Tabelle internazionali (Atkinson 2008), voce «%(voce)s»"
 msgstr "International tables (Atkinson 2008), entry “%(voce)s”"
@@ -3064,6 +3464,10 @@ msgstr "Remove %(nome)s from the comparison"
 #, python-format
 msgid "Togli %(nome)s dal pasto"
 msgstr "Remove %(nome)s from the meal"
+
+#, python-format
+msgid "Togli %(nome)s dalla lista"
+msgstr "Remove %(nome)s from the list"
 
 msgid "Togli dal confronto:"
 msgstr "Remove from the comparison:"
@@ -3156,6 +3560,15 @@ msgstr "One mild risk factor."
 msgid "Un file SQLite completo, ripristinabile da questa pagina."
 msgstr "A complete SQLite file, which can be restored from this page."
 
+msgid ""
+"Una lista a semaforo verde: per ogni reparto, alimenti con il punteggio "
+"verde e nessun rischio oltre Basso. Dove non ce ne sono, come tra cereali"
+" e oli, le scelte migliori senza rischi alti, segnate come non verdi."
+msgstr ""
+"A green traffic light list: for each aisle, foods with a green score and "
+"no risk above Low. Where there are none, as among cereals and oils, the "
+"best choices without high risks, marked as not green."
+
 msgid "Unito"
 msgstr "Merged"
 
@@ -3167,6 +3580,15 @@ msgstr "Skip to content"
 
 msgid "Vai al pasto"
 msgstr "Go to the meal"
+
+msgid ""
+"Vale il livello più alto tra i rischi del profilo: con diabete e "
+"colesterolo, un alimento con diabete Basso e colesterolo Medio è Medio "
+"per te."
+msgstr ""
+"The highest level among the profile's risks counts: with diabetes and "
+"cholesterol, a food with Low diabetes and Medium cholesterol is Medium "
+"for you."
 
 msgid "Valori"
 msgstr "Values"
@@ -3483,8 +3905,14 @@ msgstr "grams"
 msgid "ignorata"
 msgstr "ignored"
 
+msgid "il livello più alto tra i rischi del tuo profilo."
+msgstr "the highest level among your profile's risks."
+
 msgid "in corso"
 msgstr "in progress"
+
+msgid "lista-della-spesa"
+msgstr "shopping-list"
 
 msgid "livello: Trascurabile, Basso, Medio, Alto"
 msgstr "level (Italian value): Trascurabile, Basso, Medio, Alto"
@@ -3498,6 +3926,9 @@ msgstr "minimum per 100 g (inclusive)"
 #, python-format
 msgid "mostrate le prime %(n)d"
 msgstr "first %(n)d shown"
+
+msgid "nel tuo profilo"
+msgstr "in your profile"
 
 msgid "nessun fattore rilevante"
 msgstr "no relevant factor"
@@ -3522,6 +3953,9 @@ msgstr "not counted"
 
 msgid "non leggibile"
 msgstr "not readable"
+
+msgid "non verde"
+msgstr "not green"
 
 msgid "oggi"
 msgstr "today"
@@ -3616,6 +4050,9 @@ msgstr ""
 msgid "un fattore lieve"
 msgstr "one mild factor"
 
+msgid "verde"
+msgstr "green"
+
 msgid "virgola"
 msgstr "comma"
 
@@ -3650,6 +4087,10 @@ msgstr ""
 #, python-format
 msgid "«%(nome)s» è già nel confronto."
 msgstr "“%(nome)s” is already in the comparison."
+
+#, python-format
+msgid "«%(nome)s» è già nella lista."
+msgstr "“%(nome)s” is already on the list."
 
 msgid ""
 "«Al pasto» aggiunge gli ingredienti crudi per le porzioni scelte, e nella"

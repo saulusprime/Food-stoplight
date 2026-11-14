@@ -759,3 +759,68 @@ document.addEventListener("click", function (evento) {
         });
     });
 })();
+
+// ---------------------------------------------------------------
+// Lista della spesa: spunte salvate su questo dispositivo (ripartono da
+// zero con una nuova lista: data-spesa-versione) e pulsante Stampa
+// ---------------------------------------------------------------
+(function () {
+    "use strict";
+
+    var stampa = document.querySelector("[data-stampa]");
+
+    if (stampa && window.print) {
+        stampa.hidden = false;
+        stampa.addEventListener("click", function () { window.print(); });
+    }
+
+    var caselle = document.querySelectorAll("[data-spesa-preso]");
+
+    if (!caselle.length) {
+        return;
+    }
+
+    var CHIAVE = "spesa-presi";
+    var segno = document.querySelector("[data-spesa-versione]");
+    var versione = segno ? segno.getAttribute("data-spesa-versione") : "";
+    var presi = [];
+
+    try {
+        var salvato = JSON.parse(localStorage.getItem(CHIAVE) || "{}");
+        if (salvato && salvato.versione === versione && Array.isArray(salvato.presi)) {
+            presi = salvato.presi;
+        }
+    } catch (errore) {
+        presi = [];
+    }
+
+    function salva() {
+        try {
+            localStorage.setItem(CHIAVE, JSON.stringify({ versione: versione, presi: presi }));
+        } catch (errore) {
+            /* senza archivio locale le spunte valgono solo finché la pagina resta aperta */
+        }
+    }
+
+    function mostra(casella) {
+        var voce = casella.closest(".lista-spesa-voce");
+        if (voce) {
+            voce.classList.toggle("lista-spesa-presa", casella.checked);
+        }
+    }
+
+    Array.prototype.forEach.call(caselle, function (casella) {
+        var id = casella.getAttribute("data-spesa-preso");
+        casella.checked = presi.indexOf(id) !== -1;
+        mostra(casella);
+
+        casella.addEventListener("change", function () {
+            presi = presi.filter(function (preso) { return preso !== id; });
+            if (casella.checked) {
+                presi.push(id);
+            }
+            mostra(casella);
+            salva();
+        });
+    });
+})();

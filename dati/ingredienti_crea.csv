@@ -14,7 +14,7 @@ Basilico,006800,
 "Basilico, 2 foglie",006800,
 "Basilico, 5 foglie",006800,
 Besciamella,PC0044,ricetta CREA
-Brodo vegetale,,non abbinato: nessun brodo nelle tabelle CREA
+Brodo vegetale,0,"senza grassi; zuccheri trascurabili (nessun brodo nelle tabelle CREA): gli altri ingredienti spiegano già gli zuccheri del risotto pubblicati dal CREA"
 "Bulgur, crudo",000030,grano duro (il bulgur è grano duro precotto)
 Burro,190010,
 "Cannella, stecca",0,"spezia, 2,5 g"
@@ -110,7 +110,7 @@ Riso,000100,
 Rosmarino,006850,
 "Rosmarino, fresco",006850,
 Sale,0,senza zuccheri né grassi
-Salsa tahina,,non abbinato: niente sesamo nelle tabelle CREA
+Salsa tahina,009690,"approssimato: olio di sesamo per la composizione dei grassi (la tahina è pasta di sesamo, che il CREA non ha); i suoi zuccheri, circa 0,5 g su 100 g, si trascurano"
 Salsicce senza budello,110710,
 "Salsicce, senza budello",110710,
 Salvia,006860,

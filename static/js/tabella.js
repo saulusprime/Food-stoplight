@@ -7,8 +7,9 @@
  * dispositivo ricerca, filtri e ordinamento, con le stesse regole del
  * server (archivio.py, ricerca.py).
  *
- * Ricerca è anche un modulo per Node: tests/test_ricerca_js.py confronta i
- * risultati con quelli di ricerca.py.
+ * Ricerca e semaforo per te sono anche un modulo per Node:
+ * tests/test_tabella_offline.py confronta i risultati con quelli di
+ * ricerca.py e di profilo.py.
  */
 (function (radice) {
     "use strict";
@@ -202,8 +203,29 @@
 
     var Ricerca = { normalizza: normalizza, varianti: varianti, distanza: distanza, cerca: cerca };
 
+    // -----------------------------------------------------------------
+    // Semaforo per te: stessa logica di profilo.punti_per_te. livelli:
+    // punti (0-3) dei rischi del profilo, null se non classificato
+    // -----------------------------------------------------------------
+    var PUNTI_MAX = 3;
+
+    function puntiPerTe(livelli) {
+        if (!livelli.length) {
+            return null;
+        }
+        if (livelli.indexOf(PUNTI_MAX) !== -1) {
+            return PUNTI_MAX;
+        }
+        if (livelli.indexOf(null) !== -1) {
+            return null;
+        }
+        return Math.max.apply(null, livelli);
+    }
+
     if (typeof module !== "undefined" && module.exports) {
-        module.exports = Ricerca;
+        module.exports = {
+            normalizza: normalizza, varianti: varianti, distanza: distanza, cerca: cerca, puntiPerTe: puntiPerTe
+        };
     }
     radice.Ricerca = Ricerca;
 
@@ -232,7 +254,13 @@
     var INTERVALLI = vista.intervalli;    // campi dei filtri a intervallo
     var ORDINABILI = vista.ordinabili;    // campi ordinabili
     var ORDINAMENTI_MAX = vista.ordinamenti_max;
+    var PER_TE = vista.per_te || [];      // rischi del profilo (semaforo per te), vuoto senza profilo
+    var PER_TE_ADATTI = vista.per_te_adatti;
     var PERTINENZA = "pertinenza";
+
+    function attivo(testo) {
+        return ["1", "on", "true", "si", "sì"].indexOf(String(testo || "").trim().toLowerCase()) !== -1;
+    }
 
     function valori(parametri, nome) {
         var tutti = parametri.getAll(nome);
@@ -281,8 +309,8 @@
         ["categoria"].concat(RISCHI).forEach(function (campo) {
             stato.filtri[campo] = (parametri.get(campo) || "").trim();
         });
-        var sicuri = (parametri.get("sicuri") || "").trim().toLowerCase();
-        stato.filtri.sicuri = ["1", "on", "true", "si", "sì"].indexOf(sicuri) !== -1 ? "1" : "";
+        stato.filtri.sicuri = attivo(parametri.get("sicuri")) ? "1" : "";
+        stato.filtri.per_te = PER_TE.length && attivo(parametri.get("per_te")) ? "1" : "";
         INTERVALLI.forEach(function (campo) {
             ["min", "max"].forEach(function (limite) {
                 var valore = numeroFiltro(parametri.get(campo + "_" + limite));
@@ -338,6 +366,10 @@
         return indice === -1 ? null : indice;
     }
 
+    function perTe(dato) {
+        return puntiPerTe(PER_TE.map(function (campo) { return livello(dato.rischi[campo]); }));
+    }
+
     function espressione(dato, campo) {
         if (campo === "alimento") {
             return minuscoloAscii(dato.nome);
@@ -348,6 +380,9 @@
         }
         if (RISCHI.indexOf(campo) !== -1) {
             return livello(dato.rischi[campo]);
+        }
+        if (campo === "per_te") {
+            return perTe(dato);
         }
         var valore = dato.numeri[campo];
         return valore === undefined ? null : valore;
@@ -375,6 +410,12 @@
                 return l === 0 || l === 1;
             });
             if (!sicuro) {
+                return false;
+            }
+        }
+        if (filtri.per_te) {
+            var punti = perTe(dato);
+            if (punti === null || punti > PER_TE_ADATTI) {
                 return false;
             }
         }

@@ -33,8 +33,10 @@
                     <li><a href="#livelli">{{ _('Livelli di rischio') }}</a></li>
                     <li><a href="#rischi">{{ _('I cinque rischi') }}</a></li>
                     <li><a href="#punteggio">{{ _('Punteggio complessivo') }}</a></li>
+                    <li><a href="#per-te">{{ _('Semaforo per te') }}</a></li>
                     <li><a href="#pasti">{{ _('Pasti e diario') }}</a></li>
                     <li><a href="#pasti-pronti">{{ _('Pasti pronti') }}</a></li>
+                    <li><a href="#spesa">{{ _('Lista della spesa') }}</a></li>
                     <li><a href="#medaglie">{{ _('Medaglie') }}</a></li>
                     <li><a href="#tef">{{ _('Energia, TEF e Kcal nette') }}</a></li>
                     <li><a href="#glicemico">{{ _('Indice e carico glicemico') }}</a></li>
@@ -196,6 +198,29 @@
                 </div>
             </section>
 
+            <section class="card guida-sezione" id="per-te" aria-labelledby="titolo-per-te">
+                <div class="card-body">
+                    <h2 id="titolo-per-te">{{ _('Semaforo per te') }}</h2>
+                    <p>
+                        {% trans url=url_for('profilo.pagina') %}Nel <a href="{{ url }}">profilo</a> scegli le condizioni che ti riguardano. Ognuna corrisponde a uno dei cinque rischi:{% endtrans %}
+                    </p>
+                    <ul>
+                        {% for c in condizioni %}
+                            <li><strong>{{ c.etichetta|traduci }}</strong>: {{ c.descrizione|traduci }}</li>
+                        {% endfor %}
+                    </ul>
+                    <p>
+                        {% trans %}Il semaforo per te è il livello più alto tra i rischi del tuo profilo: non usa soglie diverse, guarda solo i rischi che contano per te. Un rischio Alto basta per dare Alto; altrimenti, se un rischio del profilo non è classificato, anche il semaforo per te resta non classificato.{% endtrans %}
+                    </p>
+                    <p>
+                        {% trans %}Nella tabella il filtro «Solo sicuri per il mio profilo» mostra gli alimenti con il semaforo per te trascurabile o basso; nelle schede le alternative mettono prima quelle con il semaforo per te più basso. Per un pasto o una giornata la regola è la stessa, sui livelli medi dei rischi.{% endtrans %}
+                    </p>
+                    <p class="mb-0">
+                        {% trans %}Con l'accesso il profilo è salvato nel tuo account; senza, resta nella sessione del browser. Gli export applicano il filtro per il profilo ma non hanno la colonna «Per te»; l'API non usa il profilo.{% endtrans %}
+                    </p>
+                </div>
+            </section>
+
             <section class="card guida-sezione" id="pasti" aria-labelledby="titolo-pasti">
                 <div class="card-body">
                     <h2 id="titolo-pasti">{{ _('Pasti e diario') }}</h2>
@@ -218,10 +243,25 @@
                         {% trans %}Ogni ingrediente è abbinato all'alimento più vicino della tabella, crudo. Cucchiai, pezzi e «quanto basta» diventano grammi con pesi standard (per esempio uno spicchio d'aglio 4 g, un uovo 50 g, un cucchiaio d'olio 10 g, olio «q.b.» 10 g a porzione); dell'olio per friggere si conta la parte assorbita, il 10% del peso dei cibi fritti. Sale, pepe e spezie non sono conteggiati: il sale aggiunto non è tra gli alimenti del CREA, quindi il sodio dei piatti è solo quello degli ingredienti. Acqua e brodo contano solo nel peso del piatto.{% endtrans %}
                     </p>
                     <p>
-                        {% trans url_usda='https://www.ars.usda.gov/ARSUserFiles/80400525/Data/retn/retn06.pdf' %}Il piatto in tabella si calcola come le ricette delle tabelle di composizione: i nutrienti degli ingredienti crudi si sommano e si dividono per il peso del piatto cotto. Il peso cotto tiene conto dell'acqua assorbita o persa in cottura, ingrediente per ingrediente: per pasta, riso, cereali e legumi bolliti si usa il rapporto tra crudo e cotto delle tabelle CREA (per esempio 1,95 per la pasta di semola), per carni (0,7-0,75), pesce (0,8), verdure cotte (0,7-0,8) e liquidi che si riducono (0,5) una stima arrotondata. L'alcol del vino in cottura scende al 35%, il valore delle <a href="{{ url_usda }}" target="_blank" rel="noopener noreferrer">tabelle USDA dei fattori di ritenzione</a> per 30 minuti di cottura. Un valore resta non disponibile se gli ingredienti senza quel dato ne portano più del 5%, come per le ricette CREA.{% endtrans %}
+                        {% trans url_usda='https://www.ars.usda.gov/ARSUserFiles/80400525/Data/retn/retn06.pdf' %}Il piatto in tabella si calcola come le ricette delle tabelle di composizione: i nutrienti degli ingredienti crudi si sommano e si dividono per il peso del piatto cotto. Il peso cotto tiene conto dell'acqua assorbita o persa in cottura, ingrediente per ingrediente: per pasta, riso, cereali e legumi bolliti si usa il rapporto tra crudo e cotto delle tabelle CREA (per esempio 1,95 per la pasta di semola), per carni (0,7-0,75), pesce (0,8), verdure cotte (0,7-0,8) e liquidi che si riducono (0,5) una stima arrotondata. L'alcol del vino in cottura scende al 35%, il valore delle <a href="{{ url_usda }}" target="_blank" rel="noopener noreferrer">tabelle USDA dei fattori di ritenzione</a> per 30 minuti di cottura. Un valore resta non disponibile se gli ingredienti senza quel dato ne portano più del 5%, come per le ricette CREA; come lì, gli zuccheri di carne e pesce senza il glucosio contano come glucosio.{% endtrans %}
                     </p>
                     <p class="mb-0">
                         {% trans %}«Al pasto» aggiunge gli ingredienti crudi per le porzioni scelte, e nella pagina del pasto i rischi si pesano sulle Kcal di ciascun ingrediente, come per ogni pasto (le quantità sotto 1 g, come le erbe, salgono a 1 g). Il semaforo del piatto in tabella valuta invece il piatto intero, per 100 g e per porzione, con le stesse regole degli altri alimenti: come per le ricette del CREA, la carne rossa o lavorata conta nel rischio tumorale del singolo ingrediente, non del piatto che la contiene.{% endtrans %}
+                    </p>
+                </div>
+            </section>
+
+            <section class="card guida-sezione" id="spesa" aria-labelledby="titolo-spesa">
+                <div class="card-body">
+                    <h2 id="titolo-spesa">{{ _('Lista della spesa') }}</h2>
+                    <p>
+                        {% trans url=url_for('spesa.lista') %}La <a href="{{ url }}">lista della spesa</a> propone, per ogni reparto scelto, alimenti a semaforo verde: i cinque rischi tutti classificati, nessuno oltre Basso, e un punteggio verde (da 84). Ogni volta che la generi la scelta tra gli alimenti verdi del reparto cambia.{% endtrans %}
+                    </p>
+                    <p>
+                        {% trans %}Con le regole attuali alcuni reparti non hanno alimenti verdi: pane, pasta e riso hanno il rischio diabete alto o medio, oli e grassi il rischio metabolico alto per la densità energetica. Lì la lista propone le scelte migliori senza rischi alti, segnate come non verdi; gli alimenti con un rischio alto o non classificato non vengono mai proposti.{% endtrans %}
+                    </p>
+                    <p class="mb-0">
+                        {% trans %}Si propone solo quello che si compra: niente alimenti cotti, piatti pronti, erbe aromatiche e condimenti (porzione sotto i 30 g, che puoi aggiungere a mano), e un alimento per tipo (le mele una volta sola, anche se le varietà sono tante). Con un profilo vengono prima gli alimenti con il semaforo per te più basso. Ogni voce si può cambiare con un'altra dello stesso reparto o togliere, e se aggiungi un alimento non verde la lista propone l'alternativa verde. La lista resta nella sessione del browser e, una volta aperta, anche offline; si stampa o si scarica come testo.{% endtrans %}
                     </p>
                 </div>
             </section>
@@ -358,9 +398,9 @@
                     <h2 id="titolo-fonti">{{ _('Fonti e limiti') }}</h2>
                     <ul>
                         <li>{% trans url='https://www.alimentinutrizione.it/tabelle-nutrizionali' %}Valori nutrizionali: <a href="{{ url }}" target="_blank" rel="noopener noreferrer">Tabelle di composizione degli alimenti del CREA</a> (Centro di ricerca Alimenti e Nutrizione, aggiornamento 2019), riprodotte citando la fonte come chiede il CREA. I grassi saturi in grammi sono stimati dalla percentuale degli acidi grassi con i fattori di conversione FAO/INFOODS.{% endtrans %}</li>
-                        <li>{% trans url=cofid_url, licenza=cofid_licenza %}I valori che il CREA non pubblica vengono, in quest'ordine: dalla tabella britannica <a href="{{ url }}" target="_blank" rel="noopener noreferrer">CoFID 2021</a> (McCance and Widdowson, Public Health England, <a href="{{ licenza }}" target="_blank" rel="noopener noreferrer">Open Government Licence v3.0</a>) per il profilo degli zuccheri di prodotti europei (e per gli zuccheri totali, se mancano anche in USDA) e per i grassi saturi, come percentuale degli acidi grassi o come quota sui grassi; poi dall'alimento corrispondente di USDA FoodData Central (dominio pubblico) per gli altri campi. Gli abbinamenti sono scelti alimento per alimento e la scheda indica quali valori vengono da dove.{% endtrans %}</li>
+                        <li>{% trans url=cofid_url, licenza=cofid_licenza, url_ciqual=ciqual_url, licenza_ciqual=ciqual_licenza %}I valori che il CREA non pubblica vengono, in quest'ordine: dalla tabella britannica <a href="{{ url }}" target="_blank" rel="noopener noreferrer">CoFID 2021</a> (McCance and Widdowson, Public Health England, <a href="{{ licenza }}" target="_blank" rel="noopener noreferrer">Open Government Licence v3.0</a>) per il profilo degli zuccheri di prodotti europei (e per gli zuccheri totali, se mancano anche in USDA) e per i grassi saturi, come percentuale degli acidi grassi o come quota sui grassi; dove CoFID non ha un alimento comparabile, dalla tabella francese <a href="{{ url_ciqual }}" target="_blank" rel="noopener noreferrer">Ciqual 2025</a> (Anses, <a href="{{ licenza_ciqual }}" target="_blank" rel="noopener noreferrer">Licence Ouverte 2.0</a>), con le stesse regole; poi dall'alimento corrispondente di USDA FoodData Central (dominio pubblico) per gli altri campi. Gli abbinamenti sono scelti alimento per alimento e la scheda indica quali valori vengono da dove.{% endtrans %}</li>
                         <li>{% trans %}Fruttosio, glucosio e lattosio presi da un'altra fonte seguono le proporzioni sugli zuccheri totali dell'alimento simile, riportate agli zuccheri del CREA (o, se il CREA non li pubblica, a quelli di USDA o CoFID); i grassi saturi da CoFID si calcolano dai grassi totali del CREA, con lo stesso fattore di conversione o con la quota dei saturi sui grassi dell'alimento CoFID. Così i valori restano coerenti con quelli del CREA.{% endtrans %}</li>
-                        <li>{% trans %}Ricette CREA: dove il CREA non pubblica il dettaglio di zuccheri o acidi grassi, la composizione si calcola dagli ingredienti della ricetta (quanta parte degli zuccheri è fruttosio, quanta parte dei grassi è satura) e si applica agli zuccheri e ai grassi del piatto. Se gli ingredienti senza il dato portano più del 5% degli zuccheri o dei grassi, il valore resta non disponibile.{% endtrans %}</li>
+                        <li>{% trans %}Ricette CREA: dove il CREA non pubblica il dettaglio di zuccheri o acidi grassi, la composizione si calcola dagli ingredienti della ricetta (quanta parte degli zuccheri è fruttosio, quanta parte dei grassi è satura) e si applica agli zuccheri e ai grassi del piatto. Se gli ingredienti senza il dato portano più del 5% degli zuccheri o dei grassi, il valore resta non disponibile. Carne e pesce, senza fruttosio, hanno pochi zuccheri che vengono dal glicogeno: dove manca il glucosio, i loro zuccheri contano come glucosio.{% endtrans %}</li>
                         <li>{% trans url='https://world.openfoodfacts.org' %}I prodotti confezionati cercati per codice a barre vengono da <a href="{{ url }}" target="_blank" rel="noopener noreferrer">Open Food Facts</a> (licenza ODbL).{% endtrans %}</li>
                         <li>{% trans %}Indice glicemico: valori della tabella 1 di Atkinson et al. (2008), medie di più studi per gli alimenti comuni; per gli altri, voci della tabella A1 dell'appendice (singoli studi su persone con tolleranza al glucosio normale), preferendo i test italiani ed europei e facendo la media quando più voci corrispondono. Si assegna solo dove una voce corrisponde davvero all'alimento e alla preparazione.{% endtrans %} {{ rif('atkinson2008') }}</li>
                         <li>{% trans %}Le regole dei rischi valutano un alimento alla volta, per 100 g o per la porzione tipica: non tengono conto della dieta nel suo insieme, delle quantità consumate né delle condizioni personali.{% endtrans %}</li>

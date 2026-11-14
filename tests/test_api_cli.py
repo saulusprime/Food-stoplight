@@ -75,7 +75,7 @@ def test_api_accesso_privato(app, client, visitatore):
 
 
 def test_salute(client):
-    assert client.get("/salute").get_json() == {"stato": "ok", "schema_alimenti": 5, "schema_aggiornato": True}
+    assert client.get("/salute").get_json() == {"stato": "ok", "schema_alimenti": 6, "schema_aggiornato": True}
 
 
 # ---------------------------------------------------------------
@@ -104,7 +104,7 @@ def test_elimina_utente_cancella_il_suo_diario(cli, visitatore):
 
 
 def test_db_stato(cli):
-    assert "alimenti  versione 5 di 5" in cli.invoke(args=["db-stato"]).output
+    assert "alimenti  versione 6 di 6" in cli.invoke(args=["db-stato"]).output
 
 
 def test_usda_sincronizza_senza_rete(cli, monkeypatch):

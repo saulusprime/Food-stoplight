@@ -30,9 +30,11 @@ from flask_login import (
 import analisi
 import archivio
 import nutrienti
+import profilo as profilo_personale
 from archivio import Alimento
 from web.accesso import url_sicuro
 from web.comune import (
+    condizioni_utente,
     filtro_numero,
     get_db_diario,
     trova_alimento_da_modulo,
@@ -97,7 +99,8 @@ def carica_voci(voci: list[dict[str, Any]]) -> list[tuple[Alimento, float, int]]
 
 def riepilogo_nutrizionale(voci: list[tuple[Alimento, float]]) -> dict[str, Any] | None:
     """
-    Totali, dati mancanti e profilo di rischio (con radar) di una lista di (alimento, grammi).
+    Totali, dati mancanti, profilo di rischio (con radar) e semaforo per te
+    di una lista di (alimento, grammi).
     """
     if not voci:
         return None
@@ -110,6 +113,7 @@ def riepilogo_nutrizionale(voci: list[tuple[Alimento, float]]) -> dict[str, Any]
         "mancanti": mancanti,
         "profilo": profilo,
         "radar": analisi.radar({}, punti={r["campo"]: r["punti"] for r in profilo["rischi"]}),
+        "per_te": profilo_personale.per_te_profilo(profilo["rischi"], condizioni_utente()),
         "voci": len(voci),
     }
 

@@ -2,8 +2,9 @@
  *
  * - File statici: dalla cache, scaricati all'installazione. La versione
  *   cambia quando cambia un file, e le copie vecchie vengono scartate.
- * - Tabella, guida e schede degli alimenti: dalla rete; senza connessione
- *   l'ultima copia salvata. Le altre pagine senza rete mostrano la pagina offline.
+ * - Tabella, guida, schede degli alimenti e lista della spesa: dalla rete;
+ *   senza connessione l'ultima copia salvata. Le altre pagine senza rete
+ *   mostrano la pagina offline.
  * - La tabella è divisa in pagine: la copia offline è quella con tutte le
  *   righe (TABELLA_COMPLETA), salvata come pagina iniziale e riscaricata
  *   in background, al massimo una volta all'ora, quando si apre la tabella.
@@ -25,7 +26,7 @@ const OFFLINE = {{ offline|tojson }};
 const INTESTAZIONE = {{ intestazione|tojson }};
 
 // Percorsi (relativi a BASE) delle pagine di consultazione
-const CONSULTABILI = [/^$/, /^guida$/, /^alimento\/\d+$/];
+const CONSULTABILI = [/^$/, /^guida$/, /^alimento\/\d+$/, /^spesa$/];
 
 function relativo(url) {
     return url.pathname.startsWith(BASE) ? url.pathname.slice(BASE.length) : null;

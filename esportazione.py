@@ -75,6 +75,8 @@ COLONNE = (
     ("campi_usda", N_("Campi da USDA"), None, None),
     ("codice_cofid", N_("Codice CoFID"), None, None),
     ("campi_cofid", N_("Campi da CoFID"), None, None),
+    ("codice_ciqual", N_("Codice Ciqual"), None, None),
+    ("campi_ciqual", N_("Campi da Ciqual"), None, None),
     ("campi_ricetta", N_("Campi calcolati dagli ingredienti"), None, None),
     ("ingredienti", N_("Ingredienti della ricetta"), None, None),
     ("porzione", N_("Porzione tipica (g)"), "0", None),
